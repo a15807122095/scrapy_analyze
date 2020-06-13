@@ -9,14 +9,23 @@ import json
 #             'team_b_name':result_team_B,
 #            }
 
-def api_check(payload):
+def api_check(game_name, league_name, team_a_name, team_b_name):
+        payload = {
+                'game_name': game_name,
+                'league_name': league_name,
+                'team_a_name': team_a_name,
+                'team_b_name': team_b_name,
+        }
         # 请求接口拿到数据
         url_check = 'http://dev.saishikong.com/data/backstage-api/python-search'
         final_response = requests.post(url=url_check, json=payload)
         result = json.loads(final_response.text)
-        return result['result']
+        return result
 
-# 返回格式： {
+# 返回格式： 200为未匹配到数据     600为匹配到数据
+# {'code': 200, 'msg': '联赛数据信息不存在'}
+#
+# {
 #           "code":600,"msg":"success","result":
 #                       {"league_id":"268063888",
 #                       "league_name":"2020 LPL夏季赛",
