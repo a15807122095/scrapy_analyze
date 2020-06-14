@@ -5,7 +5,7 @@ import urllib3
 import time
 import datetime
 import json
-from API_check import api_check
+from common_tool import api_check
 
 # 尚牛电竞网
 url = 'https://www.shangniu.cn/api/battle/index/dayMatchList?' \

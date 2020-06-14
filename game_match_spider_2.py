@@ -3,7 +3,7 @@ import requests
 from lxml import etree
 import urllib3
 import json
-from API_check import api_check
+from common_tool import api_check
 
 # 雷竞技
 url = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=2'
