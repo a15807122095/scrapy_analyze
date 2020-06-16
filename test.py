@@ -2,18 +2,15 @@ import requests
 import pymysql
 import time
 from datetime import datetime
-from setting import db_setting
+from common_tool import api_check
 string = '2020-06-11 19:00:00'
 string = datetime.strptime(string, '%Y-%m-%d %H:%M:%S')
 
-result = {
-    'a': '0',
-    'a1':'a1的名字',
-    'b': '321',
-    'b1':'b1的名字',
-}
+# 2020职业联赛夏季赛常规赛ESFPX2020-06-27 19:00:00
+game_name = '英雄联盟'
+league_name =  '2020职业联赛夏季赛常规赛'
+team_a_name =  'ES'
+team_b_name =  'FPX'
+result = api_check(game_name, league_name, team_a_name, team_b_name)
 
-result_a = result['a1'] if result['a'] == '0' else None
-result_b = result['b1'] if result['b'] == '0' else None
-
-print(result_a, result_b)
+print(result)

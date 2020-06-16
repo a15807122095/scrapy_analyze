@@ -1,35 +1,17 @@
 # '''
 # 使用单例模式创建redis 链接池
 # '''
-# from redis import ConnectionPool
-# import threading
-# import time
-# class redis_pool(object):
-#     _instance_lock = threading.Lock()
-#     pool = ConnectionPool(host='localhost', port=6379, db=0)
-#     def __init__(self):
-#         time.sleep(1)
-#
-#     @classmethod
-#     def instance(cls, *args, **kwargs):
-#         if not hasattr(redis_pool, "_instance"):
-#             with redis_pool._instance_lock:
-#                 if not hasattr(redis_pool, "_instance"):
-#                     redis_pool._instance = redis_pool(*args, **kwargs)
-#         return redis_pool._instance
-#
-# if __name__ == "__main__":
-#     def task(arg):
-#         obj = redis_pool.instance()
-#         print(obj)
-#         print(obj.pool)
-#     for i in range(10):
-#         t = threading.Thread(target=task,args=[i,])
-#         t.start()
-#         time.sleep(2)
-#     print('end')
-#     obj = redis_pool.instance()
-#     print(obj)
-#     print(obj.pool)
+import requests
+import json
+url_wzrygw = 'https://itea-cdn.qq.com/file/ingame/smoba/allMatchpage1.json'
+headers_wzrygw = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/'
+                         '537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
 
-import test
+
+
+requests.packages.urllib3.disable_warnings()
+response = requests.get(url=url_wzrygw, headers=headers_wzrygw, verify = False)
+response = response.text
+response = json.loads(response)
+sources = response['matchList']
+print('抓取到的源数据：',len(sources), sources)
