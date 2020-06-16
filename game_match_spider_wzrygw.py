@@ -18,7 +18,7 @@ def parse(url):
     response = response.text
     response = json.loads(response)
     sources = response['matchList']
-    print('抓取到的源数据：',len(sources), sources)
+    # print('抓取到的源数据：',len(sources), sources)
     game_name = '王者荣耀'
     type = 2
     for source in sources:
@@ -53,7 +53,7 @@ def parse(url):
             if status_check == None:
                 # 请求检测接口
                 result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-                print('检测接口返回：', result)
+                # print('检测接口返回：', result)
 
                 if result['code'] == 600:
                     insert_argument = {}
@@ -73,10 +73,10 @@ def parse(url):
                     API_return_200(db, result)
                     # 本地已有数据就直接更新
             else:
-                print('本地已有数据就直接更新 ')
+                # print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
                 db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, status_check)
-                print('本地已有数据就直接更新完成')
+                # print('本地已有数据就直接更新完成')
 
 
 
@@ -85,8 +85,8 @@ if __name__ == '__main__':
     # 创建mysql连接对象
     db = con_db()
     for url in url_wzrygw:
-        print('开始抓取比赛')
+        # print('开始抓取比赛')
         parse(url)
-        print('抓取比赛已完成')
+        # print('抓取比赛已完成')
 
 
