@@ -20,7 +20,7 @@ def parse(url, match_status):
     # 没有进行的比赛不解析 （没有进行比赛status为'-1'）
     if sources['status'] != '-1':
         sources = sources['msg']['result']
-        # print('爬取的源数据：',len(sources), sources)
+        print('爬取的源数据：',len(sources), sources)
         game_name = '英雄联盟'
         type = 1
         status = match_status
@@ -34,7 +34,7 @@ def parse(url, match_status):
                 win_team = 'B'
             else:
                 win_team = None
-            # print('比分数据：',type, status, bo, team_a_score, team_b_score, win_team)
+            print('比分数据：',type, status, bo, team_a_score, team_b_score, win_team)
             league_sourcename = each_source['GameName'] + each_source['GameTypeName']
             # 匹配A，B的名字
             bMatchName = each_source['bMatchName']
@@ -48,7 +48,7 @@ def parse(url, match_status):
             if status_check == None:
                 # 请求检测接口
                 result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-                # print('检测接口返回：',result)
+                print('检测接口返回：',result)
                 # 检测为600, result['result']包含6个字段：
                 # league_id, team_a_id, team_b_id,
                 # league_name, team_a_name, team_b_name
@@ -73,10 +73,10 @@ def parse(url, match_status):
                     API_return_200(db, result)
             # 本地已有数据就直接更新
             else:
-                # print('本地已有数据就直接更新 ')
+                print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
                 db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, status_check)
-                # print('本地已有数据就直接更新完成')
+                print('本地已有数据就直接更新完成')
 
 
 
@@ -96,16 +96,16 @@ if __name__ == '__main__':
 
 
     # 0:未开始 1:进行中 2:已结束
-    # print('开始抓取已完成比赛')
+    print('开始抓取已完成比赛')
     for url_finish in url_finishs:
         url_finish += now_time
         parse(url=url_finish, match_status='2')
 
-    # print('开始抓取进行中比赛')
+    print('开始抓取进行中比赛')
     url_matching += now_time
     parse(url_matching, match_status='1')
 
-    # print('开始抓取未进行比赛')
+    print('开始抓取未进行比赛')
     for url_unfinish in url_unfinishs:
         url_unfinish += now_time
         parse(url_unfinish, match_status='0')
