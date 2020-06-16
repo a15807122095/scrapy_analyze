@@ -7,6 +7,8 @@ db_setting = {
     'db' : 'Game'
 }
 
+# test
+
 ## product
 # db_setting = {
 #     'host': '116.62.47.187',

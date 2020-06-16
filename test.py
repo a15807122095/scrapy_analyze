@@ -12,5 +12,5 @@ league_name =  '2020职业联赛夏季赛常规赛'
 team_a_name =  'ES'
 team_b_name =  'FPX'
 result = api_check(game_name, league_name, team_a_name, team_b_name)
-
+print('test')
 print(result)
