@@ -7,14 +7,14 @@ db_setting = {
     'db' : 'Game'
 }
 
-# test
+# modify
 
 ## product
-# db_setting = {
+#db_setting = {
 #     'host': '116.62.47.187',
-#     'user': 'ele_sports',
-#     'password' : 'ele_sports',
-#     'db' : 'Game'
+#     'user': 'ele_python',
+#     'password' : 'ele_python',
+#     'db' : 'ele_python'
 # }
 
 #   英雄联盟官网的url  headers---> headers_yxlmgw
