@@ -34,7 +34,7 @@ def parse(url):
         if cate == '常规赛':
             bo = '5'
         else:
-            bo = '7'
+            bo = None
         # 每个模块分一个或多个比赛
         source_lists = source['match']
         for source_list in source_lists:
