@@ -24,8 +24,13 @@ def parse(url):
     for source in sources:
         league_sourcename = source['cate'] + source['match_name']
         # cate为 "2020春季赛·总决赛"格式, 常规赛bo5  季后赛和总决赛bo7
-        cate = source['cate'].split('·')
-        cate = cate[1]
+        # cate可能也不是‘·’区分
+        if '·' in source['cate']:
+            cate = source['cate'].split('·')
+            cate = cate[1]
+        else:
+            cate = source['cate']
+        print('名字：',cate)
         if cate == '常规赛':
             bo = '5'
         else:
