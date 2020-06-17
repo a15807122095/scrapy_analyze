@@ -4,16 +4,14 @@ from datetime import datetime
 import requests
 import time
 from common_tool import api_check, check_local, API_return_600, API_return_200
-from import_data_to_mysql import con_db
-from setting import url_finishs, url_matching, url_unfinishs, headers_yxlmgw
 
 """
 英雄联盟官网爬虫
 """
 
-def parse(url, match_status):
+def parse_yxlm(url, db, match_status, headers):
     requests.packages.urllib3.disable_warnings()
-    response = requests.get(url=url, headers=headers_yxlmgw, verify = False)
+    response = requests.get(url=url, headers=headers, verify = False)
     sources = response.text
     sources = json.loads(sources)
 
@@ -79,36 +77,6 @@ def parse(url, match_status):
                 print('本地已有数据就直接更新完成')
 
 
-
-
-
-
-
-
-
-
-if __name__ == '__main__':
-    # 创建mysql连接对象
-    db = con_db()
-    # 拿到时间戳
-    date_time = time.time()
-    now_time = str(round(date_time * 1000))
-
-
-    # 0:未开始 1:进行中 2:已结束
-    print('开始抓取已完成比赛')
-    for url_finish in url_finishs:
-        url_finish += now_time
-        parse(url=url_finish, match_status='2')
-
-    print('开始抓取进行中比赛')
-    url_matching += now_time
-    parse(url_matching, match_status='1')
-
-    print('开始抓取未进行比赛')
-    for url_unfinish in url_unfinishs:
-        url_unfinish += now_time
-        parse(url_unfinish, match_status='0')
 
 
 

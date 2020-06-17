@@ -3,18 +3,16 @@ import json
 import requests
 import urllib3
 from common_tool import api_check, check_local, API_return_600, API_return_200
-from import_data_to_mysql import con_db
 import time
 from datetime import datetime
-from setting import url_wzrygw, headers_wzrygw
 
 
 """
 王者荣耀官网爬虫
 """
-def parse(url):
+def parse_wzry(url, db, headers):
     requests.packages.urllib3.disable_warnings()
-    response = requests.get(url=url, headers=headers_wzrygw, verify = False)
+    response = requests.get(url=url, headers=headers, verify = False)
     response = response.text
     response = json.loads(response)
     sources = response['matchList']
@@ -49,6 +47,8 @@ def parse(url):
                 win_team = None
             team_a_sourcename = source_list['teama_name']
             team_b_sourcename = source_list['teamb_name']
+            if team_a_sourcename == '待定' or team_b_sourcename == '待定':
+                return
             team_a_score = source_list['wina']
             team_b_score = source_list['winb']
             start_time = source_list['mtime']
@@ -84,14 +84,5 @@ def parse(url):
                 print('本地已有数据就直接更新完成')
 
 
-
-
-if __name__ == '__main__':
-    # 创建mysql连接对象
-    db = con_db()
-    for url in url_wzrygw:
-        print('开始抓取比赛')
-        parse(url)
-        print('抓取比赛已完成')
 
 
