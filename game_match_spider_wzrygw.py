@@ -16,7 +16,7 @@ def parse_wzry(url, db, headers):
     response = response.text
     response = json.loads(response)
     sources = response['matchList']
-    print('抓取到的源数据：',len(sources), sources)
+    # print('抓取到的源数据：',len(sources), sources)
     game_name = '王者荣耀'
     type = 2
     for source in sources:
@@ -28,7 +28,7 @@ def parse_wzry(url, db, headers):
             cate = cate[1]
         else:
             cate = source['cate']
-        print('名字：',cate)
+        # print('名字：',cate)
         if cate == '常规赛':
             bo = '5'
         else:
@@ -58,7 +58,7 @@ def parse_wzry(url, db, headers):
             if status_check == None:
                 # 请求检测接口
                 result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-                print('检测接口返回：', result)
+                # print('检测接口返回：', result)
 
                 if result['code'] == 600:
                     insert_argument = {}
@@ -78,10 +78,10 @@ def parse_wzry(url, db, headers):
                     API_return_200(db, result)
                     # 本地已有数据就直接更新
             else:
-                print('本地已有数据就直接更新 ')
+                # print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
                 db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, status_check)
-                print('本地已有数据就直接更新完成')
+                # print('本地已有数据就直接更新完成')
 
 
 
