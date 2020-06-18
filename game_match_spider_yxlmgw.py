@@ -23,6 +23,18 @@ def parse_yxlm(url, db, match_status, headers):
         type = 1
         status = match_status
         for each_source in sources:
+            # 将爬取的字符串时间转化为datetime类型
+            date_time = datetime.strptime(each_source['MatchDate'], '%Y-%m-%d %H:%M:%S')
+            # 转化为时间戳
+            date_timestamp = int(time.mktime(date_time.timetuple()))
+            # print('修改前：', status)
+            # 如果官网赛程是进行中而时间没到比赛时间,就把状态调整为未进行
+            if status == '1':
+                now_time = datetime.now()
+                now_time_stamp = now_time.timestamp()
+                if now_time_stamp < date_timestamp:
+                    status = '0'
+                    # print('修改后：',now_time_stamp, date_timestamp, status)
             bo = each_source['GameMode']
             team_a_score = each_source['ScoreA']
             team_b_score = each_source['ScoreB']
@@ -60,10 +72,6 @@ def parse_yxlm(url, db, match_status, headers):
                     insert_argument['team_b_score'] = team_b_score
                     insert_argument['check_match'] = check_match
                     insert_argument['win_team'] = win_team
-                    # 将爬取的字符串时间转化为datetime类型
-                    date_time = datetime.strptime(each_source['MatchDate'], '%Y-%m-%d %H:%M:%S')
-                    # 转化为时间戳
-                    date_timestamp = int(time.mktime(date_time.timetuple()))
                     API_return_600(db, result, date_timestamp, insert_argument)
 
                 elif result['code'] == 200:

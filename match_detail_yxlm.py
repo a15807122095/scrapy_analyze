@@ -8,7 +8,10 @@ from lxml import etree
 尚牛电竞网爬虫
 """
 
-# 爬取规则： 拿到本周的startTime和endTime的时间戳组成访问赛程url
+# 爬取规则： 拿到本周的startTime和endTime的时间戳组成访问赛程url,根据时间戳差值拿到上周的赛程url
+# 过滤只保留LPL的赛程,拿到每个赛程的matchId,拼接得到对局详情url
+# 用xpath拿到对局详情url的
+#
 # startTime为本周1的00:00:00   endTime为本周1的00:00:00
 now_time = datetime.now()
 # 判断今天星期几（周1到周日对应0到6）
@@ -30,9 +33,15 @@ url_matchlist = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
 # 一周的时间戳差值为604800000
 startTime_l = startTime - 604800000
 lastTime_l = lastTime - 604800000
+# 上周的赛程url
 url_matchlist_l= 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
                 'lol&startTime={0}&endTime={1}'.format(startTime_l, lastTime_l)
-print(url_matchlist, '\n',url_matchlist_l)
+
+url_list = [url_matchlist, url_matchlist_l]
+
+
+
+
 
 
 
