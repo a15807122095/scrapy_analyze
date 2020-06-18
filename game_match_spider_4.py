@@ -5,7 +5,7 @@ import urllib3
 import time
 import datetime
 import json
-from common_tool import api_check
+from common_tool import get_response, api_check
 
 # 尚牛电竞网
 url = 'https://www.shangniu.cn/api/battle/index/dayMatchList?' \
@@ -14,9 +14,7 @@ url = 'https://www.shangniu.cn/api/battle/index/dayMatchList?' \
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/'
                          '537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
 
-requests.packages.urllib3.disable_warnings()
-response = requests.get(url = url, headers = headers , verify = False)
-results = response.text
+results = get_response(url, headers)
 results = json.loads(results)
 
 results = results['body']

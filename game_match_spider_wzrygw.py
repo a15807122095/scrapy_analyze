@@ -1,8 +1,6 @@
 # -*-coding:utf-8-*-
 import json
-import requests
-import urllib3
-from common_tool import api_check, check_local, API_return_600, API_return_200
+from common_tool import get_response, api_check, check_local, API_return_600, API_return_200
 import time
 from datetime import datetime
 
@@ -11,10 +9,7 @@ from datetime import datetime
 王者荣耀官网爬虫
 """
 def parse_wzry(url, db, headers):
-    requests.packages.urllib3.disable_warnings()
-    response = requests.get(url=url, headers=headers, verify = False)
-    response = response.text
-    response = json.loads(response)
+    response = get_response(url, headers)
     sources = response['matchList']
     # print('抓取到的源数据：',len(sources), sources)
     game_name = '王者荣耀'

@@ -3,7 +3,7 @@ import requests
 from lxml import etree
 import urllib3
 import json
-from common_tool import api_check
+from common_tool import get_response, api_check
 
 # 雷竞技
 url = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=2'
@@ -12,11 +12,9 @@ headers = {
         'USER-AGENT':'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)'
     }
 
-requests.packages.urllib3.disable_warnings()
-response = requests.get(url=url, headers = headers, verify = False)
+response = get_response(url, headers)
 # 源数据
-source = response.text
-source = json.loads(source)
+source = json.loads(response)
 
 # 提取所需数据,提供（游戏名称，主队名称，客队名称）请求接口获取参数
 source_list = source['result']

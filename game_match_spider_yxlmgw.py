@@ -3,17 +3,14 @@ import json
 from datetime import datetime
 import requests
 import time
-from common_tool import api_check, check_local, API_return_600, API_return_200
+from common_tool import get_response, api_check, check_local, API_return_600, API_return_200
 
 """
 英雄联盟官网爬虫
 """
 
 def parse_yxlm(url, db, match_status, headers):
-    requests.packages.urllib3.disable_warnings()
-    response = requests.get(url=url, headers=headers, verify = False)
-    sources = response.text
-    sources = json.loads(sources)
+    sources = get_response(url, headers)
 
     # 没有进行的比赛不解析 （没有进行比赛status为'-1'）
     if sources['status'] != '-1':

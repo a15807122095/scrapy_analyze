@@ -2,6 +2,7 @@
 import json
 import requests
 from datetime import datetime, timedelta
+from setting import headers_yxlmgw
 from lxml import etree
 
 """
@@ -9,9 +10,9 @@ from lxml import etree
 """
 
 # 爬取规则： 拿到本周的startTime和endTime的时间戳组成访问赛程url,根据时间戳差值拿到上周的赛程url
-# 过滤只保留LPL的赛程,拿到每个赛程的matchId,拼接得到对局详情url
-# 用xpath拿到对局详情url的
-#
+# 过滤只保留LPL的赛程,拿到每个赛程的matchId,拼接得到对局详情url    https://www.shangniu.cn/live/lol/268063898
+# 用xpath拿到对局详情url的battle_id,拼接对局详情数据的url        https://www.shangniu.cn/api/battle/lol/match/liveBattle?battleId=26806389801
+
 # startTime为本周1的00:00:00   endTime为本周1的00:00:00
 now_time = datetime.now()
 # 判断今天星期几（周1到周日对应0到6）
@@ -39,10 +40,12 @@ url_matchlist_l= 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' 
 
 url_list = [url_matchlist, url_matchlist_l]
 
+# def parse_detail(urls, headers):
+#     for url_match in urls:
+#         response_match =
 
 
 
 
 
-
-
+# parse_detail(url_list, headers_yxlmgw)

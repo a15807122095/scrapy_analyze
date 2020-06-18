@@ -4,6 +4,14 @@ import json
 import time
 from datetime import datetime
 
+def get_response(url, headers):
+        requests.packages.urllib3.disable_warnings()
+        response = requests.get(url=url, headers=headers, verify=False)
+        response_text = response.text
+        response_json = json.loads(response_text)
+        return response_json
+
+
 # # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
 def check_local(db, check_match):
         sql_check = 'select id from game_python_match where check_match = "{}"'.format(check_match)
