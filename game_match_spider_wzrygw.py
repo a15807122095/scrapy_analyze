@@ -43,7 +43,7 @@ def parse_wzry(url, db, headers):
             team_a_sourcename = source_list['teama_name']
             team_b_sourcename = source_list['teamb_name']
             if team_a_sourcename == '待定' or team_b_sourcename == '待定':
-                return
+                continue
             team_a_score = source_list['wina']
             team_b_score = source_list['winb']
             start_time = source_list['mtime']
