@@ -55,13 +55,14 @@ def parse(url, headers):
     for response_each in response_match:
           team_a_name = response_each['teamAShortName']
           team_b_name = response_each['teamBShortName']
+          teamAScore = response_each['teamAScore']
+          teamBScore = response_each['teamBScore']
           status = response_each['status']
           # 过滤掉未进行的比赛
           if status != 0 and team_a_name in LPL_list and team_b_name in LPL_list:
                 # 过滤只拿LPL的赛程,且比赛为已完成或者进行中的数据
                 # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
                 if team_a_name in LPL_list and team_b_name in LPL_list:
-                      bo = response_each['bo']
                       # print('过滤留下来的赛程队伍：', team_a_name, team_b_name, bo, type(bo))
                       matchId = response_each['matchId']
                       # 拼接对局详情url
@@ -79,8 +80,8 @@ def parse(url, headers):
                       battle_id_str = battle_id.split('battle_id:')[1]
                       battle_id = int(battle_id_str.split(',')[0])
                       # print('xpath拿到的battle_id：', battle_id)
-                      # 根据bo场次和battle_id拼接小场的详情数据url（先拼接url,没打满的会过滤掉）
-                      bo_count = bo
+                      # 根据两队总得分和battle_id拼接小场的详情数据url（因为默认进入小场最后一局,需要推算出第一句的url）
+                      bo_count = teamAScore + teamBScore
                       battle_urls = []
                       while bo_count > 0:
                             battledetail_url = 'https://www.shangniu.cn/api/battle/lol/match/liveBattle?' \
@@ -102,10 +103,3 @@ def parse(url, headers):
 
 
 parse(url_matchlist, headers_yxlmgw)
-
-
-
-
-
-
-
