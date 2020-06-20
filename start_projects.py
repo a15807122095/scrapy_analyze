@@ -22,20 +22,20 @@ if __name__ == '__main__':
         url_finish += now_time
         parse_yxlm(url_finish, db, '2', headers_yxlmgw)
 
-    print('开始抓取进行中比赛')
-    url_matching += now_time
-    parse_yxlm(url_matching, db, '1', headers_yxlmgw)
-
     print('开始抓取未进行比赛')
     for url_unfinish in url_unfinishs:
         url_unfinish += now_time
         parse_yxlm(url_unfinish, db, '0', headers_yxlmgw)
 
+    print('开始抓取进行中比赛')
+    url_matching += now_time
+    parse_yxlm(url_matching, db, '1', headers_yxlmgw)
+
     """
     王者荣耀爬虫抓取
     """
-    for url in url_wzrygw:
-        print('开始抓取比赛')
-        parse_wzry(url, db, headers_wzrygw)
-        print('抓取比赛已完成')
+    # for url in url_wzrygw:
+    #     print('开始抓取比赛')
+    #     parse_wzry(url, db, headers_wzrygw)
+    #     print('抓取比赛已完成')
 

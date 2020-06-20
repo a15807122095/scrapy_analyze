@@ -82,18 +82,78 @@ def parse(url, headers):
                       # print('xpath拿到的battle_id：', battle_id)
                       # 根据两队总得分和battle_id拼接小场的详情数据url（因为默认进入小场最后一局,需要推算出第一句的url）
                       bo_count = teamAScore + teamBScore
-                      battle_urls = []
+                      # 如果是进行中的赛事bo_count +1,因为当局还没计算出大比分,但已经可以进入对局详情页
+                      if status == 1:
+                          bo_count += 1
+                      battle_urls = {}
                       while bo_count > 0:
                             battledetail_url = 'https://www.shangniu.cn/api/battle/lol/match/liveBattle?' \
                                                'battleId={}'.format(battle_id)
-                            battle_urls.append(battledetail_url)
+                            battle_urls[bo_count] = battledetail_url
                             battle_id -= 1
                             bo_count -= 1
+                            result = parse_detail(battle_urls, headers, team_a_name, team_b_name)
                       print(battle_urls)
     now_2 = time.time()
     print(now_2 - now_1)
 
-# def parse_detail():
+# 解析对局详情的url,录入到数据库,录入的是赛事对应的小场
+def parse_detail(url_list, headers, team_a_name, team_b_name):
+      for key, value_url in url_list.items():
+           index_num = key
+           response = get_response(value_url, headers)['body']
+           duration = response['duration']
+           economic_diff = response['economic_diff']
+           status = response['status']
+           type = 1    # 默认为英雄联盟
+           print(index_num)
+           print(duration)
+           print(economic_diff)
+           # A,B队的英雄列表要自己拼接
+           team_a_hero = []
+           team_b_hero = []
+           # 判断response['team_stats'][0]为A队
+           if response['team_stats'][0]['team_short_name'] == team_a_name:
+               team_stats_0 = response['team_stats'][0]
+               team_stats_1 = response['team_stats'][1]
+           else:
+               team_stats_1 = response['team_stats'][0]
+               team_stats_0 = response['team_stats'][1]
+           team_a_kill_count = team_stats_0['kill_count']
+           team_b_kill_count = team_stats_1['kill_count']
+           team_a_death_count = team_stats_0['death_count']
+           team_b_death_count = team_stats_1['death_count']
+           team_a_assist_count = team_stats_0['assist_count']
+           team_b_assist_count = team_stats_1['assist_count']
+           team_a_big_dragon_count = team_stats_0['big_dragon_count']
+           team_a_big_dragon_count = team_stats_1['big_dragon_count']
+           team_a_small_dragon_count = team_stats_0['small_dragon_count']
+           team_b_small_dragon_count = team_stats_1['small_dragon_count']
+           team_a_tower_count = team_stats_0['tower_success_count']
+           team_b_tower_count = team_stats_0['tower_success_count']
+           win_team = 'A' if team_stats_0['is_win'] == 'true' else 'B'
+           first_big_dragon_team = 'A' if team_stats_0['is_first_big_dragon'] == 'true' else 'B'
+           first_small_dragon_team = 'A' if team_stats_0['is_first_small_dragon'] == 'true' else 'B'
+           first_blood_team = 'A' if team_stats_0['is_first_blood'] == 'false' else 'B'
+           team_a_five_kills = '0' if team_stats_0['is_five_kills'] == 'false' else '1'
+           team_b_five_kills = '0' if team_stats_1['is_five_kills'] == 'false' else '1'
+           team_a_ten_kills = '0' if team_stats_0['is_ten_kills'] == 'false' else '1'
+           team_b_ten_kills = '0' if team_stats_1['is_ten_kills'] == 'false' else '1'
+           first_tower_team = 'A' if team_stats_0['is_ten_kills'] == 'true' else 'B'
+           team_a_money = team_stats_0['money']
+           team_b_money = team_stats_1['money']
+           pick_list_A = team_stats_0['pick_list']
+           pick_list_B = team_stats_1['pick_list']
+           for avatar in  pick_list_A:
+               team_a_hero.append(avatar)
+           for avatar in  pick_list_B:
+               team_b_hero.append(avatar)
+           team_a_hero = str(team_a_hero)
+           team_b_hero = str(team_b_hero)
+           team_a_side = team_stats_0['side']
+           team_b_side = team_stats_1['side']
+           player_id =
+           player_name =
 
 
 
@@ -102,4 +162,15 @@ def parse(url, headers):
 
 
 
-parse(url_matchlist, headers_yxlmgw)
+url_detail = 'https://www.shangniu.cn/api/battle/lol/match/liveBattle?battleId=26806339601'
+url_details = {1:url_detail}
+parse_detail(url_details, headers_yxlmgw)
+
+
+
+
+
+
+
+
+# parse(url_matchlist, headers_yxlmgw)
