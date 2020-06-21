@@ -30,7 +30,7 @@ def parse_yxlm(url, db, match_status, headers):
             now_time_stamp = now_time.timestamp()
             if status == '1' and now_time_stamp < date_timestamp:
                 status = '0'
-            # 由于官网未进行的赛事url中有时存在已经比完的比赛,所以做此判断加以修正
+            # 由于官网未进行的赛事url中有时存在已经比完的比赛,所以做此判断加以修正,
             if status == '0' and now_time_stamp > date_timestamp:
                 status = '2'
             # print('修改后：',now_time_stamp, date_timestamp, status)
