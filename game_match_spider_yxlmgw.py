@@ -26,12 +26,14 @@ def parse_yxlm(url, db, match_status, headers):
             date_timestamp = int(time.mktime(date_time.timetuple()))
             # print('修改前：', status)
             # 如果官网赛程是进行中而时间没到比赛时间,就把状态调整为未进行
-            if status == '1':
-                now_time = datetime.now()
-                now_time_stamp = now_time.timestamp()
-                if now_time_stamp < date_timestamp:
-                    status = '0'
-                    # print('修改后：',now_time_stamp, date_timestamp, status)
+            now_time = datetime.now()
+            now_time_stamp = now_time.timestamp()
+            if status == '1' and now_time_stamp < date_timestamp:
+                status = '0'
+            # 由于官网未进行的赛事url中有时存在已经比完的比赛,所以做此判断加以修正
+            if status == '0' and now_time_stamp > date_timestamp:
+                status = '2'
+            # print('修改后：',now_time_stamp, date_timestamp, status)
             bo = each_source['GameMode']
             team_a_score = each_source['ScoreA']
             team_b_score = each_source['ScoreB']
