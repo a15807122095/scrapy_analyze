@@ -34,8 +34,8 @@ if __name__ == '__main__':
     """
     王者荣耀爬虫抓取
     """
-    # for url in url_wzrygw:
-    #     print('开始抓取比赛')
-    #     parse_wzry(url, db, headers_wzrygw)
-    #     print('抓取比赛已完成')
+    for url in url_wzrygw:
+        print('开始抓取比赛')
+        parse_wzry(url, db, headers_wzrygw)
+        print('抓取比赛已完成')
 
