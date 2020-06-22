@@ -29,6 +29,7 @@ def parse_wzry(url, db, headers):
         else:
             bo = 'Null'
         # 每个模块分一个或多个比赛
+        propertys = cate
         source_lists = source['match']
         for source_list in source_lists:
             # status: (0:未进行, 1：进行中, 2：已完成)
@@ -64,6 +65,7 @@ def parse_wzry(url, db, headers):
                     insert_argument['team_b_score'] = team_b_score
                     insert_argument['check_match'] = check_match
                     insert_argument['win_team'] = win_team
+                    insert_argument['propertys'] = propertys
                     # 将爬取的字符串时间转化为datetime类型
                     date_time = datetime.strptime(source_list['mtime'], '%Y-%m-%d %H:%M')
                     # 转化为时间戳
@@ -75,7 +77,7 @@ def parse_wzry(url, db, headers):
             else:
                 # print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
-                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, status_check)
+                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, propertys, status_check)
                 # print('本地已有数据就直接更新完成')
 
 

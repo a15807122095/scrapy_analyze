@@ -7,7 +7,6 @@ db_setting = {
     'db' : 'Game'
 }
 
-# modify
 
 ## product
 #db_setting = {

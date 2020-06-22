@@ -15,7 +15,7 @@ def parse_yxlm(url, db, match_status, headers):
     # 没有进行的比赛不解析 （没有进行比赛status为'-1'）
     if sources['status'] != '-1':
         sources = sources['msg']['result']
-        # print('爬取的源数据：',len(sources), sources)
+        print('爬取的源数据：',len(sources), sources)
         game_name = '英雄联盟'
         type = 1
         status = match_status
@@ -45,6 +45,8 @@ def parse_yxlm(url, db, match_status, headers):
                 win_team = None
             # print('比分数据：',type, status, bo, team_a_score, team_b_score, win_team)
             league_sourcename = each_source['GameName'] + each_source['GameTypeName']
+            # 截取GameTypeName后三位作为联赛性质字段
+            propertys = each_source['GameTypeName'][-3:]
             # 匹配A，B的名字
             bMatchName = each_source['bMatchName']
             bMatchName = bMatchName.split('vs')
@@ -71,6 +73,7 @@ def parse_yxlm(url, db, match_status, headers):
                     insert_argument['team_b_score'] = team_b_score
                     insert_argument['check_match'] = check_match
                     insert_argument['win_team'] = win_team
+                    insert_argument['propertys'] = propertys
                     API_return_600(db, result, date_timestamp, insert_argument)
 
                 elif result['code'] == 200:
@@ -80,7 +83,7 @@ def parse_yxlm(url, db, match_status, headers):
             else:
                 # print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
-                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, status_check)
+                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, propertys, status_check)
                 # print('本地已有数据就直接更新完成')
 
 
