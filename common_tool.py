@@ -101,7 +101,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                                                team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
                                                league_name,
                                                check_match, propertys, win_team)
-                print('600的未有记录执行插入：', sql_insert)
+                # print('600的未有记录执行插入：', sql_insert)
                 db.update_insert(sql_insert)
                 # print('600的未有记录执行插入完成')
         else:
@@ -128,8 +128,8 @@ def API_return_200(db, result):
                 # 添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
                 sql_blacklist = "INSERT INTO `api_check_200` (team_a_name, team_b_name, league_name, check_distinct) " \
                                 "VALUES('{0}', '{1}', '{2}', '{3}');".format(team_a_name, team_b_name, league_name, distinct_asc)
-                print('200的添加到api_check_200表中sql：', sql_blacklist)
+                # print('200的添加到api_check_200表中sql：', sql_blacklist)
                 db.update_insert(sql_blacklist)
-                print('200的添加到api_check_200表中sql完成')
+                # print('200的添加到api_check_200表中sql完成')
 
 

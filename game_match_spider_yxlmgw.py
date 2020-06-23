@@ -15,7 +15,7 @@ def parse_yxlm(url, db, match_status, headers):
     # 没有进行的比赛不解析 （没有进行比赛status为'-1'）
     if sources['status'] != '-1':
         sources = sources['msg']['result']
-        print('爬取的源数据：',len(sources), sources)
+        # print('爬取的源数据：',len(sources), sources)
         game_name = '英雄联盟'
         type = 1
         status = match_status
