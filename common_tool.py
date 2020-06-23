@@ -85,7 +85,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
         propertys = insert_argument['propertys']
         # 将result_insert和date_timestamp与game_python_match进行对比确定是否有这场赛事
         sql_check = 'select id from game_python_match where league_id = {0} and team_a_id = {1} ' \
-                    'and team_b_id = {2} and start_time = {3}'.format(league_id, team_a_id, team_b_id,
+                    'and team_b_id = {2} and start_time = {3};'.format(league_id, team_a_id, team_b_id,
                                                                       date_timestamp)
         # print('600的查询主键sql：', sql_check)
         status_update_or_insert = db.select_id(sql_check)
@@ -95,13 +95,13 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                 # 拿到其余需要更新的字段
                 sql_insert = "INSERT INTO `game_python_match` (type, league_id, status, start_time, bo," \
                              " team_a_id, team_a_name, team_a_score, team_b_id, team_b_name, " \
-                             "team_b_score, league_name, check_match, property, win_team) VALUES ({0}, {1}, {2}," \
-                             " {3}, {4}, {5}, '{6}', {7}, {8}, '{9}', {10}, '{11}', '{12}', '{13}' " \
+                             "team_b_score, league_name, check_match, propertys, win_team) VALUES ({0}, {1}, {2}," \
+                             " {3}, {4}, {5}, '{6}', {7}, {8}, '{9}', {10}, '{11}', '{12}', '{13}', " \
                              "'{14}');".format(type, league_id, status, date_timestamp, bo, team_a_id,
                                                team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
                                                league_name,
                                                check_match, propertys, win_team)
-                # print('600的未有记录执行插入：', sql_insert)
+                print('600的未有记录执行插入：', sql_insert)
                 db.update_insert(sql_insert)
                 # print('600的未有记录执行插入完成')
         else:
