@@ -7,16 +7,22 @@ from setting import headers_yxlmgw
 from lxml import etree
 from common_tool import api_check
 from import_data_to_mysql import con_db
+from import_data_to_redis import RedisCache_checkAPI
 
 """
-尚牛电竞网爬虫
+尚牛电竞网比赛详情爬虫
 """
+
+# 创建数据库对象
+db = con_db()
+# 创建redis对象
+redis = RedisCache_checkAPI()
+
 
 # LPL战队列表
 LPL_list = [ 'RNG', 'ES', 'EDG', 'LGD', 'IG', 'BLG', 'TES', 'SN', 'WE',
              'OMG', 'OMD', 'LNG', 'JDG', 'FPX', 'RW', 'VG', 'V5']
 
-position_list = {'上单':1, '打野':2, '中单':3, 'ADC':4, '辅助':5}
 
 matchdetail_urlpre = 'https://www.shangniu.cn/live/lol/'
 # 爬取规则： 拿到本周的startTime和endTime的时间戳组成访问赛程url,根据时间戳差值拿到上周的赛程url
@@ -27,7 +33,7 @@ matchdetail_urlpre = 'https://www.shangniu.cn/live/lol/'
 now_time = datetime.now()
 # 判断今天星期几（周1到周日对应0到6）
 judge_week = now_time.weekday()
-print(now_time)
+# print(now_time)
 start = now_time - timedelta(days=(judge_week))
 last = start + timedelta(days=7)
 start_str = start.strftime('%Y-%m-%d 00:00:00')
@@ -47,15 +53,14 @@ lastTime_l = lastTime - 604800000
 # 上周的赛程url
 url_matchlist_l= 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
                 'lol&startTime={0}&endTime={1}'.format(startTime_l, lastTime_l)
-# print(url_matchlist, '\n', url_matchlist_l)
+print(url_matchlist, '\n', url_matchlist_l)
 
 urls = [url_matchlist, url_matchlist_l]
 
 def parse(url):
-    now_1 = time.time()
     response_match = get_response(url, headers_yxlmgw)
     response_match = response_match['body']
-    print('赛程个数和结果：', len(response_match), response_match)
+    # print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
           team_a_name = response_each['teamAShortName']
           team_b_name = response_each['teamBShortName']
@@ -64,13 +69,14 @@ def parse(url):
           status = response_each['status']
           # 过滤掉未进行的比赛
           if status != 0 and team_a_name in LPL_list and team_b_name in LPL_list:
-                print('enter this way')
+                # print('enter this way')
                 # 过滤只拿LPL的赛程,且比赛为已完成或者进行中的数据
                 # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
                 if team_a_name in LPL_list and team_b_name in LPL_list:
                       # print('过滤留下来的赛程队伍：', team_a_name, team_b_name, bo, type(bo))
                       matchId = response_each['matchId']
-                      matchTime = response_each['matchTime']
+                      # 时间戳由毫秒转化为秒
+                      matchTime = response_each['matchTime'][:-3]
                       leagueName = response_each['leagueName']
                       # 拼接对局详情url
                       matchdetail_url = matchdetail_urlpre + matchId
@@ -83,44 +89,71 @@ def parse(url):
 
                       # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
                       battle_id = str(html.xpath('/html/body/script[1]/text()'))
-                      print('html源数据：', battle_id)
+                      # print('拿到的battle_id：', battle_id)
                       battle_id_str = battle_id.split('battle_id:')[1]
                       battle_id = int(battle_id_str.split(',')[0])
                       # print('xpath拿到的battle_id：', battle_id)
-                      # 根据两队总得分和battle_id拼接小场的详情数据url（因为默认进入小场最后一局,需要推算出第一句的url）
-                      bo_count = teamAScore + teamBScore
+                      # 根据两队总得分和battle_id拼接小场的详情数据url（有的时候默认进入是小场第一局，有的时候是最后一局，具体要看网站变动）
+                      bo_count = 1
                       # 如果是进行中的赛事bo_count +1,因为当局还没计算出大比分,但已经可以进入对局详情页
                       if status == 1:
-                          bo_count += 1
+                          bo_count = teamAScore + teamBScore + 1
                       battle_urls = {}
-                      while bo_count > 0:
+                      while bo_count <= (teamAScore + teamBScore):
                             battledetail_url = 'https://www.shangniu.cn/api/battle/lol/match/liveBattle?' \
                                                'battleId={}'.format(battle_id)
                             battle_urls[bo_count] = battledetail_url
-                            battle_id -= 1
-                            bo_count -= 1
-                            result = parse_detail(battle_urls, team_a_name, team_b_name, matchTime, leagueName)
-                      print(battle_urls)
-    now_2 = time.time()
-    print(now_2 - now_1)
+                            battle_id += 1
+                            bo_count += 1
+                      result = parse_detail(battle_urls, leagueName, team_a_name, team_b_name, matchTime)
+                      # print(battle_urls)
+
 
 # 解析对局详情的url,录入到数据库,录入的是赛事对应的小场
+# url_list对应的{小局第几场：场次的详情url，...}
 def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
-      # 创建数据库对象,请求检测接口拿到规范的队伍名称，在匹配赛事id
-      db = con_db()
-      # 请求检测接口
-      game_name = '英雄联盟'
-      result = api_check(game_name, leagueName, team_a_name, team_b_name, matchTime)
+      # print('enter this way: parse_detail', url_list)
+      # 请求接口前先再redis中查找是否已经访问过
+      redis_key = 'SN' + leagueName + team_a_name + team_b_name + matchTime
+      redis_value = redis.get_data(redis_key)
+      print('redis中的存储情况：', redis_key, redis_value)
+      if redis_value:
+          match_id = redis_value.split('SN')[1]
+      else:
+          # redis没记录，请求检测接口
+          game_name = '英雄联盟'
+          result = api_check(game_name, leagueName, team_a_name, team_b_name)
+          # print(result)
+          league_id = result['result']['league_id']
+          team_a_id = result['result']['team_a_id']
+          team_b_id = result['result']['team_b_id']
+          # 尚牛的比赛时间与官网有差别，用商牛网的时间左右一个小时过滤官网的时间来查找赛事id
+          matchTime_before = int(matchTime) - 3600
+          matchTime_after = int(matchTime) + 3600
+          sql_check = 'select id from game_python_match where league_id = {0} and team_a_id = {1} and team_b_id = ' \
+                      '{2} and start_time between {3} and {4};'.format(league_id, team_a_id,
+                      team_b_id, matchTime_before, matchTime_after)
+          print('检测api返回拼凑的sql：', sql_check)
+          # 拿到数据再去赛程表拿到赛事id（未拿到赛事id的暂时不处理）
+          match_id = db.select_id(sql_check)
+          print('匹配到的match_id:', match_id)
+          if match_id != None:
+              # 保存到redis，设置1天的过期时间
+              # 格式为：str（ 源网站 + 源数据联赛名 + 源数据A队名 + 源数据B队名 + 比赛时间) : str（源网站+主键）
+              # print('存入redis')
+              redis_value = 'SN' + str(match_id)
+              redis.set_data(redis_key, redis_value, 86400)
+          else:
+              return None
+      # 收集详情数据并写入数据库
       for key, value_url in url_list.items():
            index_num = key
            response = get_response(value_url, headers_yxlmgw)['body']
+           # print('源详情url：', value_url)
            duration = response['duration']
            economic_diff = response['economic_diff']
            status = response['status']
            type = 1    # 默认为英雄联盟
-           print(index_num)
-           print(duration)
-           print(economic_diff)
            # A,B队的英雄列表要自己拼接
            team_a_hero = []
            team_b_hero = []
@@ -138,7 +171,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
            team_a_assist_count = team_stats_0['assist_count']
            team_b_assist_count = team_stats_1['assist_count']
            team_a_big_dragon_count = team_stats_0['big_dragon_count']
-           team_a_big_dragon_count = team_stats_1['big_dragon_count']
+           team_b_big_dragon_count = team_stats_1['big_dragon_count']
            team_a_small_dragon_count = team_stats_0['small_dragon_count']
            team_b_small_dragon_count = team_stats_1['small_dragon_count']
            team_a_tower_count = team_stats_0['tower_success_count']
@@ -156,10 +189,11 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
            team_b_money = team_stats_1['money']
            pick_list_A = team_stats_0['pick_list']
            pick_list_B = team_stats_1['pick_list']
+           # print('两个战队的名字：',team_stats_0['team_name'], team_stats_1['team_name'])
            for pick_list in  pick_list_A:
-               team_a_hero.append(pick_list['avater'])
+               team_a_hero.append(pick_list['avatar'])
            for pick_list in  pick_list_B:
-               team_b_hero.append(pick_list['avater'])
+               team_b_hero.append(pick_list['avatar'])
            team_a_hero = str(team_a_hero)
            team_b_hero = str(team_b_hero)
            team_a_side = team_stats_0['side']
@@ -191,12 +225,62 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                score = player_message['score']
                equip_ids = player_message['equip_ids']
                skill_ids = player_message['skill_ids']
+               # 位置可能为空
                position = player_message['player_position']
-               position = position_list[position]
-            # parse_import(matchTime)
-#
-# # 导入到数据库
-# def  parse_import(matchTime):
+
+               # 添加或修改选手对局记录
+               sql_player_insert = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, " \
+                "player_avatar, hero_id, hero_level, hero_name, hero_avatar, kill_count, death_count, assist_count," \
+                " last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent, damage_taken_count, " \
+                "damage_taken_minute, damage_taken_percent, kda, money_count, money_minute, offered_rate, score, " \
+                "equip_ids, skill_ids, position, type) VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', '{7}'," \
+                " {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}, " \
+                "'{24}', '{25}', {26}, {27}) " \
+                "ON DUPLICATE KEY UPDATE player_id = '{1}', player_name = '{2}', player_avatar = '{3}', " \
+                "hero_id = {4}, hero_level = {5}, hero_name = '{6}', hero_avatar = '{7}', kill_count = {8}, " \
+                "death_count = {9}, assist_count = {10}, last_hit_count = {11}, last_hit_minute = {12}, " \
+                "damage_count = {13}, damage_minute = {14}, damage_percent = {15}, damage_taken_count = {16}, " \
+                "damage_taken_minute = {17}, damage_taken_percent = {18}, kda = {19}, money_count = {20}, " \
+                "money_minute = {21}, offered_rate = {22}, score = {23}, equip_ids = '{24}', skill_ids = '{25}'," \
+                " position ='{26}', type = {27};".format(match_id, player_id, player_name, player_avatar, hero_id,
+                hero_level, hero_name, hero_avatar, kill_count, death_count, assist_count, last_hit_count,
+                last_hit_minute, damage_count, damage_minute, damage_percent, damage_taken_count,
+                damage_taken_minute, damage_taken_percent, kda, money_count, money_minute, offered_rate, score,
+                equip_ids, skill_ids, position, type)
+               print('记录选手表：', sql_player_insert)
+               db.update_insert(sql_player_insert)
+               print('记录选手表插入完成')
+
+           # 添加或修改选手对局记录
+           sql_battle_insert = "INSERT INTO `game_player_battle_record` (match_id, duration, index_num, economic_diff," \
+           " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
+           "team_a_assist_count, team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count, " \
+           "team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team, " \
+           "first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills, " \
+           "team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_hero, team_b_hero, " \
+           "team_a_side, team_b_side) VALUES({0}, {1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
+           "{13}, {14}, {15}, {16}, {17}, '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}', '{26}'," \
+           " {27}, {28}, '{29}', '{30}', '{31}', '{32}') ON DUPLICATE KEY UPDATE duration = {1}, index_num = {2}, " \
+           "economic_diff = '{3}', status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
+           "team_a_death_count = {8}, team_b_death_count = {9}, team_a_assist_count = {10}, team_b_assist_count = {11}, " \
+           "team_a_big_dragon_count = {12}, team_b_big_dragon_count = {13}, team_a_small_dragon_count = {14}, " \
+           "team_b_small_dragon_count = {15}, team_a_tower_count = {16}, team_b_tower_count = {17}, " \
+           "win_team = '{18}', first_big_dragon_team = '{19}', first_small_dragon_team = '{20}', " \
+           "first_blood_team = '{21}', team_a_five_kills = '{22}', team_b_five_kills = '{23}', team_a_ten_kills = '{24}'," \
+           "team_b_ten_kills = '{25}', first_tower_team = '{26}', team_a_money = {27}, team_b_money = {28}, " \
+           "team_a_hero = '{29}', team_b_hero = '{30}', team_a_side = '{31}', team_b_side = '{32};".format(
+           match_id, duration, index_num, economic_diff, status, type, team_a_kill_count, team_b_kill_count,
+           team_a_death_count, team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_big_dragon_count,
+           team_b_big_dragon_count, team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count,
+           team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
+           team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
+           team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side)
+           print('记录对局详情表：', sql_battle_insert)
+           db.update_insert(sql_battle_insert)
+           print('记录对局详情表插入完成')
+
+
+
 
 
 
@@ -212,6 +296,8 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
 # parse_detail(url_details, headers_yxlmgw, team_a_name, team_b_name)
 
 
+# time_1 = time.time()
 
-for url in urls:
-    parse(url_matchlist_l, headers_yxlmgw)
+parse(url_matchlist_l)
+# time_2 = time.time()
+# print(time_2 - time_1)
