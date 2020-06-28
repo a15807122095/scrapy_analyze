@@ -7,7 +7,7 @@
 使用单例模式创建redis 链接池
 '''
 from redis import ConnectionPool
-
+from setting import Redis_checkAPI, Redis_urldistict
 import redis
 
 # 检测后端API之前现在redis中查询是否有记录/尚牛网存储本周和上周的url以及
@@ -16,9 +16,9 @@ import redis
 # redis中存储的格式：str（ 源网站 + 源数据联赛名 + 源数据A队名 + 源数据B队名 + 比赛时间 ) : str（源网站+主键）
 # 尚牛url：week1/url_matchlist, week2/url_matchlist_l
 class RedisDBConfig_checkAPI:
-    HOST = '127.0.0.1'
-    PORT = 6379
-    DBID = 0
+    HOST_checkAPI = Redis_checkAPI['host']
+    PORT_checkAPI = Redis_checkAPI['port']
+    DBID_checkAPI = Redis_checkAPI['db']
 
 class RedisCache_checkAPI(object):
     def __init__(self):
@@ -29,9 +29,9 @@ class RedisCache_checkAPI(object):
     @staticmethod
     def create_pool():
         RedisCache_checkAPI.pool = redis.ConnectionPool(
-            host=RedisDBConfig_checkAPI.HOST,
-            port=RedisDBConfig_checkAPI.PORT,
-            db=RedisDBConfig_checkAPI.DBID)
+            host=RedisDBConfig_checkAPI.HOST_checkAPI,
+            port=RedisDBConfig_checkAPI.PORT_checkAPI,
+            db=RedisDBConfig_checkAPI.DBID_checkAPI)
 
     # @operator_status
     def set_data(self, key, time, value):
@@ -59,9 +59,9 @@ class RedisCache_checkAPI(object):
 # 为了减少数据库读写太频繁，已完成和未进行的因为基本一天之内没变化，赛程录入到redis，
 # 后续从redis检查到记录就过滤掉，因为进行中的比赛变化比较频繁，不考虑redis缓存
 class RedisDBConfig_urldistict:
-    HOST = '127.0.0.1'
-    PORT = 6379
-    DBID = 1
+    HOST_urldistict = Redis_urldistict['host']
+    PORT_urldistict = Redis_urldistict['port']
+    DBID_urldistict = Redis_urldistict['db']
 
 
 class RedisCache_urldistict(object):
@@ -73,9 +73,9 @@ class RedisCache_urldistict(object):
     @staticmethod
     def create_pool():
         RedisCache_urldistict.pool = redis.ConnectionPool(
-            host=RedisDBConfig_urldistict.HOST,
-            port=RedisDBConfig_urldistict.PORT,
-            db=RedisDBConfig_urldistict.DBID)
+            host=RedisDBConfig_urldistict.HOST_urldistict,
+            port=RedisDBConfig_urldistict.PORT_urldistict,
+            db=RedisDBConfig_urldistict.DBID_urldistict)
 
     def set_data(self, key, time, value):
         '''设
