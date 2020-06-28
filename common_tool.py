@@ -133,3 +133,10 @@ def API_return_200(db, result):
                 # print('200的添加到api_check_200表中sql完成')
 
 
+# 得到一天中剩下的大致时间戳
+def fullday_remain(now_time):
+        now_stamp = now_time.timestamp()
+        fullday_time = now_time.strftime('%Y-%m-%d 23:59:55')
+        fullday_time = datetime.strptime(fullday_time, '%Y-%m-%d %H:%M:%S')
+        fullday_time = fullday_time.timestamp()
+        return fullday_time - now_stamp

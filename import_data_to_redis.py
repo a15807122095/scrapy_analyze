@@ -10,10 +10,11 @@ from redis import ConnectionPool
 
 import redis
 
-# 检测后端API之前现在redis中查询是否有记录
+# 检测后端API之前现在redis中查询是否有记录/尚牛网存储本周和上周的url以及
 # 查询赛事id时要先访问后端接口返回规范的队伍名,保存到redis,然后再找到赛事的id
 # 下次再找赛事id先访问redis，有记录直接拿到主键
 # redis中存储的格式：str（ 源网站 + 源数据联赛名 + 源数据A队名 + 源数据B队名 + 比赛时间 ) : str（源网站+主键）
+# 尚牛url：week1/url_matchlist, week2/url_matchlist_l
 class RedisDBConfig_checkAPI:
     HOST = '127.0.0.1'
     PORT = 6379
@@ -33,10 +34,10 @@ class RedisCache_checkAPI(object):
             db=RedisDBConfig_checkAPI.DBID)
 
     # @operator_status
-    def set_data(self, key, value, time):
+    def set_data(self, key, time, value):
         '''set data with (key, value)
         '''
-        return self._connection.set(key, value, ex=time)
+        return self._connection.setex(key, time, value)
 
     # @operator_status
     def get_data(self, key):
@@ -76,10 +77,10 @@ class RedisCache_urldistict(object):
             port=RedisDBConfig_urldistict.PORT,
             db=RedisDBConfig_urldistict.DBID)
 
-    def set_data(self, key, value, time):
+    def set_data(self, key, time, value):
         '''设
         '''
-        return self._connection.set(key, value, ex=time)
+        return self._connection.setex(key, time, value)
 
     def get_data(self, key):
         '''查
