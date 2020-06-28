@@ -104,7 +104,7 @@ def parse(url):
                             battle_urls[bo_count] = battledetail_url
                             battle_id += 1
                             bo_count += 1
-                      print('battle_urls:', battle_urls)
+                      # print('battle_urls:', battle_urls)
                       parse_detail(battle_urls, leagueName, team_a_name, team_b_name, matchTime)
 
 
@@ -252,7 +252,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                db.update_insert(sql_player_insert)
                # print('记录选手表插入完成')
 
-           print('得到的match_id和index_num：',match_id, index_num)
+           # print('得到的match_id和index_num：',match_id, index_num)
            # 添加或修改对局详情记录
            sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num, economic_diff," \
            " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
@@ -277,9 +277,9 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
            team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
            team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
            team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side)
-           print('记录对局详情表：', sql_battle_insert)
+           # print('记录对局详情表：', sql_battle_insert)
            db.update_insert(sql_battle_insert)
-           print('记录对局详情表插入完成')
+           # print('记录对局详情表插入完成')
 
 
 
