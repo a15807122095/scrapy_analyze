@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 """
-王者荣耀官网爬虫
+王者荣耀官网爬虫（已废弃）
 """
 def parse_wzry(url, db, headers):
     response = get_response(url, headers)

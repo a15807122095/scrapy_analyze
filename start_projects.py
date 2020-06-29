@@ -3,7 +3,6 @@ from import_data_to_mysql import con_db
 from game_match_spider_yxlmgw import parse_yxlm
 from game_match_spider_wzrygw import parse_wzry
 from setting import url_finishs, url_matching, url_unfinishs, headers_yxlmgw
-from setting import url_wzrygw, headers_wzrygw
 import time
 
 if __name__ == '__main__':
@@ -31,11 +30,12 @@ if __name__ == '__main__':
     url_matching += now_time
     parse_yxlm(url_matching, db, '1', headers_yxlmgw)
 
-    """
-    王者荣耀爬虫抓取
-    """
-    for url in url_wzrygw:
-        print('开始抓取比赛')
-        parse_wzry(url, db, headers_wzrygw)
-        print('抓取比赛已完成')
+    # """
+    # 已废弃
+    # 王者荣耀爬虫抓取
+    # """
+    # for url in url_wzrygw:
+    #     print('开始抓取比赛')
+    #     parse_wzry(url, db, headers_wzrygw)
+    #     print('抓取比赛已完成')
 

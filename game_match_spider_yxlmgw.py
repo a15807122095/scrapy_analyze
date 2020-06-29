@@ -17,6 +17,7 @@ def parse_yxlm(url, db, match_status, headers):
         sources = sources['msg']['result']
         # print('爬取的源数据：',len(sources), sources)
         game_name = '英雄联盟'
+        source_from = '官网'
         type = 1
         status = match_status
         for each_source in sources:
@@ -74,6 +75,7 @@ def parse_yxlm(url, db, match_status, headers):
                     insert_argument['check_match'] = check_match
                     insert_argument['win_team'] = win_team
                     insert_argument['propertys'] = propertys
+                    insert_argument['source_from'] = source_from
                     API_return_600(db, result, date_timestamp, insert_argument)
 
                 elif result['code'] == 200:
@@ -83,7 +85,8 @@ def parse_yxlm(url, db, match_status, headers):
             else:
                 # print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
-                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, propertys, status_check)
+                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match,
+                                propertys, source_from, status_check)
                 # print('本地已有数据就直接更新完成')
 
 

@@ -2,7 +2,7 @@
 import requests
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def get_response(url, headers):
         requests.packages.urllib3.disable_warnings()
@@ -10,6 +10,12 @@ def get_response(url, headers):
         response_text = response.text
         response_json = json.loads(response_text)
         return response_json
+
+def post_response(url, data, headers):
+        response = requests.post(url=url, data=data, headers=headers)
+        response = response.text
+        result = json.loads(response)
+        return result
 
 
 # # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
@@ -83,6 +89,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
         check_match = insert_argument['check_match']
         win_team = insert_argument['win_team']
         propertys = insert_argument['propertys']
+        source_from = insert_argument['source_from']
         # 将result_insert和date_timestamp与game_python_match进行对比确定是否有这场赛事
         sql_check = 'select id from game_python_match where league_id = {0} and team_a_id = {1} ' \
                     'and team_b_id = {2} and start_time = {3};'.format(league_id, team_a_id, team_b_id,
@@ -95,12 +102,12 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                 # 拿到其余需要更新的字段
                 sql_insert = "INSERT INTO `game_python_match` (type, league_id, status, start_time, bo," \
                              " team_a_id, team_a_name, team_a_score, team_b_id, team_b_name, " \
-                             "team_b_score, league_name, check_match, propertys, win_team) VALUES ({0}, {1}, {2}," \
-                             " {3}, {4}, {5}, '{6}', {7}, {8}, '{9}', {10}, '{11}', '{12}', '{13}', " \
-                             "'{14}');".format(type, league_id, status, date_timestamp, bo, team_a_id,
+                             "team_b_score, league_name, check_match, propertys, source_from, win_team) VALUES ({0}, {1}, {2}," \
+                             " {3}, {4}, {5}, '{6}', {7}, {8}, '{9}', {10}, '{11}', '{12}', '{13}', '{14}' " \
+                             "'{15}');".format(type, league_id, status, date_timestamp, bo, team_a_id,
                                                team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
                                                league_name,
-                                               check_match, propertys, win_team)
+                                               check_match, propertys, source_from, win_team)
                 # print('600的未有记录执行插入：', sql_insert)
                 db.update_insert(sql_insert)
                 # print('600的未有记录执行插入完成')
@@ -108,7 +115,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                 # print('600的有记录执行修改', type, status, bo, team_a_score, team_b_score, win_team,
                 #       check_match,
                 #       status_update_or_insert)
-                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, propertys,
+                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, propertys, source_from,
                                 status_update_or_insert)
                 # print('600的有记录执行修改完成')
 
@@ -140,3 +147,16 @@ def fullday_remain(now_time):
         fullday_time = datetime.strptime(fullday_time, '%Y-%m-%d %H:%M:%S')
         fullday_time = fullday_time.timestamp()
         return fullday_time - now_stamp
+
+#得到今日日期字符串：
+# '2020.06.29'， '2020.06.30'， '2020.07.01'， '2020.07.02'， '2020.07.03'， '2020.07.04'， '2020.07.05'
+def get_weeks():
+        week_str = []
+        num = 1
+        now = datetime.now().date()
+        while num <= 7:
+                now_str = now.strftime('%Y.%m.%d')
+                week_str.append(now_str)
+                now += timedelta(days=1)
+                num += 1
+        return week_str

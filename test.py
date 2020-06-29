@@ -2,5 +2,6 @@
 使用单例模式创建redis 链接池
 '''
 
-list = []
+from datetime import datetime, timedelta
+
 
