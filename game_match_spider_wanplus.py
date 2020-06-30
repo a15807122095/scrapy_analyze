@@ -66,62 +66,73 @@ def parse(url, data, db, headers):
     types = 1
     for key_list, result in results.items():
         result = result['list']
-        print('赛程数据1:', type(result), result)
+        # print('赛程数据1:', type(result), result)
         for match in result:
-            print('赛程数据2:', type(match), match)
+            # print('赛程数据2:', type(match), match)
             league_sourcename = match['ename']
-            team_a_sourcename = match['oneseedname']
-            team_b_sourcename = match['twoseedname']
-            # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上data中的‘time’才是表中的start_time类型
-            time = match['starttime']
-            str = time.split(':')
-            start_time = int(str[0]) * 3600 + int(str[1]) * 60 + data['time']
-            status = match['gametype']
-            bo = match['bonum']
-            team_a_score = match['onewin']
-            team_b_score = match['twowin']
-            if team_a_score > team_b_score and status == '2':
-                win_team = 'A'
-            elif team_a_score < team_b_score and status == '2':
-                win_team = 'B'
-            else:
-                win_team = None
-            propertys = match['groupname']
+            # 只抓取LCK, LCS, LEC, LDL联赛
+            if 'LCK' in league_sourcename or 'LCS' in league_sourcename or 'LEC' in league_sourcename or 'LDL' in league_sourcename :
+                team_a_sourcename = match['oneseedname']
+                team_b_sourcename = match['twoseedname']
+                source_matchId = match['scheduleid']
+                # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上data中的‘time’才是表中的start_time类型
+                time = match['starttime']
+                strs = time.split(':')
+                start_time = int(strs[0]) * 3600 + int(strs[1]) * 60 + data['time']
+                start_time = str(start_time)
+                # match['isover']表示是否结束， match['live']表示是否进行中
+                if match['live']:
+                    status = '1'
+                elif not match['live'] and not match['isover']:
+                    status = '0'
+                else:
+                    status = '2'
+                bo = match['bonum']
+                team_a_score = match['onewin']
+                team_b_score = match['twowin']
+                if team_a_score > team_b_score and status == '2':
+                    win_team = 'A'
+                elif team_a_score < team_b_score and status == '2':
+                    win_team = 'B'
+                else:
+                    win_team = None
+                propertys = match['groupname']
 
 
-            # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
-            check_match = league_sourcename + team_a_sourcename + team_b_sourcename + start_time
-            status_check = check_local(db, check_match)
-            if status_check == None:
-                # 请求检测接口
-                result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-                print('检测接口返回：',result)
-                # 检测为600, result['result']包含6个字段：
-                # league_id, team_a_id, team_b_id,
-                # league_name, team_a_name, team_b_name
-                if result['code'] == 600:
-                    insert_argument = {}
-                    insert_argument['type'] = types
-                    insert_argument['status'] = status
-                    insert_argument['bo'] = bo
-                    insert_argument['team_a_score'] = team_a_score
-                    insert_argument['team_b_score'] = team_b_score
-                    insert_argument['check_match'] = check_match
-                    insert_argument['win_team'] = win_team
-                    insert_argument['propertys'] = propertys
-                    insert_argument['source_from'] = source_from
-                    API_return_600(db, result, start_time, insert_argument)
+                # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
+                check_match = league_sourcename + team_a_sourcename + team_b_sourcename + start_time
+                status_check = check_local(db, check_match)
+                if status_check == None:
+                    # 请求检测接口
+                    result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
+                    print('检测接口返回：',result)
+                    # 检测为600, result['result']包含6个字段：
+                    # league_id, team_a_id, team_b_id,
+                    # league_name, team_a_name, team_b_name
+                    if result['code'] == 600:
+                        insert_argument = {}
+                        insert_argument['type'] = types
+                        insert_argument['status'] = status
+                        insert_argument['bo'] = bo
+                        insert_argument['team_a_score'] = team_a_score
+                        insert_argument['team_b_score'] = team_b_score
+                        insert_argument['check_match'] = check_match
+                        insert_argument['win_team'] = win_team
+                        insert_argument['propertys'] = propertys
+                        insert_argument['source_from'] = source_from
+                        insert_argument['source_matchId'] = source_matchId
+                        API_return_600(db, result, start_time, insert_argument)
 
-                elif result['code'] == 200:
-                    # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
-                    API_return_200(db, result)
-            # 本地已有数据就直接更新
-            else:
-                # print('本地已有数据就直接更新 ')
-                # 这里把check_match拿进去再更新一次没关系
-                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match,
-                                propertys, source_from, status_check)
-                # print('本地已有数据就直接更新完成')
+                    elif result['code'] == 200:
+                        # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
+                        API_return_200(db, result)
+                # 本地已有数据就直接更新
+                else:
+                    # print('本地已有数据就直接更新 ')
+                    # 这里把check_match拿进去再更新一次没关系
+                    db.update_by_id(types, status, bo, team_a_score, team_b_score, win_team, check_match,
+                                    propertys, source_from, source_matchId, status_check)
+                    # print('本地已有数据就直接更新完成')
 
 
 
