@@ -46,12 +46,12 @@ str_today = datetime.strptime(today_str, '%Y-%m-%d %H:%M:%S')
 today_stamp = str_today.timestamp()
 # 这周1的00:00:00时间戳
 monday_stamp = int(today_stamp - 86400 * week_day)
-# 上周日的00:00:00时间戳
-last_weekstamp = int(monday_stamp - 86400)
+# # 上周日的00:00:00时间戳
+# last_weekstamp = int(monday_stamp - 86400)
 # 下周1的00:00:00时间戳
 next_weekstamp = int(monday_stamp + 86400 * 7)
 
-time_list = [last_weekstamp, monday_stamp, next_weekstamp]
+time_list = [monday_stamp, next_weekstamp]
 
 
 
@@ -105,7 +105,7 @@ def parse(url, data, db, headers):
                 if status_check == None:
                     # 请求检测接口
                     result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-                    print('检测接口返回：',result)
+                    # print('检测接口返回：',result)
                     # 检测为600, result['result']包含6个字段：
                     # league_id, team_a_id, team_b_id,
                     # league_name, team_a_name, team_b_name
@@ -148,7 +148,7 @@ def parse(url, data, db, headers):
 # print('上周赛程已抓取')
 
 # 本周的赛程
-print('开始抓本周赛程')
+# print('开始抓本周赛程')
 form_data = {
     '_gtk': 806653903,
     'game': 2,
@@ -156,15 +156,15 @@ form_data = {
     'eids': ''
 }
 parse(start_url, form_data, db, headers)
-print('本周赛程已抓取')
+# print('本周赛程已抓取')
 
 # # 下周的赛程
 # print('开始抓下周赛程')
-# form_data = {
-#     '_gtk': 806653903,
-#     'game': 2,
-#     'time': next_weekstamp,
-#     'eids': ''
-# }
-# parse(start_url, form_data, db, headers)
+form_data = {
+    '_gtk': 806653903,
+    'game': 2,
+    'time': next_weekstamp,
+    'eids': ''
+}
+parse(start_url, form_data, db, headers)
 # print('下周赛程已抓取')
