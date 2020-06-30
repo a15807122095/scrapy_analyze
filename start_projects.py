@@ -16,17 +16,17 @@ if __name__ == '__main__':
     英雄联盟爬虫抓取
     """
     # 0:未开始 1:进行中 2:已结束
-    print('开始抓取已完成比赛')
+    # print('开始抓取已完成比赛')
     for url_finish in url_finishs:
         url_finish += now_time
         parse_yxlm(url_finish, db, '2', headers_yxlmgw)
 
-    print('开始抓取未进行比赛')
+    # print('开始抓取未进行比赛')
     for url_unfinish in url_unfinishs:
         url_unfinish += now_time
         parse_yxlm(url_unfinish, db, '0', headers_yxlmgw)
 
-    print('开始抓取进行中比赛')
+    # print('开始抓取进行中比赛')
     url_matching += now_time
     parse_yxlm(url_matching, db, '1', headers_yxlmgw)
 

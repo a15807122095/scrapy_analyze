@@ -78,7 +78,7 @@ def parse(url, headers, propertys, db):
         if status_check == None:
             # 请求检测接口
             result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-            print('检测接口返回：', result)
+            # print('检测接口返回：', result)
             # 检测为600, result['result']包含6个字段：
             # league_id, team_a_id, team_b_id,
             # league_name, team_a_name, team_b_name
@@ -101,11 +101,11 @@ def parse(url, headers, propertys, db):
                 API_return_200(db, result)
         # 本地已有数据就直接更新
         else:
-            print('本地已有数据就直接更新 ')
+            # print('本地已有数据就直接更新 ')
             # 这里把check_match拿进去再更新一次没关系
             db.update_by_id(types, status, bo, team_a_score, team_b_score, win_team, check_match,
                             propertys, source_from, source_matchId, status_check)
-            print('本地已有数据就直接更新完成')
+            # print('本地已有数据就直接更新完成')
 
 
 db = con_db()
