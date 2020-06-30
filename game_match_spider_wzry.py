@@ -18,14 +18,14 @@ header= {
 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
 }
 
-# # 选拔赛
-# url_choose1 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1592784000&end_time=1592870400&seasonid=KCC2020S'
-# url_choose2 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1592870400&end_time=1592956800&seasonid=KCC2020S'
-# url_choose3 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593043200&end_time=1593129600&seasonid=KCC2020S'
-# url_choose4 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593129600&end_time=1593216000&seasonid=KCC2020S'
-# url_choose5 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593216000&end_time=1593302400&seasonid=KCC2020S'
-# url_choose6 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593302400&end_time=1593388800&seasonid=KCC2020S'
-# urls_xuanba = [url_choose1, url_choose2, url_choose3, url_choose4, url_choose5, url_choose6]
+# 选拔赛
+url_choose1 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1592784000&end_time=1592870400&seasonid=KCC2020S'
+url_choose2 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1592870400&end_time=1592956800&seasonid=KCC2020S'
+url_choose3 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593043200&end_time=1593129600&seasonid=KCC2020S'
+url_choose4 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593129600&end_time=1593216000&seasonid=KCC2020S'
+url_choose5 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593216000&end_time=1593302400&seasonid=KCC2020S'
+url_choose6 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1593302400&end_time=1593388800&seasonid=KCC2020S'
+urls_xuanba = [url_choose1, url_choose2, url_choose3, url_choose4, url_choose5, url_choose6]
 
 # 小组赛
 url_group1 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1594771200&end_time=1594857600&seasonid=KCC2020S'
@@ -49,7 +49,7 @@ def parse(url, headers, propertys, db):
     # print(len(results), results)
     game_name = '王者荣耀'
     source_from = '王者荣耀官网'  # 爬虫源网站
-    types = 1
+    types = 2
     for result in results:
         # print('赛程数据1:', type(result), result)
         league_sourcename = result['season']
@@ -58,7 +58,12 @@ def parse(url, headers, propertys, db):
         # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上data中的‘time’才是表中的start_time类型
         start_time = result['match_timestamp']
         # 官网的状态：1为未开赛， 2为已经开打  4为已打完（需要转化成表中的字段对应值）
-        status = '2' if result['match_state'] == 4 else result['match_state']
+        if result['match_state'] == 4:
+            status = '2'
+        elif result['match_state'] == 1:
+            status = '0'
+        else:
+            status = '1'
         # print(result['match_state'], type(result['match_state']), status, result['guest_score'], type(result['guest_score']))
         # 官网没有bo数据，人工补充
         bo = 0
@@ -109,9 +114,9 @@ def parse(url, headers, propertys, db):
 
 
 db = con_db()
-# for url in urls_xuanba:
-#     propertys = '选拔赛'
-#     parse(url, header, propertys, db)
+for url in urls_xuanba:
+    propertys = '选拔赛'
+    parse(url, header, propertys, db)
 
 for url in url_groups:
     propertys = '小组赛'
