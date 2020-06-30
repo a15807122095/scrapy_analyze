@@ -17,7 +17,7 @@ def parse_yxlm(url, db, match_status, headers):
         sources = sources['msg']['result']
         # print('爬取的源数据：',len(sources), sources)
         game_name = '英雄联盟'
-        source_from = '官网'
+        source_from = '英雄联盟官网'
         type = 1
         status = match_status
         for each_source in sources:
@@ -35,6 +35,7 @@ def parse_yxlm(url, db, match_status, headers):
             if status == '0' and now_time_stamp > date_timestamp:
                 status = '2'
             # print('修改后：',now_time_stamp, date_timestamp, status)
+            surce_matchId = each_source['bMatchId']
             bo = each_source['GameMode']
             team_a_score = each_source['ScoreA']
             team_b_score = each_source['ScoreB']
@@ -66,7 +67,6 @@ def parse_yxlm(url, db, match_status, headers):
                 # league_name, team_a_name, team_b_name
                 if result['code'] == 600:
                     insert_argument = {}
-                    type = 1
                     insert_argument['type'] = type
                     insert_argument['status'] = status
                     insert_argument['bo'] = bo
@@ -76,6 +76,7 @@ def parse_yxlm(url, db, match_status, headers):
                     insert_argument['win_team'] = win_team
                     insert_argument['propertys'] = propertys
                     insert_argument['source_from'] = source_from
+                    insert_argument['surce_matchId'] = surce_matchId
                     API_return_600(db, result, date_timestamp, insert_argument)
 
                 elif result['code'] == 200:
@@ -86,7 +87,7 @@ def parse_yxlm(url, db, match_status, headers):
                 # print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
                 db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match,
-                                propertys, source_from, status_check)
+                                propertys, source_from, surce_matchId, status_check)
                 # print('本地已有数据就直接更新完成')
 
 

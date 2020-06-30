@@ -9,7 +9,7 @@ from setting import headers_wzrygw
 
 
 """
-英雄联盟其他赛区赛程
+英雄联盟其他赛区赛程 (过多延时已废弃)
 从score网站上抓取 # https://www.scoregg.com/
 """
 
@@ -56,7 +56,7 @@ def parse(url, data, headers):
     source_from = 'score' # 爬虫网站源
     results = post_response(url, data, headers)
     results = results['data']['list']
-    # print(len(results), type(results), results)
+    print(len(results), type(results), results)
     for key_list, result in results.items():
         match_list = result['info']
         for key, matchs in match_list.items():
@@ -81,7 +81,7 @@ def parse(url, data, headers):
 
                     start_time = match['start_date'] + ' ' + match['start_time'] + ':00'
                     check_match = league_sourcename + team_a_sourcename + team_b_sourcename + start_time
-                    # print('check_match:', check_match)
+                    print('check_match:', check_match)
 
                     # 将字符串 start_date: "2020-06-29"与start_time: "04:00"拼接成 “2020-06-29 04:00:00”
                     # 再转换成赛程表中的10位时间戳字段
@@ -89,15 +89,15 @@ def parse(url, data, headers):
                     time_stamp = int(time_datetime.timestamp())
                     # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
                     status_check = check_local(db, check_match)
-                    # print('本地访问是否有记录：', status_check)
+                    print('本地访问是否有记录：', status_check)
                     if status_check == None:
                         # 请求检测接口
                         result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-                        # print('检测接口返回：',result)
+                        print('检测接口返回：',result)
                         # 检测为600, result['result']包含6个字段：
                         # league_id, team_a_id, team_b_id,
                         # league_name, team_a_name, team_b_name
-                        # print('检测api结果：', result)
+                        print('检测api结果：', result)
                         if result['code'] == 600:
                             insert_argument = {}
                             insert_argument['type'] = types
@@ -116,11 +116,11 @@ def parse(url, data, headers):
                             API_return_200(db, result)
                             # 本地已有数据就直接更新
                     else:
-                        # print('本地已有数据就直接更新 ')
+                        print('本地已有数据就直接更新 ')
                         # 这里把check_match拿进去再更新一次没关系
                         db.update_by_id(types, status, bo, team_a_score, team_b_score, win_team, check_match,
                                         propertys, source_from, status_check)
-                        # print('本地已有数据就直接更新完成')
+                        print('本地已有数据就直接更新完成')
 
 
 
