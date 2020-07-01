@@ -60,7 +60,7 @@ url_matchlist = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
 def parse(url, headers):
     response_match = get_response(url, headers)
     response_match = response_match['body']
-    print('赛程个数和结果：', len(response_match), response_match)
+    # print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
           team_a_name = response_each['teamAShortName']
           team_b_name = response_each['teamBShortName']
@@ -69,11 +69,11 @@ def parse(url, headers):
           status = response_each['status']
           # 过滤掉未进行的比赛
           if status != 0 and team_a_name in LPL_list and team_b_name in LPL_list:
-                print('enter this way')
+                # print('enter this way')
                 # 过滤只拿LPL的赛程,且比赛为已完成或者进行中的数据
                 # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
                 if team_a_name in LPL_list and team_b_name in LPL_list:
-                      print('过滤留下来的赛程队伍：', team_a_name, team_b_name)
+                      # print('过滤留下来的赛程队伍：', team_a_name, team_b_name)
                       matchId = response_each['matchId']
                       # 时间戳由毫秒转化为秒
                       matchTime = response_each['matchTime'][:-3]
@@ -92,7 +92,7 @@ def parse(url, headers):
                       # print('拿到的battle_id：', battle_id)
                       battle_id_str = battle_id.split('battle_id:')[1]
                       battle_id = int(battle_id_str.split(',')[0])
-                      print('xpath拿到的battle_id：', battle_id)
+                      # print('xpath拿到的battle_id：', battle_id)
                       # 根据两队总得分和battle_id拼接小场的详情数据url（有的时候默认进入是小场第一局，有的时候是最后一局，具体要看网站变动）
                       bo_count = 1
                       # 如果是进行中的赛事bo_count +1,因为当局还没计算出大比分,但已经可以进入对局详情页
@@ -123,7 +123,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
           # redis没记录，请求检测接口
           game_name = '英雄联盟'
           result = api_check(game_name, leagueName, team_a_name, team_b_name)
-          print(result)
+          # print(result)
           league_id = result['result']['league_id']
           team_a_id = result['result']['team_a_id']
           team_b_id = result['result']['team_b_id']
@@ -284,5 +284,4 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
            # print('记录对局详情表插入完成')
 
 
-print(url_matchlist)
 parse(url_matchlist, headers)
