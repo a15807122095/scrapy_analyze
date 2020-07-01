@@ -3,11 +3,43 @@ import json
 from datetime import datetime
 import requests
 import time
+from import_data_to_mysql import con_db
 from common_tool import get_response, api_check, check_local, API_return_600, API_return_200
 
 """
 英雄联盟官网爬虫
 """
+
+#   英雄联盟官网的url  headers---> headers_yxlmgw
+# 正常情况下赛程页面是 url_finish_1：显示2条已完成  url_matching：进行中（status为‘-1’就是没有进行中的比赛） url_unfinish： 未开始
+
+#  url_finish_2, url_finish_3 ：包含一周内已完成的比赛
+#  url_unfinish_2, url_unfinish_3 ：包含一周内已完成的比赛
+
+url_finish_1 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=3&p2=%C8%AB%B2%BF&p9=&' \
+             'p10=&p6=2&p11=&p12=&page=1&pagesize=2&_='
+url_finish_2 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&' \
+               'p10=&p6=2&p11=6244&p12=&page=1&pagesize=8&_='
+url_finish_3 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&' \
+               'p10=&p6=2&p11=6236&p12=&page=1&pagesize=8&_='
+url_finishs = [url_finish_1, url_finish_2, url_finish_3]
+
+url_matching = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=2&p2=%C8%AB%B2%BF&p9=&' \
+               'p10=&p6=3&p11=&p12=&page=1&pagesize=9999&_='
+
+url_unfinish_1 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=1&p2=%C8%AB%B2%BF&p9=&' \
+               'p10=&p6=3&p11=&p12=&page=1&pagesize=10&_='
+url_unfinish_2 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=' \
+                 '&p10=&p6=3&p11=&p12=6256&page=1&pagesize=8&_='
+url_unfinish_3 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=' \
+                 '&p10=&p6=3&p11=&p12=6590&page=1&pagesize=8&_='
+url_unfinishs = [url_unfinish_1, url_unfinish_2, url_unfinish_3]
+
+
+headers_yxlmgw = {
+        'USER-AGENT':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
+    }
+
 
 def parse_yxlm(url, db, match_status, headers):
     sources = get_response(url, headers)
@@ -91,7 +123,28 @@ def parse_yxlm(url, db, match_status, headers):
                 # print('本地已有数据就直接更新完成')
 
 
+# 拿到时间戳
+date_time = time.time()
+now_time = str(round(date_time * 1000))
+# 创建mysql连接对象
+db = con_db()
+"""
+英雄联盟爬虫抓取
+"""
+# 0:未开始 1:进行中 2:已结束
+# print('开始抓取已完成比赛')
+for url_finish in url_finishs:
+    url_finish += now_time
+    parse_yxlm(url_finish, db, '2', headers_yxlmgw)
 
+# print('开始抓取未进行比赛')
+for url_unfinish in url_unfinishs:
+    url_unfinish += now_time
+    parse_yxlm(url_unfinish, db, '0', headers_yxlmgw)
+
+# print('开始抓取进行中比赛')
+url_matching += now_time
+parse_yxlm(url_matching, db, '1', headers_yxlmgw)
 
 
 
