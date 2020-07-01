@@ -16,24 +16,21 @@ from common_tool import get_response, api_check, check_local, API_return_600, AP
 #  url_finish_2, url_finish_3 ：包含一周内已完成的比赛
 #  url_unfinish_2, url_unfinish_3 ：包含一周内已完成的比赛
 
-url_finish_1 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=3&p2=%C8%AB%B2%BF&p9=&' \
-             'p10=&p6=2&p11=&p12=&page=1&pagesize=2&_='
-url_finish_2 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&' \
-               'p10=&p6=2&p11=6244&p12=&page=1&pagesize=8&_='
-url_finish_3 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&' \
-               'p10=&p6=2&p11=6236&p12=&page=1&pagesize=8&_='
-url_finishs = [url_finish_1, url_finish_2, url_finish_3]
+url_finish_1 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=3&p2=%C8%AB%B2%BF&p9=&p10=&p6=2&p11=&p12=&page=1&pagesize=2&_='
+url_finish_2 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&p10=&p6=2&p11={0}&p12=&page=1&pagesize=8&_='
+
+
+
+
+url_finishs = [url_finish_1, url_finish_2]
 
 url_matching = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=2&p2=%C8%AB%B2%BF&p9=&' \
                'p10=&p6=3&p11=&p12=&page=1&pagesize=9999&_='
 
-url_unfinish_1 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=1&p2=%C8%AB%B2%BF&p9=&' \
-               'p10=&p6=3&p11=&p12=&page=1&pagesize=10&_='
-url_unfinish_2 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=' \
-                 '&p10=&p6=3&p11=&p12=6256&page=1&pagesize=8&_='
-url_unfinish_3 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=' \
-                 '&p10=&p6=3&p11=&p12=6590&page=1&pagesize=8&_='
-url_unfinishs = [url_unfinish_1, url_unfinish_2, url_unfinish_3]
+url_unfinish_1 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=1&p2=%C8%AB%B2%BF&p9=&p10=&p6=3&p11=&p12=&page=1&pagesize=10&_='
+url_unfinish_2 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&p10=&p6=3&p11=&p12={0}&page=1&pagesize=8&_='
+url_unfinish_3 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&p10=&p6=3&p11=&p12={0}&page=1&pagesize=8&_='
+
 
 
 headers_yxlmgw = {
@@ -52,6 +49,7 @@ def parse_yxlm(url, db, match_status, headers):
         source_from = '英雄联盟官网'
         type = 1
         status = match_status
+        match_id = 0
         for each_source in sources:
             # 将爬取的字符串时间转化为datetime类型
             date_time = datetime.strptime(each_source['MatchDate'], '%Y-%m-%d %H:%M:%S')
@@ -121,6 +119,10 @@ def parse_yxlm(url, db, match_status, headers):
                 db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match,
                                 propertys, source_from, source_matchId, status_check)
                 # print('本地已有数据就直接更新完成')
+            # 返回最后一条赛程的bmatchid，拼成上一周的url
+            match_id = source_matchId
+        # print('最后的matchid：', match_id)
+        return match_id
 
 
 # 拿到时间戳
@@ -132,19 +134,33 @@ db = con_db()
 英雄联盟爬虫抓取
 """
 # 0:未开始 1:进行中 2:已结束
+# 已完成的抓两次
 # print('开始抓取已完成比赛')
-for url_finish in url_finishs:
-    url_finish += now_time
-    parse_yxlm(url_finish, db, '2', headers_yxlmgw)
+url_finish_1 = url_finish_1 + now_time
+match_id = parse_yxlm(url_finish_1, db, '2', headers_yxlmgw)
+# # 上周已完成的url中的matchid是以当页最后一场已完成的matchid
+url_finish_2 = url_finish_2.format(match_id) + now_time
+parse_yxlm(url_finish_2, db, '2', headers_yxlmgw)
+print(url_finish_1, url_finish_2)
+# print('已完成比赛抓取完毕')
 
+# 未进行的抓三次
 # print('开始抓取未进行比赛')
-for url_unfinish in url_unfinishs:
-    url_unfinish += now_time
-    parse_yxlm(url_unfinish, db, '0', headers_yxlmgw)
+url_unfinish_1 = url_unfinish_1 + now_time
+match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
+# # 下周未完成的url中的matchid是以当页最后一场未完成的matchid
+url_unfinish_2 = url_unfinish_2.format(match_id) + now_time
+match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
+url_unfinish_3 = url_unfinish_3.format(match_id) + now_time
+parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
+# print(url_unfinish_1, url_unfinish_2, url_unfinish_3)
+# print('未进行比赛抓取完毕')
 
 # print('开始抓取进行中比赛')
-url_matching += now_time
 parse_yxlm(url_matching, db, '1', headers_yxlmgw)
+# print('进行中比赛抓取完毕')
+
+
 
 
 
