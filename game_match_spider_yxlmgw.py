@@ -141,7 +141,7 @@ match_id = parse_yxlm(url_finish_1, db, '2', headers_yxlmgw)
 # # 上周已完成的url中的matchid是以当页最后一场已完成的matchid
 url_finish_2 = url_finish_2.format(match_id) + now_time
 parse_yxlm(url_finish_2, db, '2', headers_yxlmgw)
-print(url_finish_1, url_finish_2)
+# print(url_finish_1, url_finish_2)
 # print('已完成比赛抓取完毕')
 
 # 未进行的抓三次
