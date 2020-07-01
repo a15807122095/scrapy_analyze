@@ -2,8 +2,7 @@
 import time
 import requests
 from datetime import datetime, timedelta
-from common_tool import get_response, fullday_remain
-from setting import headers_yxlmgw
+from common_tool import get_response
 from lxml import etree
 from common_tool import api_check
 from import_data_to_mysql import con_db
@@ -23,6 +22,9 @@ redis = RedisCache_checkAPI()
 LPL_list = [ 'RNG', 'ES', 'EDG', 'LGD', 'IG', 'BLG', 'TES', 'SN', 'WE',
              'OMG', 'OMD', 'LNG', 'JDG', 'FPX', 'RW', 'VG', 'V5']
 
+headers = {
+        'USER-AGENT':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
+    }
 
 matchdetail_urlpre = 'https://www.shangniu.cn/live/lol/'
 # 爬取规则： 拿到本周的startTime和endTime的时间戳组成访问赛程url,根据时间戳差值拿到上周的赛程url
@@ -56,8 +58,8 @@ url_matchlist_l= 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' 
 
 urls = [url_matchlist, url_matchlist_l]
 
-def parse(url):
-    response_match = get_response(url, headers_yxlmgw)
+def parse(url, headers):
+    response_match = get_response(url, headers)
     response_match = response_match['body']
     # print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
@@ -82,7 +84,7 @@ def parse(url):
                       # print('对局详情url：', matchdetail_url)
                       # 请求对局详情url
                       requests.packages.urllib3.disable_warnings()
-                      response_detail = requests.get(matchdetail_url, headers_yxlmgw, verify=False)
+                      response_detail = requests.get(matchdetail_url, headers, verify=False)
                       response_detail = response_detail.text
                       html = etree.HTML(response_detail)
 
@@ -147,7 +149,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
       # 收集详情数据并写入数据库
       for key, value_url in url_list.items():
            index_num = key
-           response = get_response(value_url, headers_yxlmgw)['body']
+           response = get_response(value_url, headers)['body']
            # print('源详情url：', value_url)
            duration = response['duration']
            economic_diff = response['economic_diff']
@@ -293,4 +295,4 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
 
 
 for url in urls:
-    parse(url)
+    parse(url, headers)
