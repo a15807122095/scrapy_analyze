@@ -65,6 +65,7 @@ def parse(url, data, db, headers):
     source_from = 'wanplus'  # 爬虫源网站
     types = 1
     for key_list, result in results.items():
+        date_time = result['time']
         result = result['list']
         # print('赛程数据1:', type(result), result)
         for match in result:
@@ -75,10 +76,10 @@ def parse(url, data, db, headers):
                 team_a_sourcename = match['oneseedname']
                 team_b_sourcename = match['twoseedname']
                 source_matchId = match['scheduleid']
-                # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上data中的‘time’才是表中的start_time类型
+                # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上result['time']才是表中的start_time类型
                 time = match['starttime']
                 strs = time.split(':')
-                start_time = int(strs[0]) * 3600 + int(strs[1]) * 60 + data['time']
+                start_time = int(strs[0]) * 3600 + int(strs[1]) * 60 + date_time
                 start_time = str(start_time)
                 # match['isover']表示是否结束， match['live']表示是否进行中
                 if match['live']:
