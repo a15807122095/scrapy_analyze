@@ -20,6 +20,12 @@ class con_db():
         self.cursor = self.db.cursor()
 
     # 查询数据库
+    def select_message(self, sql_message):
+        self.cursor.execute(sql_message)
+        message = self.cursor.fetchone()
+        return message
+
+    # 查询数据库主键
     def select_id(self,sql_select):
         self.cursor.execute(sql_select)
         one = self.cursor.fetchone()
