@@ -65,6 +65,7 @@ def parse(url, headers):
     for response in responses:
         game_name = response['game_name']
         leagueName = response['tournament_name']
+        print('联赛名称:',game_name, leagueName)
         # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
         if game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS' in leagueName
                                     or 'LEC' in leagueName or 'LDL' in leagueName ):
@@ -78,26 +79,31 @@ def parse(url, headers):
             bo = responses_detail['round'][-1:]
             board_num = int(bo)
 
-            team_a_name = response['team'][0]['team_name']
-            team_b_name = response['team'][1]['team_name']
+            source_a_name = response['team'][0]['team_name']
+            source_b_name = response['team'][1]['team_name']
             start_time = response['start_time']
             start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
             start_time = int(start_time.timestamp())
-            match_id = redis_check(redis, db, source, leagueName, team_a_name, team_b_name, start_time)
+            start_time = str(start_time)
+            result = redis_check(redis, db, source, leagueName, source_a_name, source_b_name, start_time)
+            print('match_id:', result, source_a_name, source_b_name)
 
             # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
-            if match_id:
-                # 拿到赛程的两队名字和id
-                sql = 'select team_a_id, team_b_id from game_python_match' \
-                      ' where id = {};'.format(match_id)
-                message = db.select_message(sql)
-                team_a_id = message['team_a_id']
-                team_b_id = message['team_b_id']
+            if result:
+                match_id = result[0]
+                team_a_id = result[1]
+                team_b_id = result[2]
                 # 0-139条赔率数据，每两组构成一条数据库中的数据
                 print(type(responses_detail['odds']), responses_detail['odds'])
 
-                # odds中的数据两两拼成一条完整竞猜数据
-                count = 1
+                # odds中的数据两两拼成一条完整竞猜数据,用count的状态来判断添加到哪一个字段
+                count = True
+                option_one_name = 'Null'
+                option_two_name = 'Null'
+                option_one_odds = 'Null'
+                option_two_odds = 'Null'
+                option_one_team_id = 'Null'
+                option_two_team_id = 'Null'
                 for rate_message in responses_detail['odds']:
                     title = rate_message['group_name']
                     # 暂时只要bet_type中的竞猜项目
@@ -110,33 +116,48 @@ def parse(url, headers):
                         source_status = rate_message['status']
                         status = bet_status[source_status]
                         handicap = rate_message['value']
-                        if count == 1:
+                        print('详细竞猜数据:', title, match_stage, source_status, status, handicap)
+                        if count:
                             option_one_name = rate_message['name']
                             option_one_odds = rate_message['odds']
-                            option_one_team_id = team_a_id if option_one_name == team_a_name else 'Null'
+                            if option_one_name == source_a_name:
+                                option_one_team_id = team_a_id
+                            elif option_one_name == source_b_name:
+                                option_one_team_id = team_b_id
+                            else:
+                                option_one_team_id = 'Null'
+                            count = False
                         else:
                             option_two_name = rate_message['name']
                             option_two_odds = rate_message['odds']
-                            option_two_team_id = team_a_id if option_two_name == team_b_name else 'Null'
-
+                            if option_two_name == source_b_name:
+                                option_two_team_id = team_b_id
+                            elif option_two_name == source_a_name:
+                                option_two_team_id = team_a_id
+                            else:
+                                option_two_team_id = 'Null'
+                            count = True
                         # 添加竞猜数据的记录
-                        sql_player_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
-                            " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
-                            "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id) " \
-                                "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, '{10}', '{11}', '{12}'," \
-                                " {13}, {14}, '{15}', '{16}') " \
-                                            "ON DUPLICATE KEY UPDATE " \
-                            "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_tim={8}," \
-                            " status={9}, handicap='{10}', option_one_name='{11}', option_two_name='{12}', " \
-                            "option_one_odds={13}, option_two_odds={14}, option_one_team_id='{15}', " \
-                            "option_two_team_id='{16}';".format(types, source, id, match_stage, match_id, board_num, title,
-                            bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
-                            option_two_odds, option_one_team_id, option_two_team_id)
-                        # print('记录选手表：', sql_player_insert)
-                        db.update_insert(sql_player_insert)
-                        # print('记录选手表插入完成')
+                        if count:
+                            print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
+                                  option_two_name, source_b_name, option_two_odds, option_two_team_id)
+                            sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
+                                " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
+                                "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id) " \
+                                    "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, '{10}', '{11}', '{12}'," \
+                                    " {13}, {14}, '{15}', '{16}') " \
+                                                "ON DUPLICATE KEY UPDATE " \
+                                "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_time={8}," \
+                                " status={9}, handicap='{10}', option_one_name='{11}', option_two_name='{12}', " \
+                                "option_one_odds={13}, option_two_odds={14}, option_one_team_id='{15}', " \
+                                "option_two_team_id='{16}';".format(types, source, id, match_stage, match_id, board_num, title,
+                                bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
+                                option_two_odds, option_one_team_id, option_two_team_id)
+                            print('记录竞猜表：', sql_bet_insert)
+                            db.update_insert(sql_bet_insert)
+                            print('记录竞猜表插入完成')
 
 
 parse(start_url, headers)
-# parse(second_url, headers)
+parse(second_url, headers)
 

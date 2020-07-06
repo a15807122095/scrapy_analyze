@@ -112,9 +112,10 @@ def parse(url, headers):
 def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
       # redis中加入网站源标记
       source = 'SN'
-      match_id = redis_check(redis, db, source, leagueName, team_a_name, team_b_name, matchTime)
+      result = redis_check(redis, db, source, leagueName, team_a_name, team_b_name, matchTime)
       # 如果match_id为空，说明尚牛的赛事详情赛程在赛程表中没找到，这时不录入
-      if match_id:
+      if result:
+          match_id = result[0]
           # 收集详情数据并写入数据库
           for key, value_url in url_list.items():
                response = get_response(value_url, headers)['body']
@@ -175,6 +176,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    team_b_side = team_stats_1['side']
                    player_messages = response['player_stats']
                    for player_message in player_messages:
+                       print('选手的信息:', player_message)
                        player_id = player_message['player_id']
                        player_name = player_message['player_name']
                        player_avatar = player_message['player_avatar']
