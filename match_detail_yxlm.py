@@ -176,7 +176,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    team_b_side = team_stats_1['side']
                    player_messages = response['player_stats']
                    for player_message in player_messages:
-                       print('选手的信息:', player_message)
+                       # print('选手的信息:', player_message)
                        player_id = player_message['player_id']
                        player_name = player_message['player_name']
                        player_avatar = player_message['player_avatar']

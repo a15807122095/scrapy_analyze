@@ -59,13 +59,13 @@ bet_status = {
 def parse(url, headers):
     responses = get_response(url, headers)
     responses = responses['result']
-    print('源数据：', len(responses))
+    # print('源数据：', len(responses))
     types = 1
     source = '雷竞技'
     for response in responses:
         game_name = response['game_name']
         leagueName = response['tournament_name']
-        print('联赛名称:',game_name, leagueName)
+        # print('联赛名称:',game_name, leagueName)
         # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
         if game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS' in leagueName
                                     or 'LEC' in leagueName or 'LDL' in leagueName ):
@@ -75,7 +75,7 @@ def parse(url, headers):
             # print('详情赔率url:', match_url)
             responses_detail = get_response(match_url, headers)
             responses_detail = responses_detail['result']
-            print('详情数据：', responses_detail)
+            # print('详情数据：', responses_detail)
             bo = responses_detail['round'][-1:]
             board_num = int(bo)
 
@@ -86,7 +86,7 @@ def parse(url, headers):
             start_time = int(start_time.timestamp())
             start_time = str(start_time)
             result = redis_check(redis, db, source, leagueName, source_a_name, source_b_name, start_time)
-            print('match_id:', result, source_a_name, source_b_name)
+            # print('match_id:', result, source_a_name, source_b_name)
 
             # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
             if result:
@@ -94,7 +94,7 @@ def parse(url, headers):
                 team_a_id = result[1]
                 team_b_id = result[2]
                 # 0-139条赔率数据，每两组构成一条数据库中的数据
-                print(type(responses_detail['odds']), responses_detail['odds'])
+                # print(type(responses_detail['odds']), responses_detail['odds'])
 
                 # odds中的数据两两拼成一条完整竞猜数据,用count的状态来判断添加到哪一个字段
                 count = True
@@ -116,7 +116,7 @@ def parse(url, headers):
                         source_status = rate_message['status']
                         status = bet_status[source_status]
                         handicap = rate_message['value']
-                        print('详细竞猜数据:', title, match_stage, source_status, status, handicap)
+                        # print('详细竞猜数据:', title, match_stage, source_status, status, handicap)
                         if count:
                             option_one_name = rate_message['name']
                             option_one_odds = rate_message['odds']
@@ -138,9 +138,9 @@ def parse(url, headers):
                                 option_two_team_id = 'Null'
                             count = True
                         # 添加竞猜数据的记录
-                        if count:
-                            print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
-                                  option_two_name, source_b_name, option_two_odds, option_two_team_id)
+                        if count and match_id != None:
+                            # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
+                            #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
                             sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
                                 " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
                                 "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id) " \
@@ -153,9 +153,9 @@ def parse(url, headers):
                                 "option_two_team_id='{16}';".format(types, source, id, match_stage, match_id, board_num, title,
                                 bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
                                 option_two_odds, option_one_team_id, option_two_team_id)
-                            print('记录竞猜表：', sql_bet_insert)
+                            # print('记录竞猜表：', sql_bet_insert)
                             db.update_insert(sql_bet_insert)
-                            print('记录竞猜表插入完成')
+                            # print('记录竞猜表插入完成')
 
 
 parse(start_url, headers)
