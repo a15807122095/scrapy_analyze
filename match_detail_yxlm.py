@@ -104,12 +104,12 @@ def parse(url, headers):
                             battle_id += 1
                             bo_count += 1
                       # print('battle_urls:', battle_urls)
-                      parse_detail(battle_urls, leagueName, team_a_name, team_b_name, matchTime, status)
+                      parse_detail(battle_urls, leagueName, team_a_name, team_b_name, matchTime)
 
 
 # 解析对局详情的url,录入到数据库,录入的是赛事对应的小场
 # url_list对应的{小局第几场：场次的详情url，...}
-def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime, status):
+def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
       # redis中加入网站源标记
       source = 'SN'
       result = redis_check(redis, db, source, leagueName, team_a_name, team_b_name, matchTime)
@@ -122,6 +122,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime, stat
                # print('body:', response)
                if response !={} and match_id :
                    # print('源详情url：', value_url)
+                   status = response['status']
                    index_num = response['index']
                    duration = response['duration']
                    source_matchid = response['battle_id']   # 源网站的赛事id
@@ -187,19 +188,19 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime, stat
                        death_count = player_message['death_count']
                        assist_count = player_message['assist_count']
                        # last_hit_count和last_hit_minute赛后才返回
-                       last_hit_count = player_message['last_hit_count'] if status !=1 else 0
-                       last_hit_minute = player_message['last_hit_minute'] if status !=1 else 0
-                       damage_count = player_message['damage_count'] if status !=1 else 0
-                       damage_minute = player_message['damage_minute'] if status !=1 else 0
-                       damage_percent = player_message['damage_percent'] if status !=1 else 0
-                       damage_taken_count = player_message['damage_taken_count'] if status !=1 else 0
-                       damage_taken_minute = player_message['damage_taken_minute'] if status !=1 else 0
-                       damage_taken_percent = player_message['damage_taken_percent'] if status !=1 else 0
-                       kda = player_message['kda'] if status !=1 else 0
-                       money_count = player_message['money_count'] if status !=1 else 0
-                       money_minute = player_message['money_minute'] if status !=1 else 0
-                       offered_rate = player_message['offered_rate'] if status !=1 else 0
-                       score = player_message['score'] if status !=1 else 0
+                       last_hit_count = player_message['last_hit_count'] if status !=0 else 0
+                       last_hit_minute = player_message['last_hit_minute'] if status !=0 else 0
+                       damage_count = player_message['damage_count'] if status !=0 else 0
+                       damage_minute = player_message['damage_minute'] if status !=0 else 0
+                       damage_percent = player_message['damage_percent'] if status !=0 else 0
+                       damage_taken_count = player_message['damage_taken_count'] if status !=0 else 0
+                       damage_taken_minute = player_message['damage_taken_minute'] if status !=0 else 0
+                       damage_taken_percent = player_message['damage_taken_percent'] if status !=0 else 0
+                       kda = player_message['kda'] if status !=0 else 0
+                       money_count = player_message['money_count'] if status !=0 else 0
+                       money_minute = player_message['money_minute'] if status !=0 else 0
+                       offered_rate = player_message['offered_rate'] if status !=0 else 0
+                       score = player_message['score'] if status !=0 else 0
                        equip_ids = player_message['equip_ids']
                        skill_ids = player_message['skill_ids']
                        # 位置可能为空
