@@ -225,9 +225,9 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                         last_hit_minute, damage_count, damage_minute, damage_percent, damage_taken_count,
                         damage_taken_minute, damage_taken_percent, kda, money_count, money_minute, offered_rate, score,
                         equip_ids, skill_ids, position, types, source_matchid)
-                       print('记录选手表：', sql_player_insert)
+                       # print('记录选手表：', sql_player_insert)
                        db.update_insert(sql_player_insert)
-                       print('记录选手表插入完成')
+                       # print('记录选手表插入完成')
 
                    # print('得到的match_id和index_num：',match_id, index_num)
                    # 添加或修改对局详情记录
