@@ -29,5 +29,5 @@ for message in messages:
     if s_name:
         l_name = message.xpath('td[2]/text()')
         print(s_name, l_name)
-        home_team = message.xpath('td[3]/span[1]')
+        home_team = message.xpath('td[3]/a/span[1]')
         print(s_name, l_name, home_team)

@@ -189,18 +189,18 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                        assist_count = player_message['assist_count']
                        # last_hit_count和last_hit_minute赛后才返回
                        last_hit_count = player_message['last_hit_count'] if status !=0 else 0
-                       last_hit_minute = player_message['last_hit_minute'] if status !=0 else 0
+                       last_hit_minute = 0
                        damage_count = player_message['damage_count'] if status !=0 else 0
-                       damage_minute = player_message['damage_minute'] if status !=0 else 0
-                       damage_percent = player_message['damage_percent'] if status !=0 else 0
+                       damage_minute = 0
+                       damage_percent = 0
                        damage_taken_count = player_message['damage_taken_count'] if status !=0 else 0
-                       damage_taken_minute = player_message['damage_taken_minute'] if status !=0 else 0
-                       damage_taken_percent = player_message['damage_taken_percent'] if status !=0 else 0
+                       damage_taken_minute = 0
+                       damage_taken_percent = 0
                        kda = player_message['kda'] if status !=0 else 0
                        money_count = player_message['money_count'] if status !=0 else 0
-                       money_minute = player_message['money_minute'] if status !=0 else 0
-                       offered_rate = player_message['offered_rate'] if status !=0 else 0
-                       score = player_message['score'] if status !=0 else 0
+                       money_minute = 0
+                       offered_rate = 0
+                       score = 0
                        equip_ids = player_message['equip_ids']
                        skill_ids = player_message['skill_ids']
                        # 位置可能为空
