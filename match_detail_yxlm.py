@@ -104,12 +104,12 @@ def parse(url, headers):
                             battle_id += 1
                             bo_count += 1
                       # print('battle_urls:', battle_urls)
-                      parse_detail(battle_urls, leagueName, team_a_name, team_b_name, matchTime)
+                      parse_detail(battle_urls, leagueName, team_a_name, team_b_name, matchTime, status)
 
 
 # 解析对局详情的url,录入到数据库,录入的是赛事对应的小场
 # url_list对应的{小局第几场：场次的详情url，...}
-def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
+def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime, status):
       # redis中加入网站源标记
       source = 'SN'
       result = redis_check(redis, db, source, leagueName, team_a_name, team_b_name, matchTime)
@@ -128,7 +128,6 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    economic_diff = response['economic_diff']
                    economic_diff = str(economic_diff)
                    # print('经济差为：', type(economic_diff), economic_diff)
-                   status = response['status']
                    types = 1    # 默认为英雄联盟
                    # A,B队的英雄列表要自己拼接
                    team_a_hero = []
