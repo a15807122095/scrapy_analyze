@@ -2,10 +2,10 @@
 import pymysql
 from setting import db_setting
 
-# 现将数据去重存至redis,然后从redis读取再写入mysql
 
+# 先将数据去重存至redis,然后从redis读取再写入mysql
 class con_db():
-    db = []  # 设置连接池
+    db = []
     __instance = None
 
     # 判断单例是否存在,不存在就创建否则直接返回
