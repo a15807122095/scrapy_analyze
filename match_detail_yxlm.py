@@ -51,6 +51,8 @@ lastTime_l = lastTime - 604800000
 # 拼接本周的赛程url
 url_matchlist = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
                 'lol&startTime={0}&endTime={1}'.format(startTime, lastTime)
+
+# print(url_matchlist)
 # # 上周的赛程url
 # url_matchlist_l= 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
 #                 'lol&startTime={0}&endTime={1}'.format(startTime_l, lastTime_l)
@@ -153,14 +155,14 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    team_a_tower_count = team_stats_0['tower_success_count']
                    team_b_tower_count = team_stats_0['tower_success_count']
                    win_team = 'A' if team_stats_0['is_win'] == 'true' else 'B'
-                   first_big_dragon_team = 'A' if team_stats_0['is_first_big_dragon'] == 'true' else 'B'
-                   first_small_dragon_team = 'A' if team_stats_0['is_first_small_dragon'] == 'true' else 'B'
-                   first_blood_team = 'A' if team_stats_0['is_first_blood'] == 'false' else 'B'
-                   team_a_five_kills = '0' if team_stats_0['is_five_kills'] == 'false' else '1'
-                   team_b_five_kills = '0' if team_stats_1['is_five_kills'] == 'false' else '1'
-                   team_a_ten_kills = '0' if team_stats_0['is_ten_kills'] == 'false' else '1'
-                   team_b_ten_kills = '0' if team_stats_1['is_ten_kills'] == 'false' else '1'
-                   first_tower_team = 'A' if team_stats_0['is_ten_kills'] == 'true' else 'B'
+                   first_big_dragon_team = 'A' if team_stats_0['is_first_big_dragon'] == True else 'B'
+                   first_small_dragon_team = 'A' if team_stats_0['is_first_small_dragon'] == True else 'B'
+                   first_blood_team = 'A' if team_stats_0['is_first_blood'] == True else 'B'
+                   team_a_five_kills = '1' if team_stats_0['is_five_kills'] == True else '0'
+                   team_b_five_kills = '1' if team_stats_1['is_five_kills'] == True else '0'
+                   team_a_ten_kills = '1' if team_stats_0['is_ten_kills'] == True else '0'
+                   team_b_ten_kills = '1' if team_stats_1['is_ten_kills'] == True else '0'
+                   first_tower_team = 'A' if team_stats_0['is_ten_kills'] == True else 'B'
                    team_a_money = team_stats_0['money']
                    team_b_money = team_stats_1['money']
                    pick_list_A = team_stats_0['pick_list']
