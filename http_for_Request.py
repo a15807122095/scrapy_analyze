@@ -5,9 +5,9 @@ app = Flask(__name__)
 
 # 普通的http请求
 
-@app.route('/hello')
+@app.route('/message')
 def hello():
-    return 'Hello, World'
+    return 'message'
 
 
 # # 带参数的http请求
@@ -28,5 +28,5 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=8090)
 
