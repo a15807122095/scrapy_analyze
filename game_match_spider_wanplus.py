@@ -47,7 +47,7 @@ today_stamp = str_today.timestamp()
 # 这周1的00:00:00时间戳
 monday_stamp = int(today_stamp - 86400 * week_day)
 # # 上周日的00:00:00时间戳
-# last_weekstamp = int(monday_stamp - 86400)
+last_weekstamp = int(monday_stamp - 86400)
 # 下周1的00:00:00时间戳
 next_weekstamp = int(monday_stamp + 86400 * 7)
 
@@ -138,14 +138,14 @@ def parse(url, data, db, headers):
 
 
 # # 上周的赛程
-# print('开始抓上周赛程')
-# form_data = {
-#     '_gtk': 806653903,
-#     'game': 2,
-#     'time': last_weekstamp,
-#     'eids': ''
-# }
-# parse(start_url, form_data, db, headers)
+print('开始抓上周赛程')
+form_data = {
+    '_gtk': 806653903,
+    'game': 2,
+    'time': last_weekstamp,
+    'eids': ''
+}
+parse(start_url, form_data, db, headers)
 # print('上周赛程已抓取')
 
 # 本周的赛程
