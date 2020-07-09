@@ -14,7 +14,7 @@ url: https://pvp.qq.com/match/kcc.shtml
 
 
 
-header= {
+header_wzry= {
 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
 }
 
@@ -37,13 +37,13 @@ url_group6 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&si
 url_group7 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595116800&end_time=1595203200&seasonid=KCC2020S'
 url_group8 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595721600&end_time=1595808000&seasonid=KCC2020S'
 url_group9 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595376000&end_time=1595462400&seasonid=KCC2020S'
-url_groups = [url_group1, url_group2, url_group3, url_group4,
+url_groups_wzry = [url_group1, url_group2, url_group3, url_group4,
              url_group5, url_group6, url_group7, url_group8, url_group9]
 
 # 淘汰赛
 # url_knock =
 
-def parse(url, headers, propertys, db):
+def parse_wzry(url, headers, propertys, db):
     responses = get_response(url, headers)
     results = responses['data']
     # print(len(results), results)
@@ -118,8 +118,8 @@ db = con_db()
 #     propertys = '选拔赛'
 #     parse(url, header, propertys, db)
 
-for url in url_groups:
+for url in url_groups_wzry:
     propertys = '小组赛'
-    parse(url, header, propertys, db)
+    parse_wzry(url, header_wzry, propertys, db)
 
 # 淘汰赛出来之后在加

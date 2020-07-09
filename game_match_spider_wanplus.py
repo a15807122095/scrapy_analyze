@@ -13,9 +13,9 @@ from setting import headers_wzrygw
 从玩加网站上抓取 # https://www.wanplus.com/ajax/schedule/list
 """
 
-start_url = 'https://www.wanplus.com/ajax/schedule/list'
+start_url_wanplus = 'https://www.wanplus.com/ajax/schedule/list'
 
-headers= {
+headers_wanplus= {
 'authority': 'www.wanplus.com',
 'method': 'POST',
 'path': '/ajax/schedule/list',
@@ -47,7 +47,7 @@ today_stamp = str_today.timestamp()
 # 这周1的00:00:00时间戳
 monday_stamp = int(today_stamp - 86400 * week_day)
 # # 上周日的00:00:00时间戳
-last_weekstamp = int(monday_stamp - 86400)
+# last_weekstamp = int(monday_stamp - 86400)
 # 下周1的00:00:00时间戳
 next_weekstamp = int(monday_stamp + 86400 * 7)
 
@@ -58,7 +58,7 @@ time_list = [monday_stamp, next_weekstamp]
 
 db = con_db()
 
-def parse(url, data, db, headers):
+def parse_wanplus(url, data, db, headers):
     responses = post_response(url, data, headers)
     results = responses['data']['scheduleList']
     game_name = '英雄联盟'
@@ -137,16 +137,16 @@ def parse(url, data, db, headers):
 
 
 
-# # 上周的赛程
-print('开始抓上周赛程')
-form_data = {
-    '_gtk': 806653903,
-    'game': 2,
-    'time': last_weekstamp,
-    'eids': ''
-}
-parse(start_url, form_data, db, headers)
-# print('上周赛程已抓取')
+# # # 上周的赛程
+# print('开始抓上周赛程')
+# form_data = {
+#     '_gtk': 806653903,
+#     'game': 2,
+#     'time': last_weekstamp,
+#     'eids': ''
+# }
+# parse(start_url, form_data, db, headers)
+# # print('上周赛程已抓取')
 
 # 本周的赛程
 # print('开始抓本周赛程')
@@ -156,7 +156,7 @@ form_data = {
     'time': monday_stamp,
     'eids': ''
 }
-parse(start_url, form_data, db, headers)
+parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
 # print('本周赛程已抓取')
 
 # # 下周的赛程
@@ -167,5 +167,5 @@ form_data = {
     'time': next_weekstamp,
     'eids': ''
 }
-parse(start_url, form_data, db, headers)
+parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
 # print('下周赛程已抓取')
