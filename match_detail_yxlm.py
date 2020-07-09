@@ -132,7 +132,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    economic_diff = response['economic_diff']
                    economic_diff = str(economic_diff)
                    economic_diff = json.dumps(economic_diff)
-                   print('经济差为：', type(economic_diff), economic_diff)
+                   # print('经济差为：', type(economic_diff), economic_diff)
                    types = 1    # 默认为英雄联盟
                    # A,B队的英雄列表要自己拼接
                    team_a_hero = []
@@ -259,9 +259,9 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
                    team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
                    team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side, source_matchid)
-                   print('记录对局详情表：', sql_battle_insert)
+                   # print('记录对局详情表：', sql_battle_insert)
                    db.update_insert(sql_battle_insert)
-                   print('记录对局详情表插入完成')
+                   # print('记录对局详情表插入完成')
 
 
 parse(url_matchlist, headers)
