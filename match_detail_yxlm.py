@@ -65,6 +65,7 @@ def parse(url, headers):
     response_match = response_match['body']
     print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
+          source_matchid = response_each['matchId']
           team_a_name = response_each['teamAShortName']
           team_b_name = response_each['teamBShortName']
           teamAScore = response_each['teamAScore']
@@ -72,21 +73,20 @@ def parse(url, headers):
           status = response_each['status']
           # 过滤掉未进行的比赛
           if status != 0 and team_a_name in LPL_list and team_b_name in LPL_list:
-                # print('enter this way')
+                print('enter this way')
                 # 过滤只拿LPL的赛程,且比赛为已完成或者进行中的数据
                 # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
                 if team_a_name in LPL_list and team_b_name in LPL_list:
-                      # print('过滤留下来的赛程队伍：', team_a_name, team_b_name)
+                      print('过滤留下来的赛程队伍：', team_a_name, team_b_name)
                       matchId = response_each['matchId']
                       # 时间戳由毫秒转化为秒
                       matchTime = response_each['matchTime'][:-3]
                       leagueName = response_each['leagueName']
                       # 拼接对局详情url
                       matchdetail_url = matchdetail_urlpre + matchId
-                      # print('对局详情url：', matchdetail_url)
+                      print('对局详情url：', matchdetail_url)
                       # 请求对局详情url
-                      requests.packages.urllib3.disable_warnings()
-                      response_detail = requests.get(matchdetail_url, headers, verify=False)
+                      response_detail = requests.get(matchdetail_url, headers)
                       response_detail = response_detail.text
                       html = etree.HTML(response_detail)
 
@@ -106,25 +106,25 @@ def parse(url, headers):
                             battle_urls[bo_count] = battledetail_url
                             battle_id += 1
                             bo_count += 1
-                      # print('battle_urls:', battle_urls)
-                      parse_detail(battle_urls, leagueName, team_a_name, team_b_name, matchTime)
+                      print('battle_urls:', battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
+                      parse_detail(battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
 
 
 # 解析对局详情的url,录入到数据库,录入的是赛事对应的小场
 # url_list对应的{小局第几场：场次的详情url，...}
-def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
+def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name, matchTime):
       # redis中加入网站源标记
       source = 'SN'
-      result = redis_check(redis, db, source, leagueName, team_a_name, team_b_name, matchTime)
+      result = redis_check(redis, db, source, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
       # 如果match_id为空，说明尚牛的赛事详情赛程在赛程表中没找到，这时不录入
       if result:
           match_id = result[0]
           # 收集详情数据并写入数据库
           for key, value_url in url_list.items():
                response = get_response(value_url, headers)['body']
-               # print('body:', response)
+               print('body:', response)
                if response !={} and match_id :
-                   # print('源详情url：', value_url)
+                   print('源详情url：', value_url)
                    status = response['status']
                    index_num = response['index']
                    duration = response['duration']
@@ -168,7 +168,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    team_b_money = team_stats_1['money']
                    pick_list_A = team_stats_0['pick_list']
                    pick_list_B = team_stats_1['pick_list']
-                   # print('两个战队的名字：',team_stats_0['team_name'], team_stats_1['team_name'])
+                   print('两个战队的名字：',team_stats_0['team_name'], team_stats_1['team_name'])
                    for pick_list in  pick_list_A:
                        team_a_hero.append(pick_list['avatar'])
                    for pick_list in  pick_list_B:
@@ -179,7 +179,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    team_b_side = team_stats_1['side']
                    player_messages = response['player_stats']
                    for player_message in player_messages:
-                       # print('选手的信息:', player_message)
+                       print('选手的信息:', player_message)
                        player_id = player_message['player_id']
                        player_name = player_message['player_name']
                        player_avatar = player_message['player_avatar']
@@ -218,22 +218,22 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                         "equip_ids, skill_ids, position, type, source_matchid, team_id) VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', '{7}'," \
                         " {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}, " \
                         "'{24}', '{25}', '{26}', {27}, '{28}', {29}) " \
-                        "ON DUPLICATE KEY UPDATE player_name = '{2}', player_avatar = '{3}', " \
+                        "ON DUPLICATE KEY UPDATE match_id = {0}, player_name = '{2}', player_avatar = '{3}', " \
                         "hero_id = {4}, hero_level = {5}, hero_name = '{6}', hero_avatar = '{7}', kill_count = {8}, " \
                         "death_count = {9}, assist_count = {10}, last_hit_count = {11}, last_hit_minute = {12}, " \
                         "damage_count = {13}, damage_minute = {14}, damage_percent = {15}, damage_taken_count = {16}, " \
                         "damage_taken_minute = {17}, damage_taken_percent = {18}, kda = {19}, money_count = {20}, " \
                         "money_minute = {21}, offered_rate = {22}, score = {23}, equip_ids = '{24}', skill_ids = '{25}'," \
-                        " position ='{26}', type = {27}, source_matchid = '{28}', team_id={29};".format(match_id, player_id, player_name, player_avatar, hero_id,
-                        hero_level, hero_name, hero_avatar, kill_count, death_count, assist_count, last_hit_count,
-                        last_hit_minute, damage_count, damage_minute, damage_percent, damage_taken_count,
-                        damage_taken_minute, damage_taken_percent, kda, money_count, money_minute, offered_rate, score,
-                        equip_ids, skill_ids, position, types, source_matchid, team_id)
-                       # print('记录选手表：', sql_player_insert)
+                        " position ='{26}', type = {27}, source_matchid = '{28}', team_id={29};".format(match_id, player_id,
+                        player_name, player_avatar, hero_id, hero_level, hero_name, hero_avatar, kill_count, death_count,
+                        assist_count, last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent,
+                        damage_taken_count, damage_taken_minute, damage_taken_percent, kda, money_count, money_minute,
+                        offered_rate, score, equip_ids, skill_ids, position, types, source_matchid, team_id)
+                       print('记录选手表：', sql_player_insert)
                        db.update_insert(sql_player_insert)
-                       # print('记录选手表插入完成')
+                       print('记录选手表插入完成')
 
-                   # print('得到的match_id和index_num：',match_id, index_num)
+                   print('得到的match_id和index_num：',match_id, index_num)
                    # 添加或修改对局详情记录
                    sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num, economic_diff," \
                    " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
@@ -243,7 +243,7 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    "team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_hero, team_b_hero, " \
                    "team_a_side, team_b_side, source_matchid) VALUES({0}, {1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
                    "{13}, {14}, {15}, {16}, {17}, '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}', '{26}'," \
-                   " {27}, {28}, \"{29}\", \"{30}\", '{31}', '{32}', '{33}') ON DUPLICATE KEY UPDATE duration = {1}, " \
+                   " {27}, {28}, \"{29}\", \"{30}\", '{31}', '{32}', '{33}') ON DUPLICATE KEY UPDATE match_id = {0}, duration = {1}, " \
                    "economic_diff = '{3}', status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
                    "team_a_death_count = {8}, team_b_death_count = {9}, team_a_assist_count = {10}, team_b_assist_count = {11}, " \
                    "team_a_big_dragon_count = {12}, team_b_big_dragon_count = {13}, team_a_small_dragon_count = {14}, " \
@@ -258,9 +258,9 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
                    team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
                    team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side, source_matchid)
-                   # print('记录对局详情表：', sql_battle_insert)
+                   print('记录对局详情表：', sql_battle_insert)
                    db.update_insert(sql_battle_insert)
-                   # print('记录对局详情表插入完成')
+                   print('记录对局详情表插入完成')
 
-
+print(url_matchlist)
 parse(url_matchlist, headers)

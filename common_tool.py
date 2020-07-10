@@ -6,13 +6,13 @@ from datetime import datetime, timedelta
 from setting import proxy_pool
 
 def get_response(url, headers):
-        response = requests.get(url=url, headers=headers, proxies=proxy_pool)
+        response = requests.get(url=url, headers=headers)
         response_text = response.text
         response_json = json.loads(response_text)
         return response_json
 
 def post_response(url, data, headers):
-        response = requests.post(url=url, data=data, headers=headers, proxies=proxy_pool)
+        response = requests.post(url=url, data=data, headers=headers)
         response = response.text
         result = json.loads(response)
         return result
@@ -164,11 +164,11 @@ def get_weeks():
 # 如果没找到就访问后端api拿到赛程信息，再从game_python_match表中拿赛程id
 # 没拿到过滤掉，拿到后写入redis缓存
 # 保存到redis，设置1天的过期时间
-# 格式为：str（ 源网站 + 源数据联赛名 + 源数据A队名 + 源数据B队名 + 比赛时间) : str（源网站+主键）'+'str（a队id）'+' str（b队id）
-def redis_check(redis, db, source, leagueName, source_a_name, source_b_name, matchTime):
-        redis_key = source + leagueName + source_a_name + source_b_name + matchTime
+# 格式为：str（ 源网站 + 源网站的赛事id ) : str（源网站+主键）
+def redis_check(redis, db, source, leagueName, source_matchid, source_a_name, source_b_name, matchTime):
+        redis_key = source + source_matchid
         redis_value = redis.get_data(redis_key)
-        # print('redis中的存储情况：', redis_key, redis_value)
+        print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 result = redis_value.split(source)[1]
                 results = result.split('+')
@@ -179,8 +179,9 @@ def redis_check(redis, db, source, leagueName, source_a_name, source_b_name, mat
         else:
                 # redis没记录，请求检测接口
                 game_name = '英雄联盟'
+                print('检验的参数:', game_name, leagueName, source_a_name, source_b_name)
                 result = api_check(game_name, leagueName, source_a_name, source_b_name)
-                # print('返回的api接口：', result)
+                print('返回的api接口：', result)
                 if result['code'] == 600:
                         league_id = result['result']['league_id']
                         team_a_id = result['result']['team_a_id']
@@ -193,18 +194,17 @@ def redis_check(redis, db, source, leagueName, source_a_name, source_b_name, mat
                         ' and team_b_id in ({1}, {2}) and start_time between {3} and {4};'.format(league_id, team_a_id,
                                                                                      team_b_id, matchTime_before,
                                                                                      matchTime_after)
-                        # print('检测api返回拼凑的sql：', sql_check)
+                        print('检测api返回拼凑的sql：', sql_check)
                         # 拿到数据再去赛程表拿到赛事id（未拿到赛事id的暂时不处理）
                         match_id = db.select_id(sql_check)
-                        # print('匹配到的match_id:', match_id)
-                        if match_id != None:
+                        print('匹配到的match_id:', match_id)
+                        if match_id:
                                 # 保存到redis，设置1天的过期时间
-                                # 格式为：str（ 源网站 + 源数据联赛名 + 源数据A队名 + 源数据B队名 + 比赛时间) : str（源网站+主键）'+'
-                                # str（a队id）'+' str（b队id）
+                                # 格式为：str（ 源网站 + 源网站的赛事id) : str（源网站+主键 + team_a_id + team_b_id）
                                 # print('存入redis')
                                 redis_value = source + str(match_id) + '+' + str(team_a_id) + '+' + str(team_b_id)
                                 redis.set_data(redis_key, 86400, redis_value)
-                                # print('已经保存到redis')
+                                print('已经保存到redis')
                         return match_id, team_a_id, team_b_id
 
                 if result['code'] == 200:

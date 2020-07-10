@@ -83,9 +83,15 @@ def parse(url, headers):
             source_b_name = response['team'][1]['team_name']
             start_time = response['start_time']
             start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+            leagueName_pre = str(start_time.year) + ' '
+            # 雷竞技的联赛名不带年份，要自己加上去，用比赛的年份判断出那一年再拼接上去
+            # 例如 start_time:'2020-07-08' ---'2020 ' + leagueName
+            leagueName = leagueName_pre + leagueName
+            print('leagueName:',leagueName)
             start_time = int(start_time.timestamp())
             start_time = str(start_time)
-            result = redis_check(redis, db, source, leagueName, source_a_name, source_b_name, start_time)
+            source_matchid = str(id)
+            result = redis_check(redis, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
             # print('match_id:', result, source_a_name, source_b_name)
 
             # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
