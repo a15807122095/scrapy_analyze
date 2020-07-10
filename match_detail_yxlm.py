@@ -93,6 +93,8 @@ def parse(url, headers):
                       # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
                       battle_id = str(html.xpath('/html/body/script[1]/text()'))
                       # print('拿到的battle_id：', battle_id)
+                      if not battle_id:
+                          continue
                       battle_id_str = battle_id.split('battle_id:')[1]
                       battle_id = int(battle_id_str.split(',')[0])
                       # print('xpath拿到的battle_id：', battle_id)
@@ -169,15 +171,19 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    pick_list_A = team_stats_0['pick_list']
                    pick_list_B = team_stats_1['pick_list']
                    print('两个战队的名字：',team_stats_0['team_name'], team_stats_1['team_name'])
-                   for pick_list in  pick_list_A:
-                       team_a_hero.append(pick_list['avatar'])
-                   for pick_list in  pick_list_B:
-                       team_b_hero.append(pick_list['avatar'])
-                   team_a_hero = str(team_a_hero)
-                   team_b_hero = str(team_b_hero)
+                   for pick_list_A in  pick_list_A:
+                       team_a_hero.append(pick_list_A['avatar'])
+                   for pick_list_B in  pick_list_B:
+                       team_b_hero.append(pick_list_B['avatar'])
                    team_a_side = team_stats_0['side']
                    team_b_side = team_stats_1['side']
                    player_messages = response['player_stats']
+                   team_a_hero = str(team_a_hero)
+                   team_a_hero = team_a_hero.replace('\'', '\"')
+                   team_b_hero = str(team_b_hero)
+                   team_b_hero = team_b_hero.replace('\'', '\"')
+                   print('111111111111', type(team_a_hero), team_a_hero)
+                   print('222222222222', type(team_b_hero), team_b_hero)
                    for player_message in player_messages:
                        print('选手的信息:', player_message)
                        player_id = player_message['player_id']
@@ -243,7 +249,7 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    "team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_hero, team_b_hero, " \
                    "team_a_side, team_b_side, source_matchid) VALUES({0}, {1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
                    "{13}, {14}, {15}, {16}, {17}, '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}', '{26}'," \
-                   " {27}, {28}, \"{29}\", \"{30}\", '{31}', '{32}', '{33}') ON DUPLICATE KEY UPDATE match_id = {0}, duration = {1}, " \
+                   " {27}, {28}, '{29}', '{30}', '{31}', '{32}', '{33}') ON DUPLICATE KEY UPDATE match_id = {0}, duration = {1}, " \
                    "economic_diff = '{3}', status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
                    "team_a_death_count = {8}, team_b_death_count = {9}, team_a_assist_count = {10}, team_b_assist_count = {11}, " \
                    "team_a_big_dragon_count = {12}, team_b_big_dragon_count = {13}, team_a_small_dragon_count = {14}, " \
@@ -251,7 +257,7 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    "win_team = '{18}', first_big_dragon_team = '{19}', first_small_dragon_team = '{20}', " \
                    "first_blood_team = '{21}', team_a_five_kills = '{22}', team_b_five_kills = '{23}', team_a_ten_kills = '{24}'," \
                    "team_b_ten_kills = '{25}', first_tower_team = '{26}', team_a_money = {27}, team_b_money = {28}, " \
-                   "team_a_hero = \"{29}\", team_b_hero = \"{30}\", team_a_side = '{31}', team_b_side = '{32}', source_matchid ='{33}';".format(
+                   "team_a_hero = '{29}', team_b_hero = '{30}', team_a_side = '{31}', team_b_side = '{32}', source_matchid ='{33}';".format(
                    match_id, duration, index_num, economic_diff, status, types, team_a_kill_count, team_b_kill_count,
                    team_a_death_count, team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_big_dragon_count,
                    team_b_big_dragon_count, team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count,

@@ -7,7 +7,7 @@
 使用单例模式创建redis 链接池
 '''
 from redis import ConnectionPool
-from setting import Redis_checkAPI, Redis_urldistict
+from setting import Redis_checkAPI, Redis_urldistict, Redis_proxy
 import redis
 
 # 检测后端API之前现在redis中查询是否有记录/尚牛网存储本周和上周的url以及
@@ -96,7 +96,44 @@ class RedisCache_urldistict(object):
         return self._connection.delete(key)
 
 
+# 为了减少数据库读写太频繁，已完成和未进行的因为基本一天之内没变化，赛程录入到redis，
+# 后续从redis检查到记录就过滤掉，因为进行中的比赛变化比较频繁，不考虑redis缓存
+class RedisDBConfig_proxy:
+    HOST_urldistict = Redis_proxy['host']
+    PORT_urldistict = Redis_proxy['port']
+    DBID_urldistict = Redis_proxy['db']
 
+# 将请求到的代理ip存到redis中
+class RedisCache_proxy(object):
+    def __init__(self):
+        if not hasattr(RedisCache_urldistict, 'pool'):
+            RedisCache_urldistict.create_pool()
+        self._connection = redis.Redis(connection_pool=RedisCache_urldistict.pool)
+
+    @staticmethod
+    def create_pool():
+        RedisCache_urldistict.pool = redis.ConnectionPool(
+            host=RedisDBConfig_urldistict.HOST_urldistict,
+            port=RedisDBConfig_urldistict.PORT_urldistict,
+            db=RedisDBConfig_urldistict.DBID_urldistict)
+
+    def set_data(self, key, time, value):
+        '''设
+        '''
+        return self._connection.setex(key, time, value)
+
+    def get_data(self, key):
+        '''查
+        '''
+        if self._connection.get(key):
+            return self._connection.get(key).decode('utf-8')
+        else:
+            return None
+
+    def del_data(self, key):
+        '''删
+        '''
+        return self._connection.delete(key)
 
 
 
