@@ -63,7 +63,7 @@ url_matchlist = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
 def parse(url, headers):
     response_match = get_response(url, headers)
     response_match = response_match['body']
-    # print('赛程个数和结果：', len(response_match), response_match)
+    print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
           team_a_name = response_each['teamAShortName']
           team_b_name = response_each['teamBShortName']
@@ -130,7 +130,6 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    duration = response['duration']
                    source_matchid = response['battle_id']   # 源网站的赛事id
                    economic_diff = response['economic_diff']
-                   economic_diff = str(economic_diff)
                    economic_diff = json.dumps(economic_diff)
                    # print('经济差为：', type(economic_diff), economic_diff)
                    types = 1    # 默认为英雄联盟
@@ -242,10 +241,10 @@ def parse_detail(url_list, leagueName, team_a_name, team_b_name, matchTime):
                    "team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team, " \
                    "first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills, " \
                    "team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_hero, team_b_hero, " \
-                   "team_a_side, team_b_side, source_matchid) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
+                   "team_a_side, team_b_side, source_matchid) VALUES({0}, {1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
                    "{13}, {14}, {15}, {16}, {17}, '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}', '{26}'," \
                    " {27}, {28}, \"{29}\", \"{30}\", '{31}', '{32}', '{33}') ON DUPLICATE KEY UPDATE duration = {1}, " \
-                   "economic_diff = {3}, status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
+                   "economic_diff = '{3}', status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
                    "team_a_death_count = {8}, team_b_death_count = {9}, team_a_assist_count = {10}, team_b_assist_count = {11}, " \
                    "team_a_big_dragon_count = {12}, team_b_big_dragon_count = {13}, team_a_small_dragon_count = {14}, " \
                    "team_b_small_dragon_count = {15}, team_a_tower_count = {16}, team_b_tower_count = {17}, " \

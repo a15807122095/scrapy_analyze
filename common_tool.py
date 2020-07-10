@@ -3,16 +3,16 @@ import requests
 import json
 import time
 from datetime import datetime, timedelta
+from setting import proxy_pool
 
 def get_response(url, headers):
-        requests.packages.urllib3.disable_warnings()
-        response = requests.get(url=url, headers=headers, verify=False)
+        response = requests.get(url=url, headers=headers, proxies=proxy_pool)
         response_text = response.text
         response_json = json.loads(response_text)
         return response_json
 
 def post_response(url, data, headers):
-        response = requests.post(url=url, data=data, headers=headers)
+        response = requests.post(url=url, data=data, headers=headers, proxies=proxy_pool)
         response = response.text
         result = json.loads(response)
         return result
