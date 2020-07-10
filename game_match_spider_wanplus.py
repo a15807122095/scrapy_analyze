@@ -100,9 +100,10 @@ def parse_wanplus(url, data, db, headers):
                 propertys = match['groupname']
 
 
-                # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
+                # 访问接口前先在表中用source_matchId字段匹配一下，有就不再访问接口
+                # check_match字段就是四个源字段的字符串拼接
                 check_match = league_sourcename + team_a_sourcename + team_b_sourcename + start_time
-                status_check = check_local(db, check_match)
+                status_check = check_local(db, source_matchId)
                 if status_check == None:
                     # 请求检测接口
                     result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)

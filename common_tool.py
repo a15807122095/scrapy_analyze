@@ -18,9 +18,9 @@ def post_response(url, data, headers):
         return result
 
 
-# # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
-def check_local(db, check_match):
-        sql_check = 'select id from game_python_match where check_match = "{}"'.format(check_match)
+# # 访问接口前先在表中用网站源的match_id字段匹配一下，有就不再访问接口
+def check_local(db, source_matchId):
+        sql_check = 'select id from game_python_match where source_matchId = "{}"'.format(source_matchId)
         # print('访问接口前的sql：', sql_check)
         status_check = db.select_id(sql_check)
         # print('访问接口前的拼接字符串和匹配到的主键：', status_check, check_match)
@@ -92,9 +92,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
         source_from = insert_argument['source_from']
         source_matchId = insert_argument['source_matchId']
         # 将result_insert和date_timestamp与game_python_match进行对比确定是否有这场赛事
-        sql_check = 'select id from game_python_match where league_id = {0} and team_a_id = {1} ' \
-                    'and team_b_id = {2} and start_time = {3};'.format(league_id, team_a_id, team_b_id,
-                                                                      date_timestamp)
+        sql_check = "select id from game_python_match where source_matchId = '{}';".format(source_matchId)
         # print('600的查询主键sql：', sql_check)
         status_update_or_insert = db.select_id(sql_check)
         # print('600的查询主键：', status_update_or_insert)
@@ -107,8 +105,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                              " {3}, {4}, {5}, '{6}', {7}, {8}, '{9}', {10}, '{11}', '{12}', '{13}', '{14}', '{15}', " \
                              "'{16}');".format(type, league_id, status, date_timestamp, bo, team_a_id,
                                                team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
-                                               league_name,
-                                               check_match, propertys, source_from, source_matchId, win_team)
+                                               league_name, check_match, propertys, source_from, source_matchId, win_team)
                 # print('600的未有记录执行插入：', sql_insert)
                 db.update_insert(sql_insert)
                 # print('600的未有记录执行插入完成')
