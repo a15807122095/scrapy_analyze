@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from setting import proxy_pool
 
 def get_response(url, headers):
-        response = requests.get(url=url, headers=headers)
+        response = requests.get(url=url, headers=headers, proxies=proxy_pool)
         response_text = response.text
         response_json = json.loads(response_text)
         return response_json
