@@ -3,7 +3,7 @@ import time
 import requests
 import json
 from datetime import datetime, timedelta
-from common_tool import get_response, redis_check
+from common_tool import redis_check, get_response_proxy
 from lxml import etree
 from common_tool import api_check
 from import_data_to_mysql import con_db
@@ -61,7 +61,7 @@ url_matchlist = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
 # urls = [url_matchlist, url_matchlist_l]
 
 def parse(url, headers):
-    response_match = get_response(url, headers)
+    response_match = get_response_proxy(url, headers)
     response_match = response_match['body']
     print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
@@ -93,7 +93,7 @@ def parse(url, headers):
                       # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
                       battle_id = str(html.xpath('/html/body/script[1]/text()'))
                       # print('拿到的battle_id：', battle_id)
-                      if not battle_id:
+                      if 'battle_id' not in  battle_id:
                           continue
                       battle_id_str = battle_id.split('battle_id:')[1]
                       battle_id = int(battle_id_str.split(',')[0])
@@ -123,7 +123,7 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
           match_id = result[0]
           # 收集详情数据并写入数据库
           for key, value_url in url_list.items():
-               response = get_response(value_url, headers)['body']
+               response = get_response_proxy(value_url, headers)['body']
                print('body:', response)
                if response !={} and match_id :
                    print('源详情url：', value_url)
@@ -268,5 +268,4 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    db.update_insert(sql_battle_insert)
                    print('记录对局详情表插入完成')
 
-print(url_matchlist)
 parse(url_matchlist, headers)

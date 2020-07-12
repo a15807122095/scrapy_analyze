@@ -3,10 +3,25 @@ import requests
 import json
 import time
 from datetime import datetime, timedelta
-from setting import proxy_pool
+
+# 使用代理抓取
+def get_response_proxy(url, headers):
+        for line in open("proxies.txt"):
+                # 构造代理
+                line = line.rstrip('\n')
+                proxies = {'https':line}
+                print(proxies)
+                try:
+                        response = requests.get(url=url, headers=headers, proxies=proxies)
+                        response_text = response.text
+                        response_json = json.loads(response_text)
+                        return response_json
+                except requests.exceptions.ConnectTimeout:
+                        continue
+
 
 def get_response(url, headers):
-        response = requests.get(url=url, headers=headers, proxies=proxy_pool)
+        response = requests.get(url=url, headers=headers)
         response_text = response.text
         response_json = json.loads(response_text)
         return response_json
