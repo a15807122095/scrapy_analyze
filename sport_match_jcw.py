@@ -69,3 +69,5 @@ def parse():
             # print('开始写入:', sql_matchlist)
             db.update_insert(sql_matchlist)
             # print('写入完成')
+
+parse()

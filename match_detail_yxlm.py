@@ -63,7 +63,7 @@ url_matchlist = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
 def parse(url, headers):
     response_match = get_response_proxy(url, headers)
     response_match = response_match['body']
-    print('赛程个数和结果：', len(response_match), response_match)
+    # print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
           source_matchid = response_each['matchId']
           team_a_name = response_each['teamAShortName']
@@ -73,29 +73,31 @@ def parse(url, headers):
           status = response_each['status']
           # 过滤掉未进行的比赛
           if status != 0 and team_a_name in LPL_list and team_b_name in LPL_list:
-                print('enter this way')
+                # print('enter this way')
                 # 过滤只拿LPL的赛程,且比赛为已完成或者进行中的数据
                 # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
                 if team_a_name in LPL_list and team_b_name in LPL_list:
-                      print('过滤留下来的赛程队伍：', team_a_name, team_b_name)
+                      # print('过滤留下来的赛程队伍：', team_a_name, team_b_name)
                       matchId = response_each['matchId']
                       # 时间戳由毫秒转化为秒
                       matchTime = response_each['matchTime'][:-3]
                       leagueName = response_each['leagueName']
                       # 拼接对局详情url
                       matchdetail_url = matchdetail_urlpre + matchId
-                      print('对局详情url：', matchdetail_url)
+                      # print('对局详情url：', matchdetail_url)
                       # 请求对局详情url
                       for line in open("proxies.txt"):
                           # 构造代理
                           line = line.rstrip('\n')
                           proxies = {'https': line}
-                          try:
-                              response_detail = requests.get(matchdetail_url, headers, proxies=proxies)
-                              response_detail = response_detail.text
-                              html = etree.HTML(response_detail)
-                          except requests.exceptions.ConnectTimeout:
-                              continue
+                          print(proxies)
+                          # try:
+                          response_detail = requests.get(matchdetail_url, headers, proxies=proxies)
+                          response_detail = response_detail.text
+                          html = etree.HTML(response_detail)
+                          break
+                          # except requests.exceptions.ConnectTimeout:
+                          #     continue
                       # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
                       battle_id = str(html.xpath('/html/body/script[1]/text()'))
                       # print('拿到的battle_id：', battle_id)
@@ -130,9 +132,9 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
           # 收集详情数据并写入数据库
           for key, value_url in url_list.items():
                response = get_response_proxy(value_url, headers)['body']
-               print('body:', response)
+               # print('body:', response)
                if response !={} and match_id :
-                   print('源详情url：', value_url)
+                   # print('源详情url：', value_url)
                    status = response['status']
                    index_num = response['index']
                    duration = response['duration']
@@ -188,10 +190,8 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    team_a_hero = team_a_hero.replace('\'', '\"')
                    team_b_hero = str(team_b_hero)
                    team_b_hero = team_b_hero.replace('\'', '\"')
-                   print('111111111111', type(team_a_hero), team_a_hero)
-                   print('222222222222', type(team_b_hero), team_b_hero)
                    for player_message in player_messages:
-                       print('选手的信息:', player_message)
+                       # print('选手的信息:', player_message)
                        player_id = player_message['player_id']
                        player_name = player_message['player_name']
                        player_avatar = player_message['player_avatar']
