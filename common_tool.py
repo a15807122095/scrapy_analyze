@@ -10,7 +10,7 @@ def get_response_proxy(url, headers):
                 # 构造代理
                 line = line.rstrip('\n')
                 proxies = {'https':line}
-                print(proxies)
+                # print(proxies)
                 try:
                         response = requests.get(url=url, headers=headers, proxies=proxies)
                         response_text = response.text

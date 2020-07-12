@@ -86,10 +86,16 @@ def parse(url, headers):
                       matchdetail_url = matchdetail_urlpre + matchId
                       print('对局详情url：', matchdetail_url)
                       # 请求对局详情url
-                      response_detail = requests.get(matchdetail_url, headers)
-                      response_detail = response_detail.text
-                      html = etree.HTML(response_detail)
-
+                      for line in open("proxies.txt"):
+                          # 构造代理
+                          line = line.rstrip('\n')
+                          proxies = {'https': line}
+                          try:
+                              response_detail = requests.get(matchdetail_url, headers, proxies=proxies)
+                              response_detail = response_detail.text
+                              html = etree.HTML(response_detail)
+                          except requests.exceptions.ConnectTimeout:
+                              continue
                       # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
                       battle_id = str(html.xpath('/html/body/script[1]/text()'))
                       # print('拿到的battle_id：', battle_id)
