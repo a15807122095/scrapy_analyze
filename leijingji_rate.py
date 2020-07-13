@@ -20,8 +20,15 @@ url: https://www.ray83.com/match/37198305
 # 从start_url和second_url中拿到id，拼凑得到详情url
 # 详情url中拿到对应赔率url：https://incpgameinfo.esportsworldlink.com/v2/odds?match_id=37219633
 
+# 今日
 start_url = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=2'
-second_url ='https://incpgameinfo.esportsworldlink.com/v2/match?page=2&match_type=2'
+
+# 滚盘
+# gunpan_url1 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=1'
+gunpan_url2 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=2&match_type=0'
+
+# 赛前
+befor_url = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=3'
 
 match_url_start = 'https://incpgameinfo.esportsworldlink.com/v2/odds?match_id='
 
@@ -71,8 +78,8 @@ def parse(url, headers):
         leagueName = response['tournament_name']
         # print('联赛名称:',game_name, leagueName)
         # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
-        if game_name == ('英雄联盟' or '王者荣耀') and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS' in leagueName
-                                    or 'LEC' in leagueName or 'LDL' in leagueName ):
+        if game_name == '王者荣耀' or (game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS'
+                                                in leagueName or 'LEC' in leagueName or 'LDL' in leagueName )):
             types = game_type[game_name]
             id = response['id']
             # print('网站的赛事id：',id)
@@ -172,7 +179,14 @@ def parse(url, headers):
                                 db.update_insert(sql_bet_insert)
                                 # print('记录竞猜表插入完成')
 
-
-parse(start_url, headers)
-# parse(second_url, headers)
+# print('今日赔率')
+# parse(start_url, headers)
+# print('今日赔率抓取完成')
+# print('滚盘赔率')
+# parse(gunpan_url1, headers)
+parse(gunpan_url2, headers)
+# print('滚盘赔率抓取完成')
+# print('赛前赔率')
+# parse(befor_url, headers)
+# print('赛前赔率抓取完成')
 
