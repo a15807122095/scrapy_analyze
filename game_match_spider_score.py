@@ -5,7 +5,7 @@ from common_tool import get_response, api_check, \
     check_local, API_return_600, API_return_200, post_response, get_weeks
 from import_data_to_mysql import con_db
 from datetime import datetime
-from setting import headers_wzrygw
+from setting import db_setting
 
 
 """
@@ -126,5 +126,5 @@ def parse(url, data, headers):
 
 
 # 创建mysql连接对象
-db = con_db()
+db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 parse(start_url, form_data, headers)

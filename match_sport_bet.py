@@ -5,12 +5,13 @@ import requests
 import time
 from lxml import etree
 from import_data_to_mysql import con_db
+from setting import db_sport_setting
 
 """
 竞彩网赔率爬虫
 """
 
-db = con_db()
+db = con_db(db_sport_setting['host'], db_sport_setting['user'], db_sport_setting['password'], db_sport_setting['db'])
 
 
 bet_list = {

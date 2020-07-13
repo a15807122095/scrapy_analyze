@@ -5,7 +5,7 @@ from common_tool import get_response, api_check, \
     check_local, API_return_600, API_return_200, post_response, get_weeks
 from import_data_to_mysql import con_db
 from datetime import datetime
-from setting import headers_wzrygw
+from setting import db_setting
 
 
 """
@@ -56,7 +56,7 @@ time_list = [monday_stamp, next_weekstamp]
 
 
 
-db = con_db()
+db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 
 def parse_wanplus(url, data, db, headers):
     responses = post_response(url, data, headers)

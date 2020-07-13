@@ -2,9 +2,11 @@
 from flask import Flask,render_template,request
 from import_data_to_mysql import con_db
 from game_match_spider_wanplus import start_url_wanplus, headers_wanplus, parse_wanplus, monday_stamp, next_weekstamp
+from setting import db_setting
+
 
 # 创建mysql对象
-db = con_db()
+db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 
 app = Flask(__name__)
 

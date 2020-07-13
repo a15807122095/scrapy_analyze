@@ -8,13 +8,14 @@ from lxml import etree
 from common_tool import api_check
 from import_data_to_mysql import con_db
 from import_data_to_redis import RedisCache_checkAPI
+from setting import db_setting
 
 """
 尚牛电竞网比赛详情爬虫
 """
 
 # 创建数据库对象
-db = con_db()
+db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 # 创建redis对象
 redis = RedisCache_checkAPI()
 

@@ -5,6 +5,7 @@ import requests
 import time
 from import_data_to_mysql import con_db
 from common_tool import get_response, api_check, check_local, API_return_600, API_return_200
+from setting import db_setting
 
 """
 英雄联盟官网爬虫
@@ -129,7 +130,7 @@ def parse_yxlm(url, db, match_status, headers):
 date_time = time.time()
 now_time = str(round(date_time * 1000))
 # 创建mysql连接对象
-db = con_db()
+db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 """
 英雄联盟爬虫抓取
 """

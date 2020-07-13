@@ -14,9 +14,9 @@ class con_db():
             cls.__instance = object.__new__(cls)
         return cls.__instance
 
-    def __init__(self):
-        self.db = pymysql.connect(host=db_setting['host'], user=db_setting['user'],
-                               password=db_setting['password'], db=db_setting['db'], charset='utf8')
+    def __init__(self,host, user, password, db):
+        self.db = pymysql.connect(host=host, user=user,
+                               password=password, db=db, charset='utf8')
         self.cursor = self.db.cursor()
 
     # 查询数据库

@@ -5,6 +5,7 @@ from common_tool import get_response, api_check, check_local, API_return_600, AP
 from import_data_to_mysql import con_db
 from lxml import etree
 from datetime import datetime
+from setting import db_setting
 
 
 """
@@ -114,7 +115,7 @@ def parse_wzry(url, headers, propertys, db):
             # print('本地已有数据就直接更新完成')
 
 
-db = con_db()
+db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 # for url in urls_xuanba:
 #     propertys = '选拔赛'
 #     parse(url, header, propertys, db)
