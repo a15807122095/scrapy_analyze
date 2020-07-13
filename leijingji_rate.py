@@ -56,20 +56,24 @@ bet_status = {
     1:0, 4:1, 2:4, 5:2
 }
 
+game_type = {
+    '英雄联盟':1,
+    '王者荣耀':2
+}
 
 def parse(url, headers):
     responses = get_response(url, headers)
     responses = responses['result']
     # print('源数据：', len(responses))
-    types = 1
     source = '雷竞技'
     for response in responses:
         game_name = response['game_name']
         leagueName = response['tournament_name']
         # print('联赛名称:',game_name, leagueName)
         # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
-        if game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS' in leagueName
+        if game_name == ('英雄联盟' or '王者荣耀') and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS' in leagueName
                                     or 'LEC' in leagueName or 'LDL' in leagueName ):
+            types = game_type[game_name]
             id = response['id']
             # print('网站的赛事id：',id)
             match_url = match_url_start + str(id)
