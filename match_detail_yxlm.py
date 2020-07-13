@@ -66,6 +66,7 @@ def parse(url, headers):
     response_match = response_match['body']
     # print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
+          leagueName = response_each['leagueName']
           source_matchid = response_each['matchId']
           team_a_name = response_each['teamAShortName']
           team_b_name = response_each['teamBShortName']
@@ -73,52 +74,70 @@ def parse(url, headers):
           teamBScore = response_each['teamBScore']
           status = response_each['status']
           # 过滤掉未进行的比赛
-          if status != 0 and team_a_name in LPL_list and team_b_name in LPL_list:
-                # print('enter this way')
-                # 过滤只拿LPL的赛程,且比赛为已完成或者进行中的数据
-                # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
-                if team_a_name in LPL_list and team_b_name in LPL_list:
-                      # print('过滤留下来的赛程队伍：', team_a_name, team_b_name)
-                      matchId = response_each['matchId']
-                      # 时间戳由毫秒转化为秒
-                      matchTime = response_each['matchTime'][:-3]
-                      leagueName = response_each['leagueName']
-                      # 拼接对局详情url
-                      matchdetail_url = matchdetail_urlpre + matchId
-                      # print('对局详情url：', matchdetail_url)
-                      # 请求对局详情url
-                      for line in open("proxies.txt"):
-                          # 构造代理
-                          line = line.rstrip('\n')
-                          proxies = {'https': line}
-                          # print(proxies)
-                          # try:
-                          response_detail = requests.get(matchdetail_url, headers, proxies=proxies)
-                          response_detail = response_detail.text
-                          html = etree.HTML(response_detail)
-                          break
-                          # except requests.exceptions.ConnectTimeout:
-                          #     continue
-                      # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
-                      battle_id = str(html.xpath('/html/body/script[1]/text()'))
-                      # print('拿到的battle_id：', battle_id)
-                      if 'battle_id' not in  battle_id:
-                          continue
-                      battle_id_str = battle_id.split('battle_id:')[1]
-                      battle_id = int(battle_id_str.split(',')[0])
-                      # print('xpath拿到的battle_id：', battle_id)
-                      # 根据两队总得分和battle_id拼接小场的详情数据url（有的时候默认进入是小场第一局，有的时候是最后一局，具体要看网站变动）
-                      # 如果是进行中的赛事bo_count +1,因为当局还没计算出大比分,但已经可以进入对局详情页
-                      bo_count = 0 if status == 1 else 1
-                      battle_urls = {}
-                      while bo_count <= (teamAScore + teamBScore):
-                            battledetail_url = 'https://www.shangniu.cn/api/battle/lol/match/liveBattle?' \
-                                               'battleId={}'.format(battle_id)
-                            battle_urls[bo_count] = battledetail_url
-                            battle_id += 1
-                            bo_count += 1
-                      # print('battle_urls:', battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
-                      parse_detail(battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
+          if (team_a_name in LPL_list and team_b_name in LPL_list) or 'LCK' in leagueName or 'LCS' in leagueName or 'LEC' in leagueName or 'LDL' in leagueName:
+              if status != 0:
+                  print('enter this way')
+                  # 过滤比赛为已完成或者进行中的数据
+                  # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
+                  print('过滤留下来的赛程队伍：', leagueName, team_a_name, team_b_name)
+                  matchId = response_each['matchId']
+                  # 时间戳由毫秒转化为秒
+                  matchTime = response_each['matchTime'][:-3]
+                  leagueName = response_each['leagueName']
+                  # 拼接对局详情url--在matchId后面加01,02,03代表第一第二第三小局
+                  battle_id_1 = matchId + '01'
+                  battle_id_2 = matchId + '02'
+                  battle_id_3 = matchId + '03'
+
+                  battledetail_url_1 = 'https://www.shangniu.cn/api/battle/lol/match/' \
+                                       'liveBattle?battleId={}'.format(battle_id_1)
+                  battledetail_url_2 = 'https://www.shangniu.cn/api/battle/lol/match/' \
+                                       'liveBattle?battleId={}'.format(battle_id_2)
+                  battledetail_url_3 = 'https://www.shangniu.cn/api/battle/lol/match/' \
+                                       'liveBattle?battleId={}'.format(battle_id_3)
+                  battle_urls = {1:battledetail_url_1, 2:battledetail_url_2, 3:battledetail_url_3}
+                  # print('对局详情url：', matchdetail_url)
+                  # # 请求对局详情url
+                  # for line in open("proxies.txt"):
+                  #     # 构造代理
+                  #     line = line.rstrip('\n')
+                  #     proxies = {'https': line}
+                  #     # print(proxies)
+                  #     # try:
+                  #     response_detail = requests.get(matchdetail_url, headers, proxies=proxies)
+                  #     response_detail = response_detail.text
+                  #     html = etree.HTML(response_detail)
+                  #     break
+                  #     # except requests.exceptions.ConnectTimeout:
+                  #     #     continue
+                  # # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
+                  # battle_id = str(html.xpath('/html/body/script[1]/text()'))
+                  # print('拿到的battle_id：', battle_id)
+                  # if 'battle_id' not in  battle_id:
+                  #     continue
+                  # battle_id_str1 = battle_id.split('battle_id:')[1]
+                  # battle_id_judge = battle_id_str1.split(',')[0]
+                  # print('得到的battle_id1：', battle_id_judge)
+                  # # 判断battle_id_str.split(',')[0]得到的能不能转化为int类型
+                  # if not battle_id_judge.isdigit():
+                  #     print(1111111)
+                  #     battle_id_str2 = battle_id.split('serverRendered:')[1]
+                  #     battle_id_judge = battle_id_str2.split(',')[14]
+                  # battle_id = int(battle_id_judge)
+                  # print('得到的battle_id2：', battle_id_judge)
+                  # # print('xpath拿到的battle_id：', battle_id)
+                  # # 根据两队总得分和battle_id拼接小场的详情数据url（有的时候默认进入是小场第一局，有的时候是最后一局，具体要看网站变动）
+                  # # 如果是进行中的赛事bo_count +1,因为当局还没计算出大比分,但已经可以进入对局详情页
+                  # bo_count = 0 if status == 1 else 1
+                  # battle_urls = {}
+                  # while bo_count <= (teamAScore + teamBScore):
+                  #       battledetail_url = 'https://www.shangniu.cn/api/battle/lol/match/liveBattle?' \
+                  #                          'battleId={}'.format(battle_id)
+                  #       battle_urls[bo_count] = battledetail_url
+                  #       battle_id += 1
+                  #       bo_count += 1
+                  print('battle_urls:', battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
+                  parse_detail(battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
 
 
 # 解析对局详情的url,录入到数据库,录入的是赛事对应的小场
@@ -221,32 +240,31 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                        skill_ids = player_message['skill_ids']
                        # 位置可能为空
                        position = player_message['player_position']
-                       team_id = player_message['team_id']
 
                        # 添加或修改选手对局记录
                        sql_player_insert = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, " \
                         "player_avatar, hero_id, hero_level, hero_name, hero_avatar, kill_count, death_count, assist_count," \
                         " last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent, damage_taken_count, " \
                         "damage_taken_minute, damage_taken_percent, kda, money_count, money_minute, offered_rate, score, " \
-                        "equip_ids, skill_ids, position, type, source_matchid, team_id) VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', '{7}'," \
+                        "equip_ids, skill_ids, position, type, source_matchid) VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', '{7}'," \
                         " {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}, " \
-                        "'{24}', '{25}', '{26}', {27}, '{28}', {29}) " \
+                        "'{24}', '{25}', '{26}', {27}, '{28}') " \
                         "ON DUPLICATE KEY UPDATE match_id = {0}, player_name = '{2}', player_avatar = '{3}', " \
                         "hero_id = {4}, hero_level = {5}, hero_name = '{6}', hero_avatar = '{7}', kill_count = {8}, " \
                         "death_count = {9}, assist_count = {10}, last_hit_count = {11}, last_hit_minute = {12}, " \
                         "damage_count = {13}, damage_minute = {14}, damage_percent = {15}, damage_taken_count = {16}, " \
                         "damage_taken_minute = {17}, damage_taken_percent = {18}, kda = {19}, money_count = {20}, " \
                         "money_minute = {21}, offered_rate = {22}, score = {23}, equip_ids = '{24}', skill_ids = '{25}'," \
-                        " position ='{26}', type = {27}, source_matchid = '{28}', team_id={29};".format(match_id, player_id,
+                        " position ='{26}', type = {27}, source_matchid = '{28}';".format(match_id, player_id,
                         player_name, player_avatar, hero_id, hero_level, hero_name, hero_avatar, kill_count, death_count,
                         assist_count, last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent,
                         damage_taken_count, damage_taken_minute, damage_taken_percent, kda, money_count, money_minute,
-                        offered_rate, score, equip_ids, skill_ids, position, types, source_matchid, team_id)
-                       # print('记录选手表：', sql_player_insert)
+                        offered_rate, score, equip_ids, skill_ids, position, types, source_matchid)
+                       print('记录选手表：', sql_player_insert)
                        db.update_insert(sql_player_insert)
-                       # print('记录选手表插入完成')
+                       print('记录选手表插入完成')
 
-                   # print('得到的match_id和index_num：',match_id, index_num)
+                   print('得到的match_id和index_num：',match_id, index_num)
                    # 添加或修改对局详情记录
                    sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num, economic_diff," \
                    " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
@@ -271,8 +289,8 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
                    team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
                    team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side, source_matchid)
-                   # print('记录对局详情表：', sql_battle_insert)
+                   print('记录对局详情表：', sql_battle_insert)
                    db.update_insert(sql_battle_insert)
-                   # print('记录对局详情表插入完成')
+                   print('记录对局详情表插入完成')
 
 parse(url_matchlist, headers)

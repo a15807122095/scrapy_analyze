@@ -72,7 +72,7 @@ def parse_wanplus(url, data, db, headers):
             # print('赛程数据2:', type(match), match)
             league_sourcename = match['ename']
             # 只抓取LCK, LCS, LEC, LDL联赛
-            if 'LCK' in league_sourcename or 'LCS' in league_sourcename or 'LEC' in league_sourcename or 'LDL' in league_sourcename :
+            if 'LCK' in league_sourcename or 'LCS' in league_sourcename or 'LEC' in league_sourcename or 'LDL' in league_sourcename:
                 team_a_sourcename = match['oneseedname']
                 team_b_sourcename = match['twoseedname']
                 source_matchId = match['scheduleid']
