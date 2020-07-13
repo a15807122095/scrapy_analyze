@@ -76,10 +76,10 @@ def parse(url, headers):
           # 过滤掉未进行的比赛
           if (team_a_name in LPL_list and team_b_name in LPL_list) or 'LCK' in leagueName or 'LCS' in leagueName or 'LEC' in leagueName or 'LDL' in leagueName:
               if status != 0:
-                  print('enter this way')
+                  # print('enter this way')
                   # 过滤比赛为已完成或者进行中的数据
                   # 暂时不确定进行中的数据是否和已完成一样，要等下午对局开始在确定
-                  print('过滤留下来的赛程队伍：', leagueName, team_a_name, team_b_name)
+                  # print('过滤留下来的赛程队伍：', leagueName, team_a_name, team_b_name)
                   matchId = response_each['matchId']
                   # 时间戳由毫秒转化为秒
                   matchTime = response_each['matchTime'][:-3]
@@ -136,7 +136,7 @@ def parse(url, headers):
                   #       battle_urls[bo_count] = battledetail_url
                   #       battle_id += 1
                   #       bo_count += 1
-                  print('battle_urls:', battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
+                  # print('battle_urls:', battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
                   parse_detail(battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
 
 
@@ -260,11 +260,11 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                         assist_count, last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent,
                         damage_taken_count, damage_taken_minute, damage_taken_percent, kda, money_count, money_minute,
                         offered_rate, score, equip_ids, skill_ids, position, types, source_matchid)
-                       print('记录选手表：', sql_player_insert)
+                       # print('记录选手表：', sql_player_insert)
                        db.update_insert(sql_player_insert)
-                       print('记录选手表插入完成')
+                       # print('记录选手表插入完成')
 
-                   print('得到的match_id和index_num：',match_id, index_num)
+                   # print('得到的match_id和index_num：',match_id, index_num)
                    # 添加或修改对局详情记录
                    sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num, economic_diff," \
                    " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
@@ -289,8 +289,8 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
                    team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
                    team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side, source_matchid)
-                   print('记录对局详情表：', sql_battle_insert)
+                   # print('记录对局详情表：', sql_battle_insert)
                    db.update_insert(sql_battle_insert)
-                   print('记录对局详情表插入完成')
+                   # print('记录对局详情表插入完成')
 
 parse(url_matchlist, headers)
