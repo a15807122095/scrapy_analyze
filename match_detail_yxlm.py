@@ -166,7 +166,7 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    team_b_small_dragon_count = team_stats_1['small_dragon_count']
                    team_a_tower_count = team_stats_0['tower_success_count']
                    team_b_tower_count = team_stats_0['tower_success_count']
-                   win_team = 'A' if team_stats_0['is_win'] == 'true' else 'B'
+                   win_team = 'A' if team_stats_0['is_win'] == True else 'B'
                    first_big_dragon_team = 'A' if team_stats_0['is_first_big_dragon'] == True else 'B'
                    first_small_dragon_team = 'A' if team_stats_0['is_first_small_dragon'] == True else 'B'
                    first_blood_team = 'A' if team_stats_0['is_first_blood'] == True else 'B'
