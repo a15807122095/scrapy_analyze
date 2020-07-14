@@ -51,8 +51,10 @@ lastTime = int(last_date.timestamp()) * 1000
 startTime_l = startTime - 604800000
 lastTime_l = lastTime - 604800000
 # 拼接本周的赛程url
-url_matchlist = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=' \
-                'lol&startTime={0}&endTime={1}'.format(startTime, lastTime)
+url_matchlist_yxlm = 'https://www.shangniu.cn/api/battle/index/matchList?' \
+                     'gameType=lol&startTime={0}&endTime={1}'.format(startTime, lastTime)
+url_matchlist_wzry = 'https://www.shangniu.cn/api/battle/index/matchList?' \
+                     'gameType=kog&startTime={0}&endTime={1}'.format(startTime, lastTime)
 
 # print(url_matchlist)
 # # 上周的赛程url
@@ -145,7 +147,8 @@ def parse(url, headers):
 def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name, matchTime):
       # redis中加入网站源标记
       source = 'SN'
-      result = redis_check(redis, db, source, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
+      game_name = '英雄联盟'
+      result = redis_check(redis, game_name, db, source, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
       # 如果match_id为空，说明尚牛的赛事详情赛程在赛程表中没找到，这时不录入
       if result:
           match_id = result[0]
@@ -294,4 +297,7 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    db.update_insert(sql_battle_insert)
                    print('记录对局详情表插入完成')
 
+# 英雄联盟
+parse(url_matchlist, headers)
+# 王者荣耀
 parse(url_matchlist, headers)
