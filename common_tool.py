@@ -4,7 +4,7 @@ import json
 import time
 from datetime import datetime, timedelta
 
-# 使用代理抓取
+# 使用代理抓取,从proxies.txt中找到有效的代理，从第一个ip开始，设置7s延时，失败继续取
 def get_response_proxy(url, headers):
         for line in open("proxies.txt"):
                 # 构造代理
@@ -12,12 +12,13 @@ def get_response_proxy(url, headers):
                 proxies = {'https':line}
                 # print(proxies)
                 try:
-                        response = requests.get(url=url, headers=headers, proxies=proxies)
+                        response = requests.get(url=url, headers=headers, proxies=proxies, timeout=7)
                         response_text = response.text
                         response_json = json.loads(response_text)
                         return response_json
-                except requests.exceptions.ConnectTimeout:
+                except Exception:
                         continue
+
 
 
 def get_response(url, headers):
