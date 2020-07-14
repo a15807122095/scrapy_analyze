@@ -184,7 +184,7 @@ def get_weeks():
 def redis_check(redis, db, source, leagueName, source_matchid, source_a_name, source_b_name, matchTime):
         redis_key = source + source_matchid
         redis_value = redis.get_data(redis_key)
-        # print('redis中的存储情况：', redis_key, redis_value)
+        print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 result = redis_value.split(source)[1]
                 results = result.split('+')
@@ -197,7 +197,7 @@ def redis_check(redis, db, source, leagueName, source_matchid, source_a_name, so
                 game_name = '英雄联盟'
                 # print('检验的参数:', game_name, leagueName, source_a_name, source_b_name)
                 result = api_check(game_name, leagueName, source_a_name, source_b_name)
-                # print('返回的api接口：', result)
+                print('返回的api接口：', result)
                 if result['code'] == 600:
                         league_id = result['result']['league_id']
                         team_a_id = result['result']['team_a_id']
@@ -210,17 +210,17 @@ def redis_check(redis, db, source, leagueName, source_matchid, source_a_name, so
                         ' and team_b_id in ({1}, {2}) and start_time between {3} and {4};'.format(league_id, team_a_id,
                                                                                      team_b_id, matchTime_before,
                                                                                      matchTime_after)
-                        # print('检测api返回拼凑的sql：', sql_check)
+                        print('检测api返回拼凑的sql：', sql_check)
                         # 拿到数据再去赛程表拿到赛事id（未拿到赛事id的暂时不处理）
                         match_id = db.select_id(sql_check)
-                        # print('匹配到的match_id:', match_id)
+                        print('匹配到的match_id:', match_id)
                         if match_id:
                                 # 保存到redis，设置1天的过期时间
                                 # 格式为：str（ 源网站 + 源网站的赛事id) : str（源网站+主键 + team_a_id + team_b_id）
-                                # print('存入redis')
+                                print('存入redis')
                                 redis_value = source + str(match_id) + '+' + str(team_a_id) + '+' + str(team_b_id)
                                 redis.set_data(redis_key, 86400, redis_value)
-                                # print('已经保存到redis')
+                                print('已经保存到redis')
                         return match_id, team_a_id, team_b_id
 
                 if result['code'] == 200:
