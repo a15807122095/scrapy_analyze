@@ -239,7 +239,7 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                        equip_ids = player_message['equip_ids']
                        skill_ids = player_message['skill_ids']
                        # 位置可能为空
-                       position = player_message['player_position']
+                       position = player_message['player_position'] if 'player_position' in player_message else 'Null'
 
                        # 添加或修改选手对局记录
                        sql_player_insert = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, " \
