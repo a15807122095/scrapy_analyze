@@ -32,17 +32,19 @@ header_wzry= {
 url_group1 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1594771200&end_time=1594857600&seasonid=KCC2020S'
 url_group2 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1594857600&end_time=1594944000&seasonid=KCC2020S'
 url_group3 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1594944000&end_time=1595030400&seasonid=KCC2020S'
-url_group4 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595548800&end_time=1595635200&seasonid=KCC2020S'
-url_group5 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595030400&end_time=1595116800&seasonid=KCC2020S'
-url_group6 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595635200&end_time=1595721600&seasonid=KCC2020S'
-url_group7 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595116800&end_time=1595203200&seasonid=KCC2020S'
-url_group8 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595721600&end_time=1595808000&seasonid=KCC2020S'
-url_group9 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595376000&end_time=1595462400&seasonid=KCC2020S'
-url_groups_wzry = [url_group1, url_group2, url_group3, url_group4,
-             url_group5, url_group6, url_group7, url_group8, url_group9]
+url_group4 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595030400&end_time=1595116800&seasonid=KCC2020S'
+url_group5 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595116800&end_time=1595203200&seasonid=KCC2020S'
+url_group6 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595376000&end_time=1595462400&seasonid=KCC2020S'
+url_group7 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595462400&end_time=1595548800&seasonid=KCC2020S'
 
-# 淘汰赛
-# url_knock =
+url_group8 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595548800&end_time=1595635200&seasonid=KCC2020S'
+url_group9 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595635200&end_time=1595721600&seasonid=KCC2020S'
+url_group10 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1595721600&end_time=1595808000&seasonid=KCC2020S'
+url_groups_wzry = [url_group1, url_group2, url_group3, url_group4,
+             url_group5, url_group6, url_group7, url_group8, url_group9, url_group10]
+
+
+
 
 def parse_wzry(url, headers, propertys, db):
     responses = get_response(url, headers)
