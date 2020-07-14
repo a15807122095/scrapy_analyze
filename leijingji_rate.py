@@ -87,7 +87,7 @@ def parse(url, headers):
             # print('详情赔率url:', match_url)
             responses_detail = get_response(match_url, headers)
             responses_detail = responses_detail['result']
-            print('详情数据：', responses_detail)
+            # print('详情数据：', responses_detail)
             bo = responses_detail['round'][-1:]
             board_num = int(bo)
 
@@ -104,7 +104,7 @@ def parse(url, headers):
             start_time = str(start_time)
             source_matchid = str(id)
             result = redis_check(redis, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
-            print('match_id:', result, source_a_name, source_b_name)
+            # print('match_id:', result, source_a_name, source_b_name)
 
             # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
             if result:
@@ -175,18 +175,18 @@ def parse(url, headers):
                                     "option_two_team_id='{16}';".format(types, source, id, match_stage, match_id, board_num, title,
                                     bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
                                     option_two_odds, option_one_team_id, option_two_team_id)
-                                print('记录竞猜表：', sql_bet_insert)
+                                # print('记录竞猜表：', sql_bet_insert)
                                 db.update_insert(sql_bet_insert)
-                                print('记录竞猜表插入完成')
+                                # print('记录竞猜表插入完成')
 
-print('今日赔率')
+# print('今日赔率')
 parse(start_url, headers)
-print('今日赔率抓取完成')
-print('滚盘赔率')
+# print('今日赔率抓取完成')
+# print('滚盘赔率')
 parse(gunpan_url1, headers)
 parse(gunpan_url2, headers)
-print('滚盘赔率抓取完成')
-print('赛前赔率')
+# print('滚盘赔率抓取完成')
+# print('赛前赔率')
 parse(befor_url, headers)
-print('赛前赔率抓取完成')
+# print('赛前赔率抓取完成')
 
