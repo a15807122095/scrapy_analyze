@@ -184,7 +184,7 @@ def parse(url, headers):
                                         "option_two_team_id={16};".format(types, source, id, match_stage, match_id, board_num, title,
                                         bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
                                         option_two_odds, option_one_team_id, option_two_team_id)
-                                    print('记录竞猜表：', sql_bet_insert)
+                                    # print('记录竞猜表：', sql_bet_insert)
                                     db.update_insert(sql_bet_insert)
                                     # print('记录竞猜表插入完成')
 
