@@ -25,7 +25,9 @@ start_url = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_typ
 
 # 滚盘
 gunpan_url1 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=1'
-gunpan_url2 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=2&match_type=0'
+gunpan_url2 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=0'
+gunpan_url3 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=2&match_type=0'
+gunpan_urls = [gunpan_url1, gunpan_url2, gunpan_url3]
 
 # 赛前
 befor_url_1 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=3'
@@ -206,14 +208,14 @@ def parse(url, headers):
                                     db.update_insert(sql_bet_insert)
                                     print('记录竞猜表插入完成')
 
-# print('今日赔率',start_url)
-# parse(start_url, headers)
-# print('今日赔率抓取完成')
-# print('滚盘赔率',gunpan_url1)
-# parse(gunpan_url1, headers)
-# print('滚盘赔率',gunpan_url2)
-# parse(gunpan_url2, headers)
-# print('滚盘赔率抓取完成')
+print('今日赔率',start_url)
+parse(start_url, headers)
+print('今日赔率抓取完成')
+print('滚盘赔率',gunpan_url1)
+for gunpan_url in gunpan_urls:
+    parse(gunpan_url, headers)
+parse(gunpan_url1, headers)
+print('滚盘赔率抓取完成')
 print('赛前赔率',befor_url)
 for url in befor_url:
     parse(url, headers)
