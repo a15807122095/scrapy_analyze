@@ -62,14 +62,14 @@ def parse_yxlm(url, db, match_status, headers):
             now_time_stamp = now_time.timestamp()
             if status == '1' and now_time_stamp < date_timestamp:
                 status = '0'
-            # 由于官网未进行的赛事url中有时存在已经比完的比赛,所以做此判断加以修正,
-            if status == '0' and now_time_stamp > date_timestamp:
-                status = '2'
             # print('修改后：',now_time_stamp, date_timestamp, status)
             source_matchId = each_source['bMatchId']
             bo = each_source['GameMode']
             team_a_score = each_source['ScoreA']
             team_b_score = each_source['ScoreB']
+            # 校正状态与比分，异常就pass掉
+            if status == '2' and (team_a_score + team_b_score) != bo:
+                continue
             if each_source['MatchWin'] == '1':
                 win_team = 'A'
             elif each_source['MatchWin'] == '2':

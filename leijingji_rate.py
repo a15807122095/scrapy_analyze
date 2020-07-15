@@ -151,18 +151,22 @@ def parse(url, headers):
                                 if count:
                                     option_one_name = rate_message['name']
                                     option_one_odds = rate_message['odds']
-                                    # 某些才有handicap字段
-                                    handicap = rate_message['value'] if bet_type in bet_types_handicap else 'Null'
+                                    id_one = rate_message['id']
+                                    handicap_one = rate_message['value'] if bet_type in bet_types_handicap else 'Null'
                                     option_one_team_id = team_a_id if bet_type in bet_types_judge else 'Null'
                                     count = False
                                 else:
                                     option_two_name = rate_message['name']
                                     option_two_odds = rate_message['odds']
+                                    id_two = rate_message['id']
+                                    handicap_two = rate_message['value'] if bet_type in bet_types_handicap else 'Null'
                                     option_two_team_id = team_b_id if bet_type in bet_types_judge else 'Null'
                                     count = True
 
                                 # 添加竞猜数据的记录
                                 if count and match_id != None:
+                                    # 盘口数据根据id小的判断，id小的为主队
+                                    handicap = handicap_one if id_one < id_two else handicap_two
                                     # print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
