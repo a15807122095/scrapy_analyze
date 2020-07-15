@@ -50,9 +50,8 @@ redis = RedisCache_checkAPI()
 
 # 雷竞技目前有的竞猜项目为以下，后面出现另外的再补充（获胜者如果是小局就改为输赢）
 bet_types = {
-    '获胜者':1, '输赢':2, '地图让分':3, '杀敌数让分':3, '获得一血':4, '哪个位置获得一血':4, '哪个位置交出一血':4, '谁先获得五杀':5,
-    '谁先获得十杀':6, '摧毁第一座塔':7, '击杀第一条小龙':8, '击杀第一条大龙':9, '杀敌总数单双':10, '杀敌总数大小':11,  '时间大小':12,
-    '第一条元素龙属性为':15, '首杀峡谷迅捷蟹':21, '摧毁塔总数单双':24, '地图总数大小':29
+    '获胜者':1, '输赢':2, '获得一血':4, '谁先获得五杀':5,
+    '摧毁第一座塔':7, '击杀第一条小龙':8, '击杀第一条大龙':9, '杀敌总数单双':10, '杀敌总数大小':11
 }
 
 # 根据赔率类型判断是否与队伍相关，如果相关要关联队伍id（后端要用）(在bet_types_judge中的就与队伍相关)
@@ -177,7 +176,7 @@ def parse(url, headers):
                                     handicap = handicap_one if id_one < id_two else handicap_two
                                     if handicap != 'null':
                                         handicap = '\'' + handicap + '\''
-                                    print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
+                                    # print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
                                     sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
@@ -192,9 +191,9 @@ def parse(url, headers):
                                         "option_two_team_id={16};".format(types, source, id, match_stage, match_id, board_num, title,
                                         bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
                                         option_two_odds, option_one_team_id, option_two_team_id)
-                                    print('记录竞猜表：', sql_bet_insert)
+                                    # print('记录竞猜表：', sql_bet_insert)
                                     db.update_insert(sql_bet_insert)
-                                    print('记录竞猜表插入完成')
+                                    # print('记录竞猜表插入完成')
 
 # print('今日赔率',start_url)
 parse(start_url, headers)
