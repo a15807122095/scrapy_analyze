@@ -28,7 +28,18 @@ gunpan_url1 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_t
 gunpan_url2 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=2&match_type=0'
 
 # 赛前
-befor_url = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=3'
+befor_url_1 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=3'
+befor_url_2 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=2&match_type=3'
+befor_url_3 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=3&match_type=3'
+befor_url_4 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=4&match_type=3'
+befor_url_5 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=5&match_type=3'
+befor_url_6 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=6&match_type=3'
+befor_url_7 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=7&match_type=3'
+befor_url_8 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=8&match_type=3'
+befor_url_9 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=9&match_type=3'
+
+befor_url = [befor_url_1, befor_url_2, befor_url_3, befor_url_4, befor_url_5, befor_url_6, befor_url_7,
+             befor_url_8, befor_url_9]
 
 match_url_start = 'https://incpgameinfo.esportsworldlink.com/v2/odds?match_id='
 
@@ -84,7 +95,7 @@ def parse(url, headers):
     for response in responses:
         game_name = response['game_name']
         leagueName = response['tournament_name']
-        # print('联赛名称:',game_name, leagueName)
+        print('联赛名称:',game_name, leagueName)
         # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
         if game_name == '王者荣耀' or (game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS'
                                                 in leagueName or 'LEC' in leagueName or 'LDL' in leagueName )):
@@ -113,7 +124,7 @@ def parse(url, headers):
                 start_time = str(start_time)
                 source_matchid = str(id)
                 result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
-                # print('match_id:', result, source_a_name, source_b_name)
+                print('match_id:', result, source_a_name, source_b_name)
 
                 # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
                 if result:
@@ -176,7 +187,7 @@ def parse(url, headers):
                                     handicap = handicap_one if id_one < id_two else handicap_two
                                     if handicap != 'null':
                                         handicap = '\'' + handicap + '\''
-                                    # print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
+                                    print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
                                     sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
@@ -191,19 +202,20 @@ def parse(url, headers):
                                         "option_two_team_id={16};".format(types, source, id, match_stage, match_id, board_num, title,
                                         bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
                                         option_two_odds, option_one_team_id, option_two_team_id)
-                                    # print('记录竞猜表：', sql_bet_insert)
+                                    print('记录竞猜表：', sql_bet_insert)
                                     db.update_insert(sql_bet_insert)
-                                    # print('记录竞猜表插入完成')
+                                    print('记录竞猜表插入完成')
 
 # print('今日赔率',start_url)
-parse(start_url, headers)
+# parse(start_url, headers)
 # print('今日赔率抓取完成')
 # print('滚盘赔率',gunpan_url1)
-parse(gunpan_url1, headers)
+# parse(gunpan_url1, headers)
 # print('滚盘赔率',gunpan_url2)
-parse(gunpan_url2, headers)
+# parse(gunpan_url2, headers)
 # print('滚盘赔率抓取完成')
-# print('赛前赔率',befor_url)
-parse(befor_url, headers)
-# print('赛前赔率抓取完成')
+print('赛前赔率',befor_url)
+for url in befor_url:
+    parse(url, headers)
+print('赛前赔率抓取完成')
 
