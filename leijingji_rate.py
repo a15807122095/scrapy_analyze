@@ -152,37 +152,39 @@ def parse(url, headers):
                                     option_one_name = rate_message['name']
                                     option_one_odds = rate_message['odds']
                                     id_one = rate_message['id']
-                                    handicap_one = rate_message['value'] if bet_type in bet_types_handicap else 'Null'
-                                    option_one_team_id = team_a_id if bet_type in bet_types_judge else 'Null'
+                                    handicap_one = rate_message['value'] if bet_type in bet_types_handicap else 'null'
+                                    option_one_team_id = team_a_id if bet_type in bet_types_judge else 'null'
                                     count = False
                                 else:
                                     option_two_name = rate_message['name']
                                     option_two_odds = rate_message['odds']
                                     id_two = rate_message['id']
-                                    handicap_two = rate_message['value'] if bet_type in bet_types_handicap else 'Null'
-                                    option_two_team_id = team_b_id if bet_type in bet_types_judge else 'Null'
+                                    handicap_two = rate_message['value'] if bet_type in bet_types_handicap else 'null'
+                                    option_two_team_id = team_b_id if bet_type in bet_types_judge else 'null'
                                     count = True
 
                                 # 添加竞猜数据的记录
                                 if count and match_id != None:
                                     # 盘口数据根据id小的判断，id小的为主队
                                     handicap = handicap_one if id_one < id_two else handicap_two
+                                    if handicap != 'null':
+                                        handicap = '\'' + handicap + '\''
                                     # print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
                                     sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
                                         " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
                                         "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id) " \
-                                            "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, '{10}', '{11}', '{12}'," \
-                                            " {13}, {14}, '{15}', '{16}') " \
+                                            "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, {10}, '{11}', '{12}'," \
+                                            " {13}, {14}, {15}, {16}) " \
                                                         "ON DUPLICATE KEY UPDATE " \
                                         "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_time={8}," \
-                                        " status={9}, handicap='{10}', option_one_name='{11}', option_two_name='{12}', " \
-                                        "option_one_odds={13}, option_two_odds={14}, option_one_team_id='{15}', " \
-                                        "option_two_team_id='{16}';".format(types, source, id, match_stage, match_id, board_num, title,
+                                        " status={9}, handicap={10}, option_one_name='{11}', option_two_name='{12}', " \
+                                        "option_one_odds={13}, option_two_odds={14}, option_one_team_id={15}, " \
+                                        "option_two_team_id={16};".format(types, source, id, match_stage, match_id, board_num, title,
                                         bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
                                         option_two_odds, option_one_team_id, option_two_team_id)
-                                    # print('记录竞猜表：', sql_bet_insert)
+                                    print('记录竞猜表：', sql_bet_insert)
                                     db.update_insert(sql_bet_insert)
                                     # print('记录竞猜表插入完成')
 
