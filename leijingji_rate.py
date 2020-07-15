@@ -167,7 +167,7 @@ def parse(url, headers):
                                     if bet_type in bet_types_judge:
                                         option_two_team_id = team_b_id if option_two_name == source_b_name else team_a_id
                                     else:
-                                        option_one_team_id = 'null'
+                                        option_two_team_id = 'null'
                                     count = True
 
                                 # 添加竞猜数据的记录
