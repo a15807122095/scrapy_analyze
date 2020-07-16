@@ -56,8 +56,8 @@ def parse_wzry(url, headers, propertys, db):
     for result in results:
         # print('赛程数据1:', type(result), result)
         league_sourcename = result['season']
-        team_a_sourcename = result['gname']
-        team_b_sourcename = result['hname']
+        team_a_sourcename = result['hname']
+        team_b_sourcename = result['gname']
         # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上data中的‘time’才是表中的start_time类型
         start_time = result['match_timestamp']
         # 官网的状态：1为未开赛， 2为已经开打  4为已打完（需要转化成表中的字段对应值）
@@ -70,8 +70,8 @@ def parse_wzry(url, headers, propertys, db):
         # print(result['match_state'], type(result['match_state']), status, result['guest_score'], type(result['guest_score']))
         # 官网没有bo数据，人工补充
         bo = 0
-        team_a_score = result['guest_score']
-        team_b_score = result['host_score']
+        team_a_score = result['host_score']
+        team_b_score = result['guest_score']
         source_matchId = result['scheduleid']
         if team_a_score > team_b_score and status == '2':
             win_team = 'A'

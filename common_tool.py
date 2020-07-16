@@ -84,28 +84,6 @@ def api_check(game_name, league_name, team_a_name, team_b_name):
 #                       "team_b_name":"JDG电子竞技俱乐部"}
 #                       }
 
-# 访问后端接口校验返回数据
-def api_check_data(data, url):
-        # 请求接口拿到数据
-        data_response = requests.post(url=url, json=data)
-        result = json.loads(data_response.text)
-        return result
-
-# 返回格式： 200为未匹配到数据,返回为0的字段就是不存在的，需要录入到'api_check_200'表中     600为匹配到数据
-#           "code":600,"msg":"success","result":
-# {
-#               'code': 200, 'msg': 'success', 'result':
-#               {'league_id': '0',
-#               'league_name': '2020 LCK夏季赛'}
-#               }
-#
-# {
-#           "code":600,"msg":"success","result":
-# {
-#               'code': 600, 'msg': 'success', 'result':
-#               {'league_id': '268063485',
-#               'league_name': '2020 LCK夏季赛'}
-#               }
 
 
 
@@ -253,40 +231,12 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
                         return None
 
 # 校验后端返回的数据，并存入redis中
-def redis_check_rank(redis, db, source, data, url):
-        # 这个工具函数暂时检测保存联赛id和团队id的类型
-        key = data.get('league_name') if data.get('league_name') else data.get('team_name')
-        print('key:', key)
-        redis_key = source + key
+def redis_check_rank(redis, source, source_matchid):
+        print('key:', source_matchid)
+        redis_key = source + source_matchid
         redis_value = redis.get_data(redis_key)
         # print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 return redis_value
         else:
-                # redis没记录，请求检测接口
-                result = api_check_data(data, url)
-        if result['code'] == 600:
-                league_id = result['result']['league_id']
-                # 保存到redis，设置1天的过期时间
-                # 格式为：str（ 源网站 + 源网站的联赛名) : str（联赛id）
-                # print('存入redis')
-                redis_value = league_id
-                redis.set_data(redis_key, 86400, redis_value)
-                # print('已经保存到redis')
-                return league_id
-
-        if result['code'] == 200:
-                # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
-                league_name = result['result'].get('league_name')
-                if league_name:
-                        sql_distinct = 'select id from api_check_200 where league_name = {}'.format(league_name)
-                        sql_distinct_status = db.select_id(sql_distinct)
-                        # 确定表中无此记录
-                        if sql_distinct_status == None:
-                                # 添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
-                                sql_blacklist = "INSERT INTO `api_check_200` (team_a_name, team_b_name, league_name, " \
-                                                "check_distinct) VALUES('null', 'null', '{}', 'null');".format(league_name)
-                                # print('200的添加到api_check_200表中sql：', sql_blacklist)
-                                db.update_insert(sql_blacklist)
-                                # print('200的添加到api_check_200表中sql完成')
                 return None
