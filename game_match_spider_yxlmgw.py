@@ -68,7 +68,7 @@ def parse_yxlm(url, db, match_status, headers):
             team_a_score = each_source['ScoreA']
             team_b_score = each_source['ScoreB']
             # 校正状态与比分，异常就pass掉
-            if status == '2' and (team_a_score + team_b_score) != bo:
+            if status == '2' and (int(team_a_score) + int(team_b_score)) != int(bo):
                 continue
             if each_source['MatchWin'] == '1':
                 win_team = 'A'
