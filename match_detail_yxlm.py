@@ -111,7 +111,7 @@ url_matchlist_wzry = 'https://www.shangniu.cn/api/battle/index/matchList?' \
 def parse(url, headers):
     response_match = get_response_proxy(url, headers)
     response_match = response_match['body']
-    print('赛程个数和结果：', len(response_match), response_match)
+    # print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
           leagueName = response_each['leagueName']
           source_matchid = response_each['matchId']
