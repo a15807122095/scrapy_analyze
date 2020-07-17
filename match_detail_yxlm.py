@@ -24,9 +24,54 @@ redis = RedisCache_checkAPI()
 LPL_list = [ 'RNG', 'ES', 'EDG', 'LGD', 'IG', 'BLG', 'TES', 'SN', 'WE',
              'OMG', 'DMO', 'LNG', 'JDG', 'FPX', 'RW', 'VG', 'V5']
 
+now_date = datetime.now()
+now_stamp = int(now_date.timestamp())
+# print(now_stamp)
+cookie_message = 'UM_distinctid=172d9950ded60f-00916514fef24f-4353761-e1000-172d9950deea7b; ' \
+                 'Hm_lvt_c95eb6bfdfb2628993e507a9f5e0ea01=1594349716,1594629849,1594689821,1594950270; ' \
+                 'CNZZDATA1278221275=1183247664-1592785074-%7C1594948928; ' \
+                 'Hm_lpvt_c95eb6bfdfb2628993e507a9f5e0ea01={}'.format(now_stamp)
 headers = {
-        'USER-AGENT':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
-    }
+'authority': 'www.shangniu.cn',
+'method': 'GET',
+'path': '/api/battle/index/matchList?gameType=lol&startTime=1594569600000&endTime=1595174400000',
+'scheme': 'https',
+'accept': 'application/json, text/plain, */*',
+'accept-encoding': 'gzip, deflate, br',
+'accept-language': 'zh-CN,zh;q=0.9',
+'cookie': cookie_message,
+'ctype': 'pc',
+'referer': 'https://www.shangniu.cn/live/lol',
+'sec-fetch-dest': 'empty',
+'sec-fetch-mode': 'cors',
+'sec-fetch-site': 'same-origin',
+'token':'',
+'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+              '(KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+}
+
+
+cookie_detailmessage =  'UM_distinctid=172d9950ded60f-00916514fef24f-4353761-e1000-172d9950deea7b; ' \
+                  'Hm_lvt_c95eb6bfdfb2628993e507a9f5e0ea01=1594349716,1594629849,1594689821,1594950270; ' \
+                  'Hm_lpvt_c95eb6bfdfb2628993e507a9f5e0ea01={}; ' \
+                  'CNZZDATA1278221275=1183247664-1592785074-%7C1594954362'.format(now_stamp)
+detail_heades = {
+'authority': 'www.shangniu.cn',
+'method': 'GET',
+'path': '/api/battle/lol/match/liveBattle?battleId=26806599103',
+'scheme': 'https',
+'accept': 'application/json, text/plain, */*',
+'accept-encoding': 'gzip, deflate, br',
+'accept-language': 'zh-CN,zh;q=0.9',
+'cookie': cookie_detailmessage,
+'ctype': 'pc',
+'referer': 'https://www.shangniu.cn/lol/268065991.html',
+'sec-fetch-dest': 'empty',
+'sec-fetch-mode': 'cors',
+'sec-fetch-site': 'same-origin',
+'token':'',
+'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
+}
 
 matchdetail_urlpre = 'https://www.shangniu.cn/live/lol/'
 # 爬取规则： 拿到本周的startTime和endTime的时间戳组成访问赛程url,根据时间戳差值拿到上周的赛程url
@@ -66,7 +111,7 @@ url_matchlist_wzry = 'https://www.shangniu.cn/api/battle/index/matchList?' \
 def parse(url, headers):
     response_match = get_response_proxy(url, headers)
     response_match = response_match['body']
-    # print('赛程个数和结果：', len(response_match), response_match)
+    print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
           leagueName = response_each['leagueName']
           source_matchid = response_each['matchId']
@@ -298,6 +343,7 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                    # print('记录对局详情表插入完成')
 
 # 英雄联盟
+# print(url_matchlist_yxlm)
 parse(url_matchlist_yxlm, headers)
 ## 王者荣耀
 # parse(url_matchlist, headers)

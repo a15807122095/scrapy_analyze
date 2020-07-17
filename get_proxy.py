@@ -12,7 +12,7 @@ try:
     resp = requests.get(get_proxies_urls, timeout=5)
     text = resp.text
     list = json.loads(text)
-
+    # print(list)
     if list['code'] == 0:
         # 极光代理会返回5个代理ip,每天发放1000个代理
         # 每个代理ip时效5-25分钟

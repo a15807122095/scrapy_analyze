@@ -148,7 +148,12 @@ def parse(form_data_yxlm, types):
                             # print('计算的数据为：', team_a_name, team_a_win, team_b_name, team_b_win)
                             # print('胜', team_win_count, '负', team_lose_count, '净胜分', team_score_count)
 
-                            # 更新或插入数据库
+                            # 更新或插入数据库(两个队是两条数据先记录A，后记录B)
+                            team_id = team_a_id
+                            win_count = team_win_count[team_a_name]
+                            lost_count = team_lose_count[team_a_name]
+                            score = team_score_count[team_a_name]
+                            type_name =
                             sql_rank = "INSERT INTO `game_league_board` (league_id, team_id, win_count, lost_count, " \
                             "score, type_name, stage, type)  VALUES('{0}', '{1}', {2}, {3}, {4}, '{5}', '{6}', {7})  " \
                                        "ON DUPLICATE KEY UPDATE " \
