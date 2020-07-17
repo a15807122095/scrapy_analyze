@@ -68,8 +68,8 @@ def parse_yxlm(url, db, match_status, headers):
             team_a_score = each_source['ScoreA']
             team_b_score = each_source['ScoreB']
             # 校正状态与比分，异常就pass掉
-            if status == '2' and (int(team_a_score) + int(team_b_score)) != int(bo):
-                continue
+            # if status == '2' and (int(team_a_score) + int(team_b_score)) != int(bo):
+            #     continue
             if each_source['MatchWin'] == '1':
                 win_team = 'A'
             elif each_source['MatchWin'] == '2':
@@ -139,7 +139,7 @@ db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_s
 # print('开始抓取已完成比赛')
 url_finish_1 = url_finish_1 + now_time
 match_id = parse_yxlm(url_finish_1, db, '2', headers_yxlmgw)
-# # 上周已完成的url中的matchid是以当页最后一场已完成的matchid
+# 上周已完成的url中的matchid是以当页最后一场已完成的matchid
 url_finish_2 = url_finish_2.format(match_id) + now_time
 parse_yxlm(url_finish_2, db, '2', headers_yxlmgw)
 # print(url_finish_1, url_finish_2)
@@ -151,14 +151,15 @@ url_unfinish_1 = url_unfinish_1 + now_time
 match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
 # # 下周未完成的url中的matchid是以当页最后一场未完成的matchid
 url_unfinish_2 = url_unfinish_2.format(match_id) + now_time
-match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
+match_id = parse_yxlm(url_unfinish_2, db, '0', headers_yxlmgw)
 url_unfinish_3 = url_unfinish_3.format(match_id) + now_time
-parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
+parse_yxlm(url_unfinish_3, db, '0', headers_yxlmgw)
 # print(url_unfinish_1, url_unfinish_2, url_unfinish_3)
 # print('未进行比赛抓取完毕')
 
 # print('开始抓取进行中比赛')
 parse_yxlm(url_matching, db, '1', headers_yxlmgw)
+# print(url_matching)
 # print('进行中比赛抓取完毕')
 
 
