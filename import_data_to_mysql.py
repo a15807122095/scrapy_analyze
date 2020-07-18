@@ -38,11 +38,11 @@ class con_db():
             return None
 
     def update_by_id(self, type, status, bo, team_a_score, team_b_score, win_team, check_match,
-                     propertys, source_from, source_matchId, id):
+                     propertys, source_from, source_matchId, start_time, id):
         sql_update =  "update game_python_match set type = {0}, status = {1}, bo = {2}, team_a_score = {3}, " \
                       "team_b_score = {4} , win_team = '{5}', check_match = '{6}', propertys = '{7}', " \
-                      "source_from = '{8}', source_matchId = '{9}' where id = {10};".format(type, status,
-                       bo, team_a_score, team_b_score, win_team, check_match, propertys, source_from, source_matchId, id)
+                      "source_from = '{8}', source_matchId = '{9}', start_time={10} where id = {11};".format(type, status,
+                       bo, team_a_score, team_b_score, win_team, check_match, propertys, source_from, source_matchId, start_time, id)
         # print('执行修改的sql:', sql_update)
         self.cursor.execute(sql_update)
         self.db.commit()

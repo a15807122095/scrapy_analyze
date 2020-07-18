@@ -113,7 +113,7 @@ def parse_wzry(url, headers, propertys, db):
             # print('本地已有数据就直接更新 ')
             # 这里把check_match拿进去再更新一次没关系
             db.update_by_id(types, status, bo, team_a_score, team_b_score, win_team, check_match,
-                            propertys, source_from, source_matchId, status_check)
+                            propertys, source_from, source_matchId, start_time, status_check)
             # print('本地已有数据就直接更新完成')
 
 

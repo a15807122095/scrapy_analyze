@@ -118,7 +118,7 @@ def parse_yxlm(url, db, match_status, headers):
                 # print('本地已有数据就直接更新 ')
                 # 这里把check_match拿进去再更新一次没关系
                 db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match,
-                                propertys, source_from, source_matchId, status_check)
+                                propertys, source_from, source_matchId, date_timestamp, status_check)
                 # print('本地已有数据就直接更新完成')
             # 返回最后一条赛程的bmatchid，拼成上一周的url
             match_id = source_matchId

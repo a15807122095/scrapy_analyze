@@ -133,7 +133,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                 #       check_match,
                 #       status_update_or_insert)
                 db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, propertys,
-                                source_from, source_matchId, status_update_or_insert)
+                                source_from, source_matchId, date_timestamp, status_update_or_insert)
                 # print('600的有记录执行修改完成')
 
 # 检测API返回为200的处理
