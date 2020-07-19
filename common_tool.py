@@ -89,6 +89,40 @@ def api_check(game_name, league_name, team_a_name, team_b_name):
 
 
 # 检测API返回为600的处理
+
+
+def league_check(league_name, type):
+        payload_league = {
+                'league_name': league_name,
+                'type': type,
+        }
+        url_league = 'http://dev.saishikong.com/data/backstage-api/matching-league'
+        final_response = requests.post(url=url_league, json=payload_league)
+        result = json.loads(final_response.text)
+        return result
+# 返回格式：
+# {'code': 600, 'msg': 'success', 'result': {
+#               'league_id': '268063485',
+#               'league_name': '2020 LCK夏季赛'
+#               }
+#    }
+
+
+def team_check(team_name, type):
+        payload_team = {
+                'team_name': team_name,
+                'type': type,
+        }
+        url_league = 'http://dev.saishikong.com/data/backstage-api/matching-team'
+        final_response = requests.post(url=url_league, json=payload_team)
+        result = json.loads(final_response.text)
+        return result
+# 返回格式： {'code': 600, 'msg': 'success', 'result': {
+#                       'team_id': '672',
+#                       'team_name': 'OMD战队'
+#                       }
+# }
+
 def API_return_600(db, result, date_timestamp, insert_argument):
         # 检测为600, result['result']包含6个字段：
         # league_id, team_a_id, team_b_id,
@@ -136,7 +170,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                                 source_from, source_matchId, date_timestamp, status_update_or_insert)
                 # print('600的有记录执行修改完成')
 
-# 检测API返回为200的处理
+# 从有联赛名,对战双方的赛程检测API返回为200的处理
 def API_return_200(db, result):
         insert_blacklist = result['result']
         league_name = insert_blacklist['league_name'] if insert_blacklist['league_id'] == 0 else 'Null'
@@ -156,6 +190,13 @@ def API_return_200(db, result):
                 db.update_insert(sql_blacklist)
                 # print('200的添加到api_check_200表中sql完成')
 
+
+# 只有联赛名，或战队名检测添加到黑名单
+def api_return_200(sql_check, sql_insert, db):
+        blacklist_id = db.select_id(sql_check)
+        # 黑名单未添加才记录
+        if not blacklist_id:
+                db.update_insert(sql_insert)
 
 # 得到一天中剩下的大致时间戳
 def fullday_remain(now_time):
