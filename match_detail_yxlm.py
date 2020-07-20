@@ -346,7 +346,6 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
 
 # 英雄联盟
 # print(url_matchlist_yxlm)
-url_matchlist_yxlm = 'https://www.shangniu.cn/api/battle/index/matchList?gameType=lol&startTime=1594569600000&endTime=1595174400000'
 parse(url_matchlist_yxlm, headers)
 ## 王者荣耀
 # parse(url_matchlist, headers)
