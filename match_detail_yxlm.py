@@ -110,6 +110,7 @@ url_matchlist_wzry = 'https://www.shangniu.cn/api/battle/index/matchList?' \
 
 def parse(url, headers):
     response_match = get_response_proxy(url, headers)
+    # print(response_match)
     response_match = response_match['body']
     # print('赛程个数和结果：', len(response_match), response_match)
     for response_each in response_match:
@@ -194,14 +195,15 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
       source = 'SN'
       game_name = '英雄联盟'
       result = redis_check(redis, game_name, db, source, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
+      match_id = result[0] if result else None
       # 如果match_id为空，说明尚牛的赛事详情赛程在赛程表中没找到，这时不录入
-      if result:
-          match_id = result[0]
+      if match_id:
+
           # 收集详情数据并写入数据库
           for key, value_url in url_list.items():
                response = get_response_proxy(value_url, headers)['body']
                # print('body:', response)
-               if response !={} and match_id :
+               if response !={} :
                    # print('源详情url：', value_url)
                    status = response['status']
                    index_num = response['index']
@@ -295,10 +297,10 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                         "player_avatar, hero_id, hero_level, hero_name, hero_avatar, kill_count, death_count, assist_count," \
                         " last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent, damage_taken_count, " \
                         "damage_taken_minute, damage_taken_percent, kda, money_count, money_minute, offered_rate, score, " \
-                        "equip_ids, skill_ids, position, type, source_matchid, team_id) VALUES({0}, '{1}', '{2}', '{3}', " \
+                        "equip_ids, skill_ids, position, type, source_matchid, team_id) VALUES({0}, '{1}', '{2}', \"{3}\", " \
                         "{4}, {5}, '{6}', '{7}', {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, " \
                         "{20}, {21}, {22}, {23}, '{24}', '{25}', '{26}', {27}, '{28}', '{29}') " \
-                        "ON DUPLICATE KEY UPDATE match_id = {0}, player_name = '{2}', player_avatar = '{3}', " \
+                        "ON DUPLICATE KEY UPDATE match_id = {0}, player_name = '{2}', player_avatar = \"{3}\", " \
                         "hero_id = {4}, hero_level = {5}, hero_name = '{6}', hero_avatar = '{7}', kill_count = {8}, " \
                         "death_count = {9}, assist_count = {10}, last_hit_count = {11}, last_hit_minute = {12}, " \
                         "damage_count = {13}, damage_minute = {14}, damage_percent = {15}, damage_taken_count = {16}, " \

@@ -273,7 +273,7 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
 
 # 校验后端返回的数据，并存入redis中
 def redis_check_rank(redis, source, source_matchid):
-        print('key:', source_matchid)
+        # print('key:', source_matchid)
         redis_key = source + source_matchid
         redis_value = redis.get_data(redis_key)
         # print('redis中的存储情况：', redis_key, redis_value)
