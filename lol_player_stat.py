@@ -109,6 +109,8 @@ def parse(types):
                     # 访问后端拿到正确的团队名
                     result_player = team_check(team_name, types)
                     team_name = result_player['result']['team_name']
+                    team_id = result_player['result']['team_id']
+
                     print('访问后端得到的团队结果：', result_player)
 
                     if result_player['code']:
@@ -133,7 +135,7 @@ def parse(types):
                         damage_taken_minute = responses_team['MINUTE_DAMAGETAKEN']
                         damage_taken_rate = responses_team['DAMAGETAKEN_RATE']
                         wards_killed_minute = responses_team['MINUTE_WARDKILLED']
-                        team_id
+                        wards_placed_minute = responses_team['MINUTE_WARDSPLACED']
 
                         # 场均不到网站上没有，先写0
                         last_hit_per_game = 0
@@ -142,11 +144,10 @@ def parse(types):
                         most_kill_per_games = responses_team['total_kills']
                         most_death_per_games = responses_team['total_deaths']
                         most_assist_per_games = responses_team['total_assists']
-                        nick_name = responses_team['player_chinese_name']
+                        nick_name = responses_team['player_name']
                         avatar = responses_team['player_image']
                         position = responses_team['position']
                         position = position_dict[position]
-                        team_id = responses_team['position']
 
                         # 记录英雄联盟表
 
@@ -176,20 +177,20 @@ def parse(types):
                         sql_teamrank_wzry = "INSERT INTO `game_kog_player_league_stats` (player_id, league_id, win_count, " \
                                     "lose_count, play_count, mvp_count, kda, kill_count, kill_average, assist_count," \
                                     " assist_average, death_count, death_average, offered_rate, economic_minute, hit_minute," \
-                                    "wards_killed_minute, damage_deal_rate, damage_deal_minute, damage_taken_minute, " \
+                                    "wards_placed_minute, wards_killed_minute, damage_deal_rate, damage_deal_minute, damage_taken_minute, " \
                                     "damage_taken_rate,  type, team_id, nick_name, avatar, position) VALUES({0}, " \
                                     "{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}," \
-                                    " {17}, {18}, {19}, {20},  {21}, '{22}', '{23}', {24}) " \
+                                    " {17}, {18}, {19}, {20},  {21}, {22}, {23}, '{24}', '{25}', {26}) " \
                                             "ON DUPLICATE KEY UPDATE " \
-                                    "player_id={0}, league_id={1}, kda={2}, mvp_count={3}, play_count={4}, win_count={5}, " \
-                                    "offered_rate={6}, kill_count={7}, kill_average={8}, assist_count={9}, assist_average={10}, " \
-                                    "death_count={11}, death_average={12}, economic_minute={13}, hit_minute={14}, " \
-                                    "damage_deal_minute={15}, damage_deal_rate={16}, damage_taken_minute={17}, " \
-                                    "damage_taken_rate={18}, last_hit_per_game={19}, most_kill_per_games={20}, " \
-                                    "most_death_per_games={21}, most_assist_per_games={22}, nick_name='{23}', avatar='{24}', " \
-                                    "position={25};".format(player_id, league_id, win_count, lose_count, play_count,
+                                    "player_id={0}, league_id={1}, win_count={2}, lose_count={3}, play_count={4}, mvp_count={5}, " \
+                                    "kda={6}, kill_count={7}, kill_average={8}, assist_count={9}, assist_average={10}, " \
+                                    "death_count={11}, death_average={12}, offered_rate={13}, economic_minute={14}, " \
+                                    "hit_minute={15}, wards_placed_minute={16}, wards_killed_minute={17}, " \
+                                    "damage_deal_rate={18}, damage_deal_minute={19}, damage_taken_minute={20}, " \
+                                    "damage_taken_rate={21}, type={22}, team_id={23}, nick_name='{24}', avatar='{25}'," \
+                                    "position={26};".format(player_id, league_id, win_count, lose_count, play_count,
                                     mvp_count, kda, kill_count, kill_average, assist_count, assist_average, death_count,
-                                    death_average, offered_rate, economic_minute, hit_minute, wards_killed_minute,
+                                    death_average, offered_rate, economic_minute, hit_minute, wards_placed_minute, wards_killed_minute,
                                     damage_deal_rate, damage_deal_minute, damage_taken_minute, damage_taken_rate,
                                     types, team_id, nick_name, avatar, position)
                         sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
@@ -219,8 +220,8 @@ def parse(types):
 
 
 
-parse(1)
-print('英雄联盟抓取完成')
+# parse(1)
+# print('英雄联盟抓取完成')
 parse(2)
 print('王者荣耀抓取完成')
 

@@ -60,8 +60,8 @@ form_data = {
     'api_version': '9.9.9',
     'language_id': 1,
     'tournament_id': 0,
-    'type': 'team',
-    'order_type': 'KDA',
+    'type': 'hero',
+    'order_type': 'APPEAR',
     'order_value': 'DESC',
     'team_name': '',
     'player_name': '',
@@ -102,9 +102,9 @@ def parse(types):
                 responses = post_response(start_url, form_data, header)
                 responses = responses['data']['data']['list']
 
-                for responses_team in responses:
-                    print('拿到的源数据：', responses_team)
-                    team_name = responses_team['team_name']
+                for responses_hero in responses:
+                    print('拿到的源数据：', responses_hero)
+                    team_name = responses_hero['team_name']
                     # 访问后端拿到正确的团队名
                     result_team = team_check(team_name, types)
                     team_name = result_team['result']['team_name']
@@ -112,38 +112,20 @@ def parse(types):
 
                     if result_team['code']:
                         team_id = result_team['result']['team_id']
-                        win_count = responses_team['win']
-                        lost_count = responses_team['los']
-                        play_count = responses_team['MACTH_TIMES']
-                        time_average = responses_team['AVERAGE_TIME']
-                        # 存在比赛时长的,将时间转换为时间戳
-                        if time_average:
-                            time_average = time_average.split(':')
-                            time_averages = int(time_average[0]) * 3600 + int(time_average[1]) * 60 + int(time_average[2])
-                        else:
-                            time_averages = 0
-                        first_blood_rate = responses_team['FIRSTBLOODKILL']
-                        small_dragon_rate = responses_team['SMALLDRAGON_RATE']
-                        small_dragon_average = responses_team['AVERAGE_SMALLDRAGON']
-                        big_dragon_rate = responses_team['BIGDRAGON_RATE']
-                        big_dragon_average = responses_team['AVERAGE_BIGDRAGON']
-                        tower_success_average = responses_team['AVERAGE_TOWER_SUCCESS']
-                        tower_fail_average = responses_team['AVERAGE_TOWER_FAIL']
-                        kda = responses_team['KDA']
-                        kill_average = responses_team['AVERAGE_KILLS']
-                        death_average = responses_team['AVERAGE_DEATHS']
-                        assist_average = responses_team['AVERAGE_ASSISTS']
-                        economic_average = responses_team['AVERAGE_MONEY']
-                        economic_minute = responses_team['MINUTE_MONEY']
-                        hit_minute = responses_team['MINUTE_HITS']
-                        wards_placed_minute = responses_team['MINUTE_WARDSPLACED']
-                        wards_killed_minute = responses_team['MINUTE_WARDSKILLED']
-                        damage_average = responses_team['AVERAGE_CHAMPIONS']
-                        damage_minute = responses_team['MINUTE_OUTPUT']
-                        score = responses_team['f_score']
-                        win_rate = responses_team['VICTORY_RATE']
-                        # 一塔率网站上没有，先写0
-                        first_tower_rate = 0
+                        hero_id = responses_hero['hero_id']
+                        hero_avatar = responses_hero['hero_image']
+                        hero_name = responses_hero['hero_name']
+                        assist_average = responses_hero['AVERAGE_ASSISTS']
+                        death_average = responses_hero['AVERAGE_DEATHS']
+                        kill_average = responses_hero['AVERAGE_KILLS']
+                        kda = responses_hero['KDA']
+                        pick_rate = responses_hero['APPEAR']
+                        ban_rate = responses_hero['PROHIBIT']
+                        win_rate = responses_hero['VICTORY_RATE']
+                        pick_count = responses_hero['appear_count']
+                        ban_count = responses_hero['prohibit_count']
+                        win_count = responses_hero['victory_count']
+                        position = responses_hero['position_name']
 
                         # 记录英雄联盟表
 
