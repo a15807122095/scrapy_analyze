@@ -22,7 +22,7 @@ header = {
               ' Chrome/84.0.4147.89 Safari/537.36'
 }
 
-league_exclude = ['2020 季中杯', '2020 LCK夏季升降级赛', '2019KeSPA杯', '2019LOL全明星']
+league_exclude = ['2020 季中杯', '2020 LCK夏季升降级赛', '2019KeSPA杯', '2019拉斯维加斯全明星', 'LPL公开训练赛']
 
 # 请求英雄联盟联赛id的form_data  url:https://www.scoregg.com/services/api_url.php
 form_data_yxlm = {
@@ -105,6 +105,9 @@ def parse(types):
                 for responses_team in responses:
                     print('拿到的源数据：', responses_team)
                     team_name = responses_team['team_name']
+                    # 网站存在战队为空的排名，过滤掉
+                    if not team_name:
+                        continue
                     # 访问后端拿到正确的团队名
                     result_team = team_check(team_name, types)
                     team_name = result_team['result']['team_name']
@@ -172,7 +175,7 @@ def parse(types):
                                    "play_count, time_average, first_blood_rate, small_dragon_rate, small_dragon_average, " \
                                    "big_dragon_rate, big_dragon_average, tower_success_average, tower_fail_average, kda, " \
                                    "kill_average, death_average, assist_average, economic_average, economic_minute, hit_minute, " \
-                                   "wards_placed_minute, wards_killed_minute, damage_average, damage_minute, score, win_rate" \
+                                   "wards_placed_minute, wards_killed_minute, damage_average, damage_minute, win_rate, score" \
                                    ")  VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}," \
                                    "{16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}, {24}, {25})" \
                                         "ON DUPLICATE KEY UPDATE "\
@@ -213,7 +216,7 @@ def parse(types):
 
 
 
-parse(1)
-print('英雄联盟抓取完成')
-# parse(2)
-# print('王者荣耀抓取完成')
+# parse(1)
+# print('英雄联盟抓取完成')
+parse(2)
+print('王者荣耀抓取完成')

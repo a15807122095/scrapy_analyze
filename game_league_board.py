@@ -78,99 +78,99 @@ db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_s
 def parse(form_data_yxlm, types):
     game_name = '英雄联盟' if types == 1 else '王者荣耀'
     league_id = 0
-    # responses = post_response(start_url, form_data_yxlm, header)
-    # responses = responses['data']['list']
-    # print('源数据：', responses)
-    # for response in responses:
-    #     # 拿到联赛id
-    #     tournamentID = response['tournamentID']
-    #     source_league_name = response['name']
-    #     # 在未知联赛列表中就过滤掉
-    #     if source_league_name in league_unknow:
-    #         continue
+    responses = post_response(start_url, form_data_yxlm, header)
+    responses = responses['data']['list']
+    print('源数据：', responses)
+    for response in responses:
+        # 拿到联赛id
+        tournamentID = response['tournamentID']
+        source_league_name = response['name']
+        # 在未知联赛列表中就过滤掉
+        if source_league_name in league_unknow:
+            continue
         # 13位时间戳
-    source_league_name = '2020 LCS夏季赛'
-    tournamentID = '170'
-    now_time = datetime.now()
-    timestamps = int(now_time.timestamp() * 1000)
-    # 先遍历拿到每个队伍的分组名称(分组名称在不同的联赛阶段是不变的)
-    type_url = type_url_pre.format(tournamentID, timestamps)
-    type_responses = get_response(type_url, header)
-    type_responses = type_responses['data']
-    for type_response in type_responses:
-        source_team_name = type_response['team_name']
-        group_name = type_response['group_name']
-        # 没有规定分组显示积分榜
-        team_type_name[source_team_name] = group_name if group_name else '积分榜'
-    print('分组情况:', team_type_name)
+        # source_league_name = '2020 LCS夏季赛'
+        # tournamentID = '170'
+        now_time = datetime.now()
+        timestamps = int(now_time.timestamp() * 1000)
+        # 先遍历拿到每个队伍的分组名称(分组名称在不同的联赛阶段是不变的)
+        type_url = type_url_pre.format(tournamentID, timestamps)
+        type_responses = get_response(type_url, header)
+        type_responses = type_responses['data']
+        for type_response in type_responses:
+            source_team_name = type_response['team_name']
+            group_name = type_response['group_name']
+            # 没有规定分组显示积分榜
+            team_type_name[source_team_name] = group_name if group_name else '积分榜'
+        print('分组情况:', team_type_name)
 
-    rank_url = rank_url_pre.format(tournamentID, timestamps)
-    # print(rank_url, response)
-    match_responses = get_response(rank_url, header)
-    # 再遍历拿到每个联赛阶段的id用于凭借更加细致的赛程列表
-    for match_response in match_responses:
-        stage = match_response['name']
-        round_son = match_response['round_son']
-        roundID = match_response['roundID']
-        print('联赛阶段信息：', stage, round_son, roundID)
+        rank_url = rank_url_pre.format(tournamentID, timestamps)
+        # print(rank_url, response)
+        match_responses = get_response(rank_url, header)
+        # 再遍历拿到每个联赛阶段的id用于凭借更加细致的赛程列表
+        for match_response in match_responses:
+            stage = match_response['name']
+            round_son = match_response['round_son']
+            roundID = match_response['roundID']
+            print('联赛阶段信息：', stage, round_son, roundID)
 
-        # 用于统计每个联赛阶段胜负场次，净胜积分
-        team_win_count = {}
-        team_lose_count = {}
-        team_score_count = {}
-        # 如果round_son有值，遍历去取‘round_son’中的id拼接赛程列表（在网页上的体现就是有更细一层的划分，类似于周几的赛程）
-        if round_son:
-            for match_list in round_son:
-                id = match_list['id']
+            # 用于统计每个联赛阶段胜负场次，净胜积分
+            team_win_count = {}
+            team_lose_count = {}
+            team_score_count = {}
+            # 如果round_son有值，遍历去取‘round_son’中的id拼接赛程列表（在网页上的体现就是有更细一层的划分，类似于周几的赛程）
+            if round_son:
+                for match_list in round_son:
+                    id = match_list['id']
+                    # 拿到每周（每组）赛事列表的id,遍历合并每周（每组）的 胜/负/净胜分
+                    print('计算积分之前的数据:', game_name, source_league_name, team_win_count, team_lose_count, team_score_count,
+                          id)
+                    # 拼接赛程列表url
+                    match_url = match_url_pre.format(id, timestamps_match)
+                    match_details = get_response(match_url, header)
+                    for match_detail in match_details:
+                        result_detail = parse_detail(match_detail, game_name, source_league_name, team_win_count,
+                                              team_lose_count, team_score_count)
+                        if result_detail:
+                            league_id = result_detail
+
+                            # 如果round_son为空，直接用‘p_’+ 'roundID'拼接赛程列表（在网页上的体现就是该联赛阶段只有一组赛程）
+            else:
+                id = 'p_{}'.format(roundID)
                 # 拿到每周（每组）赛事列表的id,遍历合并每周（每组）的 胜/负/净胜分
-                print('计算积分之前的数据:', game_name, source_league_name, team_win_count, team_lose_count, team_score_count,
-                      id)
                 # 拼接赛程列表url
                 match_url = match_url_pre.format(id, timestamps_match)
                 match_details = get_response(match_url, header)
                 for match_detail in match_details:
                     result_detail = parse_detail(match_detail, game_name, source_league_name, team_win_count,
-                                          team_lose_count, team_score_count)
+                                             team_lose_count, team_score_count)
                     if result_detail:
                         league_id = result_detail
 
-                        # 如果round_son为空，直接用‘p_’+ 'roundID'拼接赛程列表（在网页上的体现就是该联赛阶段只有一组赛程）
-        else:
-            id = 'p_{}'.format(roundID)
-            # 拿到每周（每组）赛事列表的id,遍历合并每周（每组）的 胜/负/净胜分
-            # 拼接赛程列表url
-            match_url = match_url_pre.format(id, timestamps_match)
-            match_details = get_response(match_url, header)
-            for match_detail in match_details:
-                result_detail = parse_detail(match_detail, game_name, source_league_name, team_win_count,
-                                         team_lose_count, team_score_count)
-                if result_detail:
-                    league_id = result_detail
 
+            print('拿到的联赛阶段统计结果：',league_id, team_win_count, team_lose_count, team_score_count)
+            # 联赛阶段的积分数据已统计完，遍历更新或插入到表中
+            # 字典的键：‘team_a_name’+ ‘+’ + ‘team_b_id’
+            # 理论上 team_win_final， team_lose_final， team_score_final的长度一样
+            for key, value in team_win_count.items():
+                team_name = key.split('+')[0]
+                team_id = key.split('+')[1]
+                win_count = value
+                lost_count = team_lose_count[key]
+                score = team_score_count[key]
+                # 从分组字典中找到队伍的对应分组
+                type_name = realteam_type_name[team_name]
 
-        print('拿到的联赛阶段统计结果：',league_id, team_win_count, team_lose_count, team_score_count)
-        # 联赛阶段的积分数据已统计完，遍历更新或插入到表中
-        # 字典的键：‘team_a_name’+ ‘+’ + ‘team_b_id’
-        # 理论上 team_win_final， team_lose_final， team_score_final的长度一样
-        for key, value in team_win_count.items():
-            team_name = key.split('+')[0]
-            team_id = key.split('+')[1]
-            win_count = value
-            lost_count = team_lose_count[key]
-            score = team_score_count[key]
-            # 从分组字典中找到队伍的对应分组
-            type_name = realteam_type_name[team_name]
-
-            # 拿到该联赛阶段的 胜/负/净胜分后，开始更新后插入到表中
-            sql_rank = "INSERT INTO `game_league_board` (league_id, team_id, win_count, lost_count, score, type_name, stage," \
-                       " type, team_name)  VALUES('{0}', '{1}', {2}, {3}, {4}, '{5}', '{6}', {7}, '{8}') " \
-                            " ON DUPLICATE KEY UPDATE " \
-                       "league_id='{0}', team_id='{1}', win_count={2}, lost_count={3}, score={4}, type_name='{5}', " \
-                       "stage='{6}', type={7}, team_name='{8}';".format(league_id, team_id, win_count, lost_count, score,
-                       type_name, stage, types, team_name)
-            print('更新或插入排行表：', sql_rank)
-            db.update_insert(sql_rank)
-            print('更新完成')
+                # 拿到该联赛阶段的 胜/负/净胜分后，开始更新后插入到表中
+                sql_rank = "INSERT INTO `game_league_board` (league_id, team_id, win_count, lost_count, score, type_name, stage," \
+                           " type, team_name)  VALUES('{0}', '{1}', {2}, {3}, {4}, '{5}', '{6}', {7}, '{8}') " \
+                                " ON DUPLICATE KEY UPDATE " \
+                           "league_id='{0}', team_id='{1}', win_count={2}, lost_count={3}, score={4}, type_name='{5}', " \
+                           "stage='{6}', type={7}, team_name='{8}';".format(league_id, team_id, win_count, lost_count, score,
+                           type_name, stage, types, team_name)
+                print('更新或插入排行表：', sql_rank)
+                db.update_insert(sql_rank)
+                print('更新完成')
 
 
 # 计算每个联赛阶段单周（单组）战队的胜，负，净胜分
@@ -178,64 +178,68 @@ def parse_detail(match_detail, game_name, source_league_name, team_win_count, te
         status = match_detail['status']
         team_a_win = int(match_detail['team_a_win'])
         team_b_win = int(match_detail['team_b_win'])
+        # lck中sp战队和sho战队是一个队伍，统一称呼为sho
         source_team_a_name = 'SP' if match_detail['team_short_name_a'] == 'SHO' else match_detail['team_short_name_a']
         source_team_b_name = 'SP' if match_detail['team_short_name_b'] == 'SHO' else match_detail['team_short_name_b']
-        team_type_name_a = team_type_name[source_team_a_name]
-        team_type_name_b = team_type_name[source_team_b_name]
-
-        # 只统计完成的赛事
-        if status == '2':
-            # 访问后端接口拿到联赛和两个战队id(因为一天更新一次，不用存入redis)
-            result = api_check(game_name, source_league_name, source_team_a_name, source_team_b_name)
-            print('访问后端的结果:', result)
-            if result['code'] == 600:
-                result = result['result']
-                league_id = result['league_id']
-                league_name = result['league_name']
-                team_a_id = result['team_a_id']
-                team_a_name = result['team_a_name']
-                team_b_id = result['team_b_id']
-                team_b_name = result['team_b_name']
-                realteam_type_name[team_a_name] = team_type_name_a
-                realteam_type_name[team_b_name] = team_type_name_b
-
-                # 从字典中取出合计的值，然后遍历计算，没有找到对应队伍就预设为0,字典的键：‘team_a_name’+ ‘+’ + ‘team_b_id’
-                key_a = team_a_name + '+' + team_a_id
-                key_b = team_b_name + '+' + team_b_id
-                team_score_count[key_a] = 0 if team_score_count.get(key_a) == None else \
-                    team_score_count.get(key_a)
-                team_score_count[key_b] = 0 if team_score_count.get(key_b) == None else \
-                    team_score_count.get(key_b)
-                team_win_count[key_a] = 0 if team_win_count.get(key_a) == None \
-                    else team_win_count.get(key_a)
-                team_win_count[key_b] = 0 if team_win_count.get(key_b) == None \
-                    else team_win_count.get(key_b)
-                team_lose_count[key_a] = 0 if team_lose_count.get(key_a) == None \
-                    else team_lose_count.get(key_a)
-                team_lose_count[key_b] = 0 if team_lose_count.get(key_b) == None \
-                    else team_lose_count.get(key_b)
-                # 净胜分：小场赢一场+1，输一场-1
-                team_score_count[key_a] = team_score_count[key_a] + team_a_win - team_b_win
-                team_score_count[key_b] = team_score_count[key_b] + team_b_win - team_a_win
-                # print('净胜分：', team_score_count[team_a_name], team_score_count[team_b_name])
-                # team_win_count中保存着键值对：  ‘战队名’:胜场
-                # team_lose_count中保存着键值对： ‘战队名’:负场
-                if team_a_win > team_b_win:
-                    team_win_count[key_a] = team_win_count.get(key_a) + 1
-                    team_lose_count[key_b] = team_lose_count.get(key_b) + 1
-                else:
-                    team_win_count[key_b] = team_win_count.get(key_b) + 1
-                    team_lose_count[key_a] = team_lose_count.get(key_a) + 1
-                print('计算的数据为：', team_a_name, team_a_win, team_b_name, team_b_win)
-                print('胜', team_win_count, '负', team_lose_count, '净胜分', team_score_count)
-
-                return league_id
-            elif result['code'] == 200:
-                # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
-                API_return_200(db, result)
-                return None
-        else:
+        if source_team_a_name == 'TBD' or source_team_b_name == 'TBD':
             return None
+        else:
+            team_type_name_a = team_type_name[source_team_a_name]
+            team_type_name_b = team_type_name[source_team_b_name]
+
+            # 只统计完成的赛事
+            if status == '2':
+                # 访问后端接口拿到联赛和两个战队id(因为一天更新一次，不用存入redis)
+                result = api_check(game_name, source_league_name, source_team_a_name, source_team_b_name)
+                print('访问后端的结果:', result)
+                if result['code'] == 600:
+                    result = result['result']
+                    league_id = result['league_id']
+                    league_name = result['league_name']
+                    team_a_id = result['team_a_id']
+                    team_a_name = result['team_a_name']
+                    team_b_id = result['team_b_id']
+                    team_b_name = result['team_b_name']
+                    realteam_type_name[team_a_name] = team_type_name_a
+                    realteam_type_name[team_b_name] = team_type_name_b
+
+                    # 从字典中取出合计的值，然后遍历计算，没有找到对应队伍就预设为0,字典的键：‘team_a_name’+ ‘+’ + ‘team_b_id’
+                    key_a = team_a_name + '+' + team_a_id
+                    key_b = team_b_name + '+' + team_b_id
+                    team_score_count[key_a] = 0 if team_score_count.get(key_a) == None else \
+                        team_score_count.get(key_a)
+                    team_score_count[key_b] = 0 if team_score_count.get(key_b) == None else \
+                        team_score_count.get(key_b)
+                    team_win_count[key_a] = 0 if team_win_count.get(key_a) == None \
+                        else team_win_count.get(key_a)
+                    team_win_count[key_b] = 0 if team_win_count.get(key_b) == None \
+                        else team_win_count.get(key_b)
+                    team_lose_count[key_a] = 0 if team_lose_count.get(key_a) == None \
+                        else team_lose_count.get(key_a)
+                    team_lose_count[key_b] = 0 if team_lose_count.get(key_b) == None \
+                        else team_lose_count.get(key_b)
+                    # 净胜分：小场赢一场+1，输一场-1
+                    team_score_count[key_a] = team_score_count[key_a] + team_a_win - team_b_win
+                    team_score_count[key_b] = team_score_count[key_b] + team_b_win - team_a_win
+                    # print('净胜分：', team_score_count[team_a_name], team_score_count[team_b_name])
+                    # team_win_count中保存着键值对：  ‘战队名’:胜场
+                    # team_lose_count中保存着键值对： ‘战队名’:负场
+                    if team_a_win > team_b_win:
+                        team_win_count[key_a] = team_win_count.get(key_a) + 1
+                        team_lose_count[key_b] = team_lose_count.get(key_b) + 1
+                    else:
+                        team_win_count[key_b] = team_win_count.get(key_b) + 1
+                        team_lose_count[key_a] = team_lose_count.get(key_a) + 1
+                    print('计算的数据为：', team_a_name, team_a_win, team_b_name, team_b_win)
+                    print('胜', team_win_count, '负', team_lose_count, '净胜分', team_score_count)
+
+                    return league_id
+                elif result['code'] == 200:
+                    # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
+                    API_return_200(db, result)
+                    return None
+            else:
+                return None
 
 
 
@@ -245,10 +249,10 @@ def parse_detail(match_detail, game_name, source_league_name, team_win_count, te
 
 
 
-parse(form_data_yxlm, 1)
+# parse(form_data_yxlm, 1)
 # print('英雄联盟抓取完成')
-# parse(form_data_wzry, 2)
-# print('王者荣耀抓取完成')
+parse(form_data_wzry, 2)
+print('王者荣耀抓取完成')
 
 
 # https://img1.famulei.com/match/teamrank/152.json?_=1594781931989
