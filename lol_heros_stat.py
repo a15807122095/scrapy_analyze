@@ -83,7 +83,7 @@ def parse(types):
     for response in responses:
         # 拿到联赛id
         tournamentID = response['tournamentID']
-        source_league_name = response['short_name']
+        source_league_name = response['name']
         # 过滤掉排除的联赛
         if source_league_name in league_exclude:
             continue
@@ -214,8 +214,8 @@ def parse(types):
 
 
 
-parse(1)
-print('英雄联盟抓取完成')
-# parse(2)
-# print('王者荣耀抓取完成')
+# parse(1)
+# print('英雄联盟抓取完成')
+parse(2)
+print('王者荣耀抓取完成')
 

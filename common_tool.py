@@ -281,3 +281,12 @@ def redis_check_rank(redis, source, source_matchid):
                 return redis_value
         else:
                 return None
+
+# 将两个字典合并到字典1，键相同值相加，键不同值保留，并返回字典1
+def dict_merge(dict_one,dict_two):
+        for key, value in dict_two.items():
+                if key in dict_one:
+                        dict_one[key] += value
+                else:
+                        dict_one[key] = value
+        return dict_one

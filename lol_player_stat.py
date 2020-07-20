@@ -84,7 +84,7 @@ def parse(types):
     for response in responses:
         # 拿到联赛id
         tournamentID = response['tournamentID']
-        source_league_name = response['short_name']
+        source_league_name = response['name']
         # 过滤掉排除的联赛
         if source_league_name in league_exclude:
             continue
