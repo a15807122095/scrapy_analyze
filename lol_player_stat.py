@@ -113,7 +113,7 @@ def parse(types):
 
                     print('访问后端得到的团队结果：', result_player)
 
-                    if result_player['code']:
+                    if result_player['code']==600:
                         # player_id存的网站的，不知道对不对
                         player_id = responses_team['player_id']
                         kda = responses_team['KDA']

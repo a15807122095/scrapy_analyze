@@ -104,81 +104,63 @@ def parse(types):
 
                 for responses_hero in responses:
                     print('拿到的源数据：', responses_hero)
-                    team_name = responses_hero['team_name']
-                    # 访问后端拿到正确的团队名
-                    result_team = team_check(team_name, types)
-                    team_name = result_team['result']['team_name']
-                    print('访问后端得到的团队结果：', result_team)
+                    # team_name = responses_hero['team_name']
+                    # # 访问后端拿到正确的团队名
+                    # result_team = team_check(team_name, types)
+                    # team_name = result_team['result']['team_name']
+                    # print('访问后端得到的团队结果：', result_team)
 
-                    if result_team['code']:
-                        team_id = result_team['result']['team_id']
-                        hero_id = responses_hero['hero_id']
-                        hero_avatar = responses_hero['hero_image']
-                        hero_name = responses_hero['hero_name']
-                        assist_average = responses_hero['AVERAGE_ASSISTS']
-                        death_average = responses_hero['AVERAGE_DEATHS']
-                        kill_average = responses_hero['AVERAGE_KILLS']
-                        kda = responses_hero['KDA']
-                        pick_rate = responses_hero['APPEAR']
-                        ban_rate = responses_hero['PROHIBIT']
-                        win_rate = responses_hero['VICTORY_RATE']
-                        pick_count = responses_hero['appear_count']
-                        ban_count = responses_hero['prohibit_count']
-                        win_count = responses_hero['victory_count']
-                        position = responses_hero['position_name']
+                    # if result_team['code']:
+                    #     team_id = result_team['result']['team_id']
+                    hero_id = responses_hero['hero_id']
+                    hero_avatar = responses_hero['hero_image']
+                    hero_name = responses_hero['hero_name']
+                    assist_average = responses_hero['AVERAGE_ASSISTS']
+                    death_average = responses_hero['AVERAGE_DEATHS']
+                    kill_average = responses_hero['AVERAGE_KILLS']
+                    kda_average = responses_hero['KDA']
+                    pick_rate = responses_hero['APPEAR']
+                    ban_rate = responses_hero['PROHIBIT']
+                    win_rate = responses_hero['VICTORY_RATE']
+                    pick_count = responses_hero['appear_count']
+                    ban_count = responses_hero['prohibit_count']
+                    win_count = responses_hero['victory_count']
+                    position = responses_hero['position_name']
+                    # total_count官网上没有
 
-                        # 记录英雄联盟表
+                    # 记录英雄联盟表
 
-                        table = 'game_lol_team_league_stats' if types == 1 else 'game_kog_team_league_stats'
-                        sql_teamrank_yxlm = "INSERT INTO `game_lol_team_league_stats` (team_id, league_id, play_count, win_rate," \
-                                    " time_average, death_average, kill_average, economic_minute, first_blood_rate, tower_fail_average," \
-                                    " tower_success_average, kda, damage_average, big_dragon_rate, big_dragon_average, small_dragon_rate," \
-                                    "small_dragon_average, first_tower_rate, damage_minute, hit_minute, economic_average, type, " \
-                                    "wards_placed_minute, wards_killed_minute) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, " \
-                                    "{8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}) " \
-                                            "ON DUPLICATE KEY UPDATE " \
-                                    "team_id={0}, league_id={1}, play_count={2}, win_rate={3}, time_average={4}, death_average={5}, " \
-                                    "kill_average={6}, economic_minute={7}, first_blood_rate={8}, tower_fail_average={9}, " \
-                                    "tower_success_average={10}, kda={11}, damage_average={12}, big_dragon_rate={13}, big_dragon_average={14}, " \
-                                    "small_dragon_rate={15}, small_dragon_average={16}, first_tower_rate={17}, damage_minute={18}, " \
-                                    "hit_minute={19}, economic_average={20}, type={21}, wards_placed_minute={22}, wards_killed_minute={23};".format(
-                                    team_id, league_id, play_count, win_rate, time_averages, death_average, kill_average,
-                                    economic_minute, first_blood_rate, tower_fail_average, tower_success_average, kda, damage_average,
-                                    big_dragon_rate, big_dragon_average, small_dragon_rate, small_dragon_average, first_tower_rate,
-                                    damage_minute, hit_minute, economic_average, types, wards_placed_minute, wards_killed_minute)
+                    sql_teamrank_yxlm = "INSERT INTO `game_lol_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
+                                "assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate, " \
+                                "win_rate, pick_count, ban_count, win_count, position, league_id) VALUES({0}, '{1}', " \
+                                "'{2}', {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, '{13}', {14}) " \
+                                        "ON DUPLICATE KEY UPDATE " \
+                                "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
+                                " kill_average={5}, kda_average={6}, pick_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
+                                "ban_count={11}, win_count={12}, position='{13}', league_id={14};".format(hero_id, hero_avatar, hero_name,
+                                assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate,
+                                win_rate, pick_count, ban_count, win_count, position, league_id)
 
+                    sql_teamrank_wzry = "INSERT INTO `game_kog_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
+                                "assist_average, death_average, kill_average, kda_average, show_rate, ban_rate, " \
+                                "win_rate, pick_count, ban_count, league_id) VALUES({0}, '{1}', '{2}', {3}, " \
+                                "{4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}) " \
+                                "ON DUPLICATE KEY UPDATE " \
+                                "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
+                                " kill_average={5}, kda_average={6}, show_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
+                                "ban_count={11}, league_id={12};".format(hero_id, hero_avatar,
+                                hero_name, assist_average, death_average, kill_average, kda_average, pick_rate,
+                                ban_rate, win_rate, pick_count, ban_count, league_id)
+                    sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
+                    print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
+                    db.update_insert(sql_teamrank)
 
-
-
-
-                        sql_teamrank_wzry = "INSERT INTO `game_kog_team_league_stats` (team_id, league_id, win_count, lost_count, " \
-                                   "play_count, time_average, first_blood_rate, small_dragon_rate, small_dragon_average, " \
-                                   "big_dragon_rate, big_dragon_average, tower_success_average, tower_fail_average, kda, " \
-                                   "kill_average, death_average, assist_average, economic_average, economic_minute, hit_minute, " \
-                                   "wards_placed_minute, wards_killed_minute, damage_average, damage_minute, score, win_rate" \
-                                   ")  VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}," \
-                                   "{16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}, {24}, {25})" \
-                                        "ON DUPLICATE KEY UPDATE "\
-                                   "team_id={0}, league_id={1}, win_count={2}, lost_count={3}, play_count={4}, time_average={5}, " \
-                                   "first_blood_rate={6}, small_dragon_rate={7}, small_dragon_average={8}, big_dragon_rate={9}, big_dragon_average={10}, " \
-                                   "tower_success_average={11}, tower_fail_average={12}, kda={13}, kill_average={14}, " \
-                                   "death_average={15}, assist_average={16}, economic_average={17}, economic_minute={18}," \
-                                   "hit_minute={19}, wards_placed_minute={20}, wards_killed_minute={21}, damage_average={22}," \
-                                   " damage_minute={23}, win_rate={24}, score={25};".format(team_id, league_id, win_count, lost_count,
-                                   play_count, time_averages, first_blood_rate, small_dragon_rate, small_dragon_average,
-                                   big_dragon_rate, big_dragon_average, tower_success_average, tower_fail_average, kda,
-                                   kill_average, death_average, assist_average, economic_average, economic_minute, hit_minute,
-                                   wards_placed_minute, wards_killed_minute, damage_average, damage_minute, win_rate, score, table)
-                        sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
-                        print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
-                        db.update_insert(sql_teamrank)
-
-                    else:
-                        # 记录到黑名单
-                        sql_blacklist = "select id from api_check_200 where team_name = '{}';".format(team_name)
-                        sql_add_blacklist = "insert into api_check_200 set team_name = '{}';".format(team_name)
-                        print('记录到战队黑名单sql:', sql_add_blacklist)
-                        api_return_200(sql_blacklist, sql_add_blacklist, db)
+                    # else:
+                    #     # 记录到黑名单
+                    #     sql_blacklist = "select id from api_check_200 where team_name = '{}';".format(team_name)
+                    #     sql_add_blacklist = "insert into api_check_200 set team_name = '{}';".format(team_name)
+                    #     print('记录到战队黑名单sql:', sql_add_blacklist)
+                    #     api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
 

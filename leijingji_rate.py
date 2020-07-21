@@ -68,7 +68,7 @@ bet_types = {
 }
 
 # 根据赔率类型判断是否与队伍相关，如果相关要关联队伍id（后端要用）(在bet_types_judge中的就与队伍相关)
-bet_types_judge = [1, 2, 3, 5, 6, 7, 8, 9]
+bet_types_judge = [1, 2, 3, 4, 5, 7, 8, 9]
 
 bet_types_handicap = [3, 11, 12, 29]
 
@@ -163,7 +163,7 @@ def parse(url, headers):
                             source_status = rate_message['status']
                             if source_status in bet_status:
                                 status = bet_status[source_status]
-                                # print('详细竞猜数据:', title, match_stage, source_status, status)
+                                print('详细竞猜数据:', title, match_stage, source_status, status)
                                 if count:
                                     option_one_name = rate_message['name']
                                     option_one_odds = rate_message['odds']

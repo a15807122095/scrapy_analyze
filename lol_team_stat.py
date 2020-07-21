@@ -113,7 +113,7 @@ def parse(types):
                     team_name = result_team['result']['team_name']
                     print('访问后端得到的团队结果：', result_team)
 
-                    if result_team['code']:
+                    if result_team['code']==600:
                         team_id = result_team['result']['team_id']
                         win_count = responses_team['win']
                         lost_count = responses_team['los']
