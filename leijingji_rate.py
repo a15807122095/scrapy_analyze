@@ -223,4 +223,3 @@ parse(gunpan_url1, headers)
 for url in befor_url:
     parse(url, headers)
 # print('赛前赔率抓取完成')
-

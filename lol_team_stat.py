@@ -79,7 +79,7 @@ def parse(types):
     form_data_tournament = form_data_yxlm if types ==1 else form_data_wzry
     responses = post_response(start_url, form_data_tournament, header)
     responses = responses['data']['list']
-    print('源数据：', responses)
+    # print('源数据：', responses)
     for response in responses:
         # 拿到联赛id
         tournamentID = response['tournamentID']
@@ -90,7 +90,7 @@ def parse(types):
 
     # 访问后端拿到正确的联赛名
         result_league = league_check(source_league_name, types)
-        print('访问后端得到的联赛结果：', result_league)
+        # print('访问后端得到的联赛结果：', result_league)
         league_name = result_league['result']['league_name']
         league_id = result_league['result']['league_id']
 
@@ -103,7 +103,7 @@ def parse(types):
                 responses = responses['data']['data']['list']
 
                 for responses_team in responses:
-                    print('拿到的源数据：', responses_team)
+                    # print('拿到的源数据：', responses_team)
                     team_name = responses_team['team_name']
                     # 网站存在战队为空的排名，过滤掉
                     if not team_name:
@@ -111,7 +111,7 @@ def parse(types):
                     # 访问后端拿到正确的团队名
                     result_team = team_check(team_name, types)
                     team_name = result_team['result']['team_name']
-                    print('访问后端得到的团队结果：', result_team)
+                    # print('访问后端得到的团队结果：', result_team)
 
                     if result_team['code']==600:
                         team_id = result_team['result']['team_id']
@@ -190,14 +190,14 @@ def parse(types):
                                    kill_average, death_average, assist_average, economic_average, economic_minute, hit_minute,
                                    wards_placed_minute, wards_killed_minute, damage_average, damage_minute, win_rate, score)
                         sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
-                        print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
+                        # print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
                         db.update_insert(sql_teamrank)
 
                     else:
                         # 记录到黑名单
-                        sql_blacklist = "select id from api_check_200 where team_name = '{}';".format(team_name)
-                        sql_add_blacklist = "insert into api_check_200 set team_name = '{}';".format(team_name)
-                        print('记录到战队黑名单sql:', sql_add_blacklist)
+                        sql_blacklist = "select id from api_check_200 where team_a_name = '{}';".format(team_name)
+                        sql_add_blacklist = "insert into api_check_200 set team_a_name = '{}';".format(team_name)
+                        # print('记录到战队黑名单sql:', sql_add_blacklist)
                         api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
@@ -206,7 +206,7 @@ def parse(types):
             # 记录到黑名单
             sql_blacklist = "select id from api_check_200 where league_name = '{}';".format(league_name)
             sql_add_blacklist = "insert into api_check_200 set league_name = '{}';".format(league_name)
-            print('记录到联赛黑名单sql:', sql_add_blacklist)
+            # print('记录到联赛黑名单sql:', sql_add_blacklist)
             api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
@@ -216,7 +216,7 @@ def parse(types):
 
 
 
-# parse(1)
+parse(1)
 # print('英雄联盟抓取完成')
 parse(2)
-print('王者荣耀抓取完成')
+# print('王者荣耀抓取完成')
