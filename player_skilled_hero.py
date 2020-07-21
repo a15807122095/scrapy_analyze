@@ -123,8 +123,6 @@ def parse(types):
                     form_data_hotheroes['playerID'] = '{}'.format(source_player_id)
                     response_detail = post_response(start_url, form_data_hotheroes, header)
                     response_hot_heroes = response_detail['data']['data']['hot_heroes']
-                    # 先预设一个player_id
-                    player_id = None
 
                     # 先从redis中找到player_id，有记录代表之前已记录，过滤掉
                     # redis存储结构：（源+player+source_player_id:player_id）‘score+player+8377:'123'
@@ -133,6 +131,7 @@ def parse(types):
                     print('redis查询player的结果：', result)
                     if result:
                         player_id = result
+                        parse_detail(response_hot_heroes, source, types, key_player, player_id)
                     else:
                         # redis中不存在就访问后端接口
                         result_player = player_check(player_name, types)
@@ -141,6 +140,8 @@ def parse(types):
                             # 记录到redis中，格式为：（源+player+source_player_id:player_id）‘score+player+8377:'123'
                             redis.set_data(key_player, 86400, player_id)
                             print('redis记录player完成：',key_player, player_id)
+
+                            parse_detail(response_hot_heroes, source, types, key_player, player_id)
 
 
 
@@ -159,7 +160,7 @@ def parse(types):
 
 def parse_detail(response_hot_heroes, source, types, key_player, player_id):
     for response_hot_hero in response_hot_heroes:
-        hero_id = None
+
         source_hero_id = response_hot_hero['heroID']
         # 先从redis中找到hero_id，有记录代表之前已记录，直接取hero_id
         # redis存储结构：（源+player+source_hero_id:hero_id）‘score+hero+8377:'123'
@@ -168,6 +169,7 @@ def parse_detail(response_hot_heroes, source, types, key_player, player_id):
         print('redis查询hero的结果：', result)
         if result:
             hero_id = result
+            parse_insert(response_hot_hero, types, hero_id, player_id)
         else:
             hero_name = response_hot_hero['name']
             result_hero = hero_check(hero_name, types)
@@ -176,38 +178,41 @@ def parse_detail(response_hot_heroes, source, types, key_player, player_id):
                 # 记录到redis中，格式为：（源+player+source_hero_id:hero_id）‘score+hero+8377:'123'
                 redis.set_data(key_hero, 86400, hero_id)
                 print('redis记录player完成：', key_player, player_id)
+
+                parse_insert(response_hot_hero, types, hero_id, player_id)
             else:
                 # 英雄后端未找到信息处理
                 continue
 
-        kda = response_hot_hero['kda']
-        kill_average = response_hot_hero['kills']
-        death_average = response_hot_hero['deaths']
-        assist_average = response_hot_hero['assists']
-        score = response_hot_hero['score']
-        win_count = response_hot_hero['wins']
-        play_count = response_hot_hero['wins']
-        win_rate = response_hot_hero['victory_rate']
+def parse_insert(response_hot_hero,types, hero_id, player_id):
+    kda = response_hot_hero['kda']
+    kill_average = response_hot_hero['kills']
+    death_average = response_hot_hero['deaths']
+    assist_average = response_hot_hero['assists']
+    score = response_hot_hero['score']
+    win_count = response_hot_hero['wins']
+    play_count = response_hot_hero['wins']
+    win_rate = response_hot_hero['victory_rate']
 
-        # 拿到后端返回的player_id和hero_id开始记录
-        # 1.找到对应选手的旧数据删掉，插入新数据（未找到选手直接插入）
-        sql_checkplayer = 'select id from game_player_hero_stats where player_id = {}'.format(
-            player_id)
-        id_checkplayer = db.select_query(sql_checkplayer)
-        # 找到之前的数据
-        if id_checkplayer:
-            sql_delete = 'delete from game_kog_heroes_league_stats where id = {};'.format(
-                id_checkplayer)
-            db.update_insert(sql_delete)
+    # 拿到后端返回的player_id和hero_id开始记录
+    # 1.找到对应选手的旧数据删掉，插入新数据（未找到选手直接插入）
+    sql_checkplayer = 'select id from game_player_hero_stats where player_id = {}'.format(
+        player_id)
+    id_checkplayer = db.select_query(sql_checkplayer)
+    # 找到之前的数据
+    if id_checkplayer:
+        sql_delete = 'delete from game_kog_heroes_league_stats where id = {};'.format(
+            id_checkplayer)
+        db.update_insert(sql_delete)
 
-        # 2.插入新的数据
-        sql_insert = "INSERT INTO `game_player_hero_stats` (hero_id, player_id, kda, " \
-                     "kill_average, death_average, assist_average, score, win_count, play_count, " \
-                     "win_rate, type) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, " \
-                     "{10})".format(hero_id, player_id, kda, kill_average,
-                                    death_average,
-                                    assist_average, score, win_count, play_count,
-                                    win_rate, types)
+    # 2.插入新的数据
+    sql_insert = "INSERT INTO `game_player_hero_stats` (hero_id, player_id, kda, " \
+                 "kill_average, death_average, assist_average, score, win_count, play_count, " \
+                 "win_rate, type) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, " \
+                 "{10})".format(hero_id, player_id, kda, kill_average,
+                                death_average,
+                                assist_average, score, win_count, play_count,
+                                win_rate, types)
 
 
 
