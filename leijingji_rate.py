@@ -163,7 +163,7 @@ def parse(url, headers):
                             source_status = rate_message['status']
                             if source_status in bet_status:
                                 status = bet_status[source_status]
-                                print('详细竞猜数据:', title, match_stage, source_status, status)
+                                # print('详细竞猜数据:', title, match_stage, source_status, status)
                                 if count:
                                     option_one_name = rate_message['name']
                                     option_one_odds = rate_message['odds']
@@ -192,7 +192,7 @@ def parse(url, headers):
                                     handicap = handicap_one if id_one < id_two else handicap_two
                                     if handicap != 'null':
                                         handicap = '\'' + handicap + '\''
-                                    print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
+                                    # print('核对两队名称:',option_one_name, option_one_team_id, source_a_name, option_two_name, option_two_team_id, source_b_name)
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
                                     sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
