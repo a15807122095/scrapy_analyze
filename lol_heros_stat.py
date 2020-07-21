@@ -2,14 +2,14 @@
 
 import requests
 import json
-from common_tool import post_response, league_check, team_check, api_return_200
+from common_tool import post_response, league_check, api_return_200, hero_check
 from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db
 from setting import db_setting
 from datetime import datetime
 
 """
-战队排行榜（英雄联盟）
+英雄排行榜（英雄联盟）
 抓取规则：
 每个联赛都有一个tournament_id,以post请求：https://www.scoregg.com/services/api_url.php
 form_data 中主要有两个变动参数：tournament_id(联赛id), page(页数)
@@ -52,7 +52,7 @@ form_data_wzry = {
 'year':''
 }
 
-# 请求战队排行的form_data  url:https://www.scoregg.com/services/api_url.php
+# 请求英雄排行的form_data  url:https://www.scoregg.com/services/api_url.php
 form_data = {
     'api_path': '/services/gamingDatabase/match_data_ssdb_list.php',
     'method': 'post',
@@ -104,48 +104,49 @@ def parse(types):
 
                 for responses_hero in responses:
                     # print('拿到的源数据：', responses_hero)
-                    hero_id = responses_hero['hero_id']
                     hero_avatar = responses_hero['hero_image']
                     hero_name = responses_hero['hero_name']
-                    assist_average = responses_hero['AVERAGE_ASSISTS']
-                    death_average = responses_hero['AVERAGE_DEATHS']
-                    kill_average = responses_hero['AVERAGE_KILLS']
-                    kda_average = responses_hero['KDA']
-                    pick_rate = responses_hero['APPEAR']
-                    ban_rate = responses_hero['PROHIBIT']
-                    win_rate = responses_hero['VICTORY_RATE']
-                    pick_count = responses_hero['appear_count']
-                    ban_count = responses_hero['prohibit_count']
-                    win_count = responses_hero['victory_count']
-                    position = responses_hero['position_name']
-                    # total_count官网上没有
+                    # 根据英雄名称访问后端拿到正确的hero_id
+                    result_hero = hero_check(hero_name, types)
+                    # 只处理后端返回600的数据
+                    if result_hero['code'] == 600:
+                        hero_id = result_hero['result']['hero_id']
+                        assist_average = responses_hero['AVERAGE_ASSISTS']
+                        death_average = responses_hero['AVERAGE_DEATHS']
+                        kill_average = responses_hero['AVERAGE_KILLS']
+                        kda_average = responses_hero['KDA']
+                        pick_rate = responses_hero['APPEAR']
+                        ban_rate = responses_hero['PROHIBIT']
+                        win_rate = responses_hero['VICTORY_RATE']
+                        pick_count = responses_hero['appear_count']
+                        ban_count = responses_hero['prohibit_count']
+                        win_count = responses_hero['victory_count']
+                        position = responses_hero['position_name']
+                        # 记录英雄联盟表
+                        sql_teamrank_yxlm = "INSERT INTO `game_lol_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
+                                    "assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate, " \
+                                    "win_rate, pick_count, ban_count, win_count, position, league_id) VALUES({0}, '{1}', " \
+                                    "'{2}', {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, '{13}', {14}) " \
+                                            "ON DUPLICATE KEY UPDATE " \
+                                    "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
+                                    " kill_average={5}, kda_average={6}, pick_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
+                                    "ban_count={11}, win_count={12}, position='{13}', league_id={14};".format(hero_id, hero_avatar, hero_name,
+                                    assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate,
+                                    win_rate, pick_count, ban_count, win_count, position, league_id)
 
-                    # 记录英雄联盟表
-
-                    sql_teamrank_yxlm = "INSERT INTO `game_lol_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
-                                "assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate, " \
-                                "win_rate, pick_count, ban_count, win_count, position, league_id) VALUES({0}, '{1}', " \
-                                "'{2}', {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, '{13}', {14}) " \
-                                        "ON DUPLICATE KEY UPDATE " \
-                                "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
-                                " kill_average={5}, kda_average={6}, pick_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
-                                "ban_count={11}, win_count={12}, position='{13}', league_id={14};".format(hero_id, hero_avatar, hero_name,
-                                assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate,
-                                win_rate, pick_count, ban_count, win_count, position, league_id)
-
-                    sql_teamrank_wzry = "INSERT INTO `game_kog_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
-                                "assist_average, death_average, kill_average, kda_average, show_rate, ban_rate, " \
-                                "win_rate, pick_count, ban_count, league_id) VALUES({0}, '{1}', '{2}', {3}, " \
-                                "{4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}) " \
-                                "ON DUPLICATE KEY UPDATE " \
-                                "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
-                                " kill_average={5}, kda_average={6}, show_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
-                                "ban_count={11}, league_id={12};".format(hero_id, hero_avatar,
-                                hero_name, assist_average, death_average, kill_average, kda_average, pick_rate,
-                                ban_rate, win_rate, pick_count, ban_count, league_id)
-                    sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
-                    # print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
-                    db.update_insert(sql_teamrank)
+                        sql_teamrank_wzry = "INSERT INTO `game_kog_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
+                                    "assist_average, death_average, kill_average, kda_average, show_rate, ban_rate, " \
+                                    "win_rate, pick_count, ban_count, league_id) VALUES({0}, '{1}', '{2}', {3}, " \
+                                    "{4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}) " \
+                                    "ON DUPLICATE KEY UPDATE " \
+                                    "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
+                                    " kill_average={5}, kda_average={6}, show_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
+                                    "ban_count={11}, league_id={12};".format(hero_id, hero_avatar,
+                                    hero_name, assist_average, death_average, kill_average, kda_average, pick_rate,
+                                    ban_rate, win_rate, pick_count, ban_count, league_id)
+                        sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
+                        # print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
+                        db.update_insert(sql_teamrank)
 
 
 

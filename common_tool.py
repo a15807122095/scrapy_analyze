@@ -123,6 +123,36 @@ def team_check(team_name, type):
 #                       }
 # }
 
+def player_check(player_name, type):
+        payload_team = {
+                'name': player_name,
+                'type': type,
+        }
+        url_league = 'http://api.saishikong.com/data/backstage-api/matching-player'
+        final_response = requests.post(url=url_league, json=payload_team)
+        result = json.loads(final_response.text)
+        return result
+# 返回格式： {'code': 600, 'msg': 'success', 'result': {
+#                       'player_id': '186',
+#                       'player_name': 'doinb'
+#                       }
+# }
+
+def hero_check(hero_name, type):
+        payload_team = {
+                'name': hero_name,
+                'type': type,
+        }
+        url_league = 'http://api.saishikong.com/data/backstage-api/matching-hero'
+        final_response = requests.post(url=url_league, json=payload_team)
+        result = json.loads(final_response.text)
+        return result
+# 返回格式： {'code': 600, 'msg': 'success', 'result': {
+#                       'hero_id': '33',
+#                       'hero_name': '巨魔之王'
+#                       }
+# }
+
 def API_return_600(db, result, date_timestamp, insert_argument):
         # 检测为600, result['result']包含6个字段：
         # league_id, team_a_id, team_b_id,
@@ -272,11 +302,11 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
                         return None
 
 # 校验后端返回的数据，并存入redis中
-def redis_check_rank(redis, source, source_matchid):
-        # print('key:', source_matchid)
-        redis_key = source + source_matchid
+def redis_check_data(redis, source, data):
+        # print('key:', data)
+        redis_key = source + data
         redis_value = redis.get_data(redis_key)
-        # print('redis中的存储情况：', redis_key, redis_value)
+        print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 return redis_value
         else:

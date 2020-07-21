@@ -19,11 +19,22 @@ class con_db():
                                password=password, db=db, charset='utf8')
         self.cursor = self.db.cursor()
 
-    # 查询数据库
+    # 查询数据库单个值
     def select_message(self, sql_message):
         self.cursor.execute(sql_message)
         message = self.cursor.fetchone()
         return message
+
+    # 查询数据库的集合的主键id，以元组形式返回
+    def select_query(self, sql_message):
+        self.cursor.execute(sql_message)
+        messages = self.cursor.fetchall()
+        result = []
+        for message in messages:
+            result.append(message[0])
+        result = tuple(result)
+        return result
+
 
     # 查询数据库主键
     def select_id(self,sql_select):

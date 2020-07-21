@@ -13,6 +13,7 @@ from datetime import datetime
 抓取规则：
 每个联赛都有一个tournament_id,以post请求：https://www.scoregg.com/services/api_url.php
 form_data 中主要有两个变动参数：tournament_id(联赛id), page(页数)
+
 """
 
 start_url = 'https://www.scoregg.com/services/api_url.php'
@@ -75,7 +76,6 @@ redis = RedisCache_checkAPI()
 db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 
 def parse(types):
-    # game_name = '英雄联盟' if types ==1 else '王者荣耀'
     form_data_tournament = form_data_yxlm if types ==1 else form_data_wzry
     responses = post_response(start_url, form_data_tournament, header)
     responses = responses['data']['list']

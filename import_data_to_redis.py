@@ -56,8 +56,8 @@ class RedisCache_checkAPI(object):
 
 
 
-# 为了减少数据库读写太频繁，已完成和未进行的因为基本一天之内没变化，赛程录入到redis，
-# 后续从redis检查到记录就过滤掉，因为进行中的比赛变化比较频繁，不考虑redis缓存
+# 为了减少数据库读写太频繁,记录选手id（类似于重复查询的redis缓存过滤）
+# 后续从redis检查到记录就过滤掉
 class RedisDBConfig_urldistict:
     HOST_urldistict = Redis_urldistict['host']
     PORT_urldistict = Redis_urldistict['port']

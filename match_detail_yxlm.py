@@ -144,47 +144,6 @@ def parse(url, headers):
                   battledetail_url_3 = 'https://www.shangniu.cn/api/battle/lol/match/' \
                                        'liveBattle?battleId={}'.format(battle_id_3)
                   battle_urls = {1:battledetail_url_1, 2:battledetail_url_2, 3:battledetail_url_3}
-                  # print('对局详情url：', matchdetail_url)
-                  # # 请求对局详情url
-                  # for line in open("proxies.txt"):
-                  #     # 构造代理
-                  #     line = line.rstrip('\n')
-                  #     proxies = {'https': line}
-                  #     # print(proxies)
-                  #     # try:
-                  #     response_detail = requests.get(matchdetail_url, headers, proxies=proxies)
-                  #     response_detail = response_detail.text
-                  #     html = etree.HTML(response_detail)
-                  #     break
-                  #     # except requests.exceptions.ConnectTimeout:
-                  #     #     continue
-                  # # 用xpath拿到对局详情页的battle_id,拼接对局详情数据的url,以及场次数
-                  # battle_id = str(html.xpath('/html/body/script[1]/text()'))
-                  # print('拿到的battle_id：', battle_id)
-                  # if 'battle_id' not in  battle_id:
-                  #     continue
-                  # battle_id_str1 = battle_id.split('battle_id:')[1]
-                  # battle_id_judge = battle_id_str1.split(',')[0]
-                  # print('得到的battle_id1：', battle_id_judge)
-                  # # 判断battle_id_str.split(',')[0]得到的能不能转化为int类型
-                  # if not battle_id_judge.isdigit():
-                  #     print(1111111)
-                  #     battle_id_str2 = battle_id.split('serverRendered:')[1]
-                  #     battle_id_judge = battle_id_str2.split(',')[14]
-                  # battle_id = int(battle_id_judge)
-                  # print('得到的battle_id2：', battle_id_judge)
-                  # # print('xpath拿到的battle_id：', battle_id)
-                  # # 根据两队总得分和battle_id拼接小场的详情数据url（有的时候默认进入是小场第一局，有的时候是最后一局，具体要看网站变动）
-                  # # 如果是进行中的赛事bo_count +1,因为当局还没计算出大比分,但已经可以进入对局详情页
-                  # bo_count = 0 if status == 1 else 1
-                  # battle_urls = {}
-                  # while bo_count <= (teamAScore + teamBScore):
-                  #       battledetail_url = 'https://www.shangniu.cn/api/battle/lol/match/liveBattle?' \
-                  #                          'battleId={}'.format(battle_id)
-                  #       battle_urls[bo_count] = battledetail_url
-                  #       battle_id += 1
-                  #       bo_count += 1
-                  # print('battle_urls:', battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
                   parse_detail(battle_urls, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
 
 
