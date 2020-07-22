@@ -194,6 +194,7 @@ def parse_insert(response_hot_hero,types, hero_id, player_id):
     win_count = response_hot_hero['wins']
     play_count = response_hot_hero['wins']
     win_rate = response_hot_hero['victory_rate']
+    hero_avatar = response_hot_hero['image']
 
     # 拿到后端返回的player_id和hero_id开始记录
     # 1.找到对应选手的旧数据删掉，插入新数据（未找到选手直接插入）
@@ -202,19 +203,22 @@ def parse_insert(response_hot_hero,types, hero_id, player_id):
     id_checkplayer = db.select_query(sql_checkplayer)
     # 找到之前的数据
     if id_checkplayer:
-        sql_delete = 'delete from game_kog_heroes_league_stats where id = {};'.format(
+        sql_delete = 'delete from game_player_hero_stats where id in {};'.format(
             id_checkplayer)
-        db.update_insert(sql_delete)
+        print('删除旧数据sql:',sql_delete)
+        # db.update_insert(sql_delete)
 
     # 2.插入新的数据
     sql_insert = "INSERT INTO `game_player_hero_stats` (hero_id, player_id, kda, " \
                  "kill_average, death_average, assist_average, score, win_count, play_count, " \
-                 "win_rate, type) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, " \
-                 "{10})".format(hero_id, player_id, kda, kill_average,
+                 "win_rate, type, hero_avatar) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, " \
+                 "{10}, '{11}');".format(hero_id, player_id, kda, kill_average,
                                 death_average,
                                 assist_average, score, win_count, play_count,
-                                win_rate, types)
-    print(sql_insert)
+                                win_rate, types, hero_avatar)
+    print('更新选手擅长英雄表：', sql_insert)
+    db.update_insert(sql_insert)
+    print('更新完成')
 
 
 
