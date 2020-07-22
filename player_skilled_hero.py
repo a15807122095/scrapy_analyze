@@ -202,11 +202,16 @@ def parse_insert(response_hot_hero,types, hero_id, player_id):
         player_id)
     id_checkplayer = db.select_query(sql_checkplayer)
     # 找到之前的数据
-    if id_checkplayer:
+    if len(id_checkplayer) > 1:
         sql_delete = 'delete from game_player_hero_stats where id in {};'.format(
             id_checkplayer)
-        print('删除旧数据sql:',sql_delete)
-        # db.update_insert(sql_delete)
+        # print('删除旧数据sql:', sql_delete)
+        db.update_insert(sql_delete)
+    elif len(id_checkplayer) == 1:
+        sql_delete = 'delete from game_player_hero_stats where id = {};'.format(
+            id_checkplayer[0])
+        # print('删除旧数据sql:',sql_delete)
+        db.update_insert(sql_delete)
 
     # 2.插入新的数据
     sql_insert = "INSERT INTO `game_player_hero_stats` (hero_id, player_id, kda, " \
@@ -216,9 +221,9 @@ def parse_insert(response_hot_hero,types, hero_id, player_id):
                                 death_average,
                                 assist_average, score, win_count, play_count,
                                 win_rate, types, hero_avatar)
-    print('更新选手擅长英雄表：', sql_insert)
+    # print('更新选手擅长英雄表：', sql_insert)
     db.update_insert(sql_insert)
-    print('更新完成')
+    # print('更新完成')
 
 
 

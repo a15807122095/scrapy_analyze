@@ -81,11 +81,11 @@ title_judge = [3]
 
 
 # status状态对应：
-# 0: 比赛尚未开始，正常更新   1: 比赛开始进行，停止更新(早盘)，正常更新(滚球)   2: 结束   4: 封盘
+# 0: 比赛尚未开始，正常更新    2: 结束   4: 封盘
 # 雷竞技与表中对应关系：
-# 1--0   4--1   2--4    5--2
+# 1--0   4--4   2--4    5--2
 bet_status = {
-    1:0, 4:1, 2:4, 5:2
+    1:0, 4:4, 2:4, 5:2
 }
 
 match_stage_bo = {
@@ -154,12 +154,16 @@ def parse(url, headers):
                     count = True
                     judge_status_one = False
                     judge_status_two = False
+                    # 当
                     option_one_realname = 0
                     option_one_realodds = 0
                     option_one_realteam_id = 0
                     option_two_realname = 0
                     option_two_realodds = 0
                     option_two_realteam_id = 0
+                    # 先预设两两竞猜数据的status为100
+                    status_one = 100
+                    status_two = 100
                     for rate_message in responses_detail['odds']:
                         # print('odds详情:', rate_message)
                         title = rate_message['group_name']
@@ -183,28 +187,33 @@ def parse(url, headers):
                                 if count:
                                     option_one_name = rate_message['name']
                                     option_one_odds = rate_message['odds']
+                                    status_one = status
                                     win_one = rate_message['win']
                                     id_one = rate_message['id']
-                                    status_one = bet_status[source_status]
                                     handicap_one = rate_message['value'] if bet_type in bet_types_handicap else 'null'
                                     if bet_type in bet_types_judge:
                                         option_one_team_id = team_a_id if source_a_name in option_one_name  else team_b_id
                                     else:
                                         option_one_team_id = 'null'
-
                                     count = False
+                                    # 如果存在status为4的赔率，过滤掉
                                 else:
                                     option_two_name = rate_message['name']
                                     option_two_odds = rate_message['odds']
+                                    status_two = status
                                     win_two = rate_message['win']
                                     id_two = rate_message['id']
-                                    status_two = bet_status[source_status]
                                     handicap_two = rate_message['value'] if bet_type in bet_types_handicap else 'null'
                                     if bet_type in bet_types_judge:
                                         # option_two_name 中带名
                                         option_two_team_id = team_b_id if source_b_name in option_two_name  else team_a_id
                                     else:
                                         option_two_team_id = 'null'
+                                    # # 第一条是假数据
+                                    # if status_one == 4 and status_two == 1:
+                                    #     pass
+                                    # # 第二条是假数据
+                                    # if status_one == 1 and status_two == 4:
                                     count = True
 
                                 # 添加竞猜数据的记录
@@ -217,19 +226,30 @@ def parse(url, headers):
                                         handicap = '\'' + handicap + '\''
                                     print('核对两队名称:', option_one_name, option_one_team_id, source_a_name, option_two_name,
                                           option_two_team_id, source_b_name)
-                                    # 当两队是第一个战队的赔率，要根据status来判断，是1就把option_one_realname的数据都取option_two的
-                                    if source_a_name in option_one_name and source_a_name in option_two_name:
-                                        option_one_realname = option_two_name if status == 1 else option_one_name
-                                        option_one_realodds = option_two_odds if status == 1 else option_one_odds
-                                        option_one_realteam_id = option_two_team_id if status == 1 else option_one_team_id
-                                        # 已经过滤掉假数据
+                                    # 当两两中有status不一致时，说明有假数据，过滤掉status为4的数据
+                                    if status_one == 1 and status_two == 4:
+                                        # 第一次过滤假数据，填充option_one_realname， option_one_realodds， option_one_realteam_id
+                                        if not judge_status_one and not judge_status_two:
+                                            option_one_realname = option_one_name
+                                            option_one_realodds = option_one_odds
+                                            option_one_realteam_id = option_one_team_id
+                                        # 已经过滤过一次，填充option_two_realname， option_two_realodds， option_two_realteam_id
+                                        elif judge_status_one != judge_status_two:
+                                            option_two_realname = option_one_name
+                                            option_two_realodds = option_one_odds
+                                            option_two_realteam_id = option_one_team_id
                                         judge_status_one = True
 
                                     # 当两队是第一个战队的赔率，要根据status来判断，是1就把option_one_realname的数据都取option_two的
-                                    if source_b_name in option_one_name and source_b_name in option_two_name:
-                                        option_two_realname = option_two_name if status == 1 else option_one_name
-                                        option_two_realodds = option_two_odds if status == 1 else option_one_odds
-                                        option_two_realteam_id = option_two_team_id if status == 1 else option_one_team_id
+                                    if status_one == 4 and status_two == 1:
+                                        option_one_realname = option_two_name
+                                        option_one_realodds = option_two_odds
+                                        option_one_realteam_id = option_two_team_id
+                                    # 已经过滤过一次，填充option_two_realname， option_two_realodds， option_two_realteam_id
+                                    elif judge_status_one != judge_status_two:
+                                        option_two_realname = option_one_name
+                                        option_two_realodds = option_one_odds
+                                        option_two_realteam_id = option_one_team_id
                                         # 已经过滤掉假数据
                                         judge_status_two = True
 
@@ -238,7 +258,6 @@ def parse(url, headers):
                                         continue
                                     #已过滤完，开始更新插入
                                     if judge_status_one and judge_status_two:
-                                        print(1111111, option_one_realname, option_two_name)
                                         option_one_name = option_one_realname
                                         option_one_odds = option_one_realodds
                                         option_one_team_id = option_one_realteam_id
@@ -252,16 +271,16 @@ def parse(url, headers):
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
                                     sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
                                         " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
-                                        "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id, win) " \
+                                        "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id, win, source_status) " \
                                             "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, {10}, '{11}', '{12}'," \
-                                            " {13}, {14}, {15}, {16}, {17}) " \
+                                            " {13}, {14}, {15}, {16}, {17}, {18}) " \
                                                         "ON DUPLICATE KEY UPDATE " \
                                         "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_time={8}," \
                                         " status={9}, handicap={10}, option_one_name='{11}', option_two_name='{12}', " \
                                         "option_one_odds={13}, option_two_odds={14}, option_one_team_id={15}, " \
-                                        "option_two_team_id={16}, win={17};".format(types, source, id, match_stage, match_id, board_num, title,
+                                        "option_two_team_id={16}, win={17}, source_status={18};".format(types, source, id, match_stage, match_id, board_num, title,
                                         bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
-                                        option_two_odds, option_one_team_id, option_two_team_id, win)
+                                        option_two_odds, option_one_team_id, option_two_team_id, win, source_status)
                                     print('记录竞猜表：', sql_bet_insert)
                                     db.update_insert(sql_bet_insert)
                                     # print('记录竞猜表插入完成')

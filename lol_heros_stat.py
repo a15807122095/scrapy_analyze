@@ -137,15 +137,15 @@ def parse(types):
                         sql_teamrank_wzry = "INSERT INTO `game_kog_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
                                     "assist_average, death_average, kill_average, kda_average, show_rate, ban_rate, " \
                                     "win_rate, pick_count, ban_count, league_id, position) VALUES({0}, '{1}', '{2}', {3}, " \
-                                    "{4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}) " \
+                                    "{4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, '{13}') " \
                                     "ON DUPLICATE KEY UPDATE " \
                                     "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
                                     " kill_average={5}, kda_average={6}, show_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
-                                    "ban_count={11}, league_id={12}, position={13};".format(hero_id, hero_avatar,
+                                    "ban_count={11}, league_id={12}, position='{13}';".format(hero_id, hero_avatar,
                                     hero_name, assist_average, death_average, kill_average, kda_average, pick_rate,
                                     ban_rate, win_rate, pick_count, ban_count, league_id, position)
                         sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
-                        # print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
+                        print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
                         db.update_insert(sql_teamrank)
 
 
