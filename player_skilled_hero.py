@@ -135,6 +135,7 @@ def parse(types):
                     else:
                         # redis中不存在就访问后端接口
                         result_player = player_check(player_name, types)
+                        print('访问后端拿到的选手信息：', result_player)
                         if result_player['code'] == 600:
                             player_id = result_player['result']['player_id']
                             # 记录到redis中，格式为：（源+player+source_player_id:player_id）‘score+player+8377:'123'
@@ -213,6 +214,7 @@ def parse_insert(response_hot_hero,types, hero_id, player_id):
                                 death_average,
                                 assist_average, score, win_count, play_count,
                                 win_rate, types)
+    print(sql_insert)
 
 
 
