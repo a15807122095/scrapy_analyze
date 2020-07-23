@@ -196,7 +196,7 @@ def parse(types):
                                         "and team_name = '{1}';".format(league_name, team_name)
                         sql_add_blacklist = "insert into black_list set league_name = '{0}',team_name = '{1}', " \
                                             "source_from = 1, judge_position=0100;".format(league_name, team_name)
-                        print('记录到战队黑名单sql:', sql_add_blacklist)
+                        # print('记录到战队黑名单sql:', sql_add_blacklist)
                         api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
@@ -206,7 +206,7 @@ def parse(types):
             sql_blacklist = "select id from black_list where league_name = '{}';".format(league_name)
             sql_add_blacklist = "insert into black_list set league_name = '{}', source_from = 1, " \
                                 "judge_position=1000;".format(league_name)
-            print('记录到联赛黑名单sql:', sql_add_blacklist)
+            # print('记录到联赛黑名单sql:', sql_add_blacklist)
             api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 

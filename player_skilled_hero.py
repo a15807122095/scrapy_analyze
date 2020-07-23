@@ -128,19 +128,19 @@ def parse(types):
                     # redis存储结构：（源+player+source_player_id:player_id）‘score+player+8377:'123'
                     key_player = source + '+' + 'player' + '+' + source_player_id
                     result = redis.get_data(key_player)
-                    print('redis查询player的结果：', result)
+                    # print('redis查询player的结果：', result)
                     if result:
                         player_id = result
                         parse_detail(response_hot_heroes, league_name, source, types, player_id)
                     else:
                         # redis中不存在就访问后端接口
                         result_player = player_check(player_name, types)
-                        print('访问后端拿到的选手信息：', result_player)
+                        # print('访问后端拿到的选手信息：', result_player)
                         if result_player['code'] == 600:
                             player_id = result_player['result']['player_id']
                             # 记录到redis中，格式为：（源+player+source_player_id:player_id）‘score+player+8377:'123'
                             redis.set_data(key_player, 86400, player_id)
-                            print('redis记录player完成：',key_player, player_id)
+                            # print('redis记录player完成：',key_player, player_id)
 
                             parse_detail(response_hot_heroes, league_name, source, types, player_id)
                         else:
@@ -149,7 +149,7 @@ def parse(types):
                                             "player_name ='{1}';".format(league_name, player_name)
                             sql_add_blacklist = "insert into black_list set league_name = '{0}',player_name ='{1}', " \
                                                 "source_from = 1, judge_position=0010;".format(league_name, player_name)
-                            print('记录到选手黑名单sql:', sql_add_blacklist)
+                            # print('记录到选手黑名单sql:', sql_add_blacklist)
                             api_return_200(sql_blacklist, sql_add_blacklist, db)
                             continue
 
@@ -158,7 +158,7 @@ def parse(types):
             sql_blacklist = "select id from black_list where league_name = '{}';".format(league_name)
             sql_add_blacklist = "insert into black_list set league_name = '{}', source_from = 1, " \
                                 "judge_position=1000;".format(league_name)
-            print('记录到联赛黑名单sql:', sql_add_blacklist)
+            # print('记录到联赛黑名单sql:', sql_add_blacklist)
             api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
@@ -171,7 +171,7 @@ def parse_detail(response_hot_heroes, league_name, source, types, player_id):
         # redis存储结构：（源+player+source_hero_id:hero_id）‘score+hero+8377:'123'
         key_hero = source + '+' + 'hero' + '+' + source_hero_id
         result = redis.get_data(key_hero)
-        print('redis查询hero的结果：', result)
+        # print('redis查询hero的结果：', result)
         if result:
             hero_id = result
             parse_insert(response_hot_hero, types, hero_id, player_id)
@@ -182,14 +182,14 @@ def parse_detail(response_hot_heroes, league_name, source, types, player_id):
                 hero_id = result_hero['result']['hero_id']
                 # 记录到redis中，格式为：（源+player+source_hero_id:hero_id）‘score+hero+8377:'123'
                 redis.set_data(key_hero, 86400, hero_id)
-                print('redis记录player完成：', key_hero, hero_id)
+                # print('redis记录player完成：', key_hero, hero_id)
                 parse_insert(response_hot_hero, types, hero_id, player_id)
             else:
                 # 记录到黑名单中的英雄名称
                 sql_blacklist = "select id from black_list where hero_name='{}';".format(hero_name)
                 sql_add_blacklist = "insert into black_list set league_name = '{0}',hero_name = '{1}', source_from = 1, " \
                                     "judge_position=0001;".format(league_name, hero_name)
-                print('记录到英雄黑名单sql:', sql_add_blacklist)
+                # print('记录到英雄黑名单sql:', sql_add_blacklist)
                 api_return_200(sql_blacklist, sql_add_blacklist, db)
                 continue
 
@@ -204,12 +204,12 @@ def parse_delete(player_id):
     if len(id_checkplayer) > 1:
         sql_delete = 'delete from game_player_hero_stats where id in {};'.format(
             id_checkplayer)
-        print('删除一组旧数据sql:', sql_delete)
+        # print('删除一组旧数据sql:', sql_delete)
         db.update_insert(sql_delete)
     elif len(id_checkplayer) == 1:
         sql_delete = 'delete from game_player_hero_stats where id = {};'.format(
             id_checkplayer[0])
-        print('删除单个旧数据sql:', sql_delete)
+        # print('删除单个旧数据sql:', sql_delete)
         db.update_insert(sql_delete)
 
 
@@ -229,12 +229,12 @@ def parse_insert(response_hot_hero,types, hero_id, player_id):
                  "assist_average, score, win_count, play_count, win_rate, type, hero_avatar) VALUES({0}, {1}, {2}, {3}, " \
                  "{4}, {5}, {6}, {7}, {8}, {9}, {10}, '{11}');".format(hero_id, player_id, kda, kill_average, death_average,
                  assist_average, score, win_count, play_count, win_rate, types, hero_avatar)
-    print('更新选手擅长英雄表：', sql_insert)
+    # print('更新选手擅长英雄表：', sql_insert)
     db.update_insert(sql_insert)
-    print('更新完成')
+    # print('更新完成')
 
 parse(1)
-print('英雄联盟抓取完成')
+# print('英雄联盟抓取完成')
 parse(2)
-print('王者荣耀抓取完成')
+# print('王者荣耀抓取完成')
 
