@@ -9,7 +9,7 @@ from setting import db_setting
 from datetime import datetime
 
 """
-战队排行榜（英雄联盟）
+战队排行榜（英雄联盟，王者荣耀）
 抓取规则：
 每个联赛都有一个tournament_id,以post请求：https://www.scoregg.com/services/api_url.php
 form_data 中主要有两个变动参数：tournament_id(联赛id), page(页数)
@@ -168,9 +168,6 @@ def parse(types):
                                     damage_minute, hit_minute, economic_average, types, wards_placed_minute, wards_killed_minute)
 
 
-
-
-
                         sql_teamrank_wzry = "INSERT INTO `game_kog_team_league_stats` (team_id, league_id, win_count, lost_count, " \
                                    "play_count, time_average, first_blood_rate, small_dragon_rate, small_dragon_average, " \
                                    "big_dragon_rate, big_dragon_average, tower_success_average, tower_fail_average, kda, " \
@@ -194,19 +191,21 @@ def parse(types):
                         db.update_insert(sql_teamrank)
 
                     else:
-                        # 记录到黑名单
-                        sql_blacklist = "select id from api_check_200 where team_a_name = '{}';".format(team_name)
-                        sql_add_blacklist = "insert into api_check_200 set team_a_name = '{}';".format(team_name)
-                        # print('记录到战队黑名单sql:', sql_add_blacklist)
+                        # 记录到黑名单中的团队名称
+                        sql_blacklist = "select id from black_list where team_a_name = '{}';".format(team_name)
+                        sql_add_blacklist = "insert into black_list set team_a_name = '{}', source_from = 'score', " \
+                                            "judge_position=0100;".format(team_name)
+                        print('记录到战队黑名单sql:', sql_add_blacklist)
                         api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
 
         else:
             # 记录到黑名单
-            sql_blacklist = "select id from api_check_200 where league_name = '{}';".format(league_name)
-            sql_add_blacklist = "insert into api_check_200 set league_name = '{}';".format(league_name)
-            # print('记录到联赛黑名单sql:', sql_add_blacklist)
+            sql_blacklist = "select id from black_list where league_name = '{}';".format(league_name)
+            sql_add_blacklist = "insert into black_list set league_name = '{}', source_from = 'score', " \
+                                "judge_position=1000;".format(league_name)
+            print('记录到联赛黑名单sql:', sql_add_blacklist)
             api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 

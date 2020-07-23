@@ -200,7 +200,7 @@ def API_return_600(db, result, date_timestamp, insert_argument):
                                 source_from, source_matchId, date_timestamp, status_update_or_insert)
                 # print('600的有记录执行修改完成')
 
-# 从有联赛名,对战双方的赛程检测API返回为200的处理
+# 从有联赛名,对战双方的赛程检测API返回为200的处理(记录到旧的黑名单表：api_check_200)
 def API_return_200(db, result):
         insert_blacklist = result['result']
         league_name = insert_blacklist['league_name'] if insert_blacklist['league_id'] == 0 else 'Null'
@@ -221,7 +221,7 @@ def API_return_200(db, result):
                 # print('200的添加到api_check_200表中sql完成')
 
 
-# 只有联赛名，或战队名检测添加到黑名单
+# 只有联赛名，或战队名检测添加到黑名单(记录到新的黑名单表：black_list)
 def api_return_200(sql_check, sql_insert, db):
         blacklist_id = db.select_id(sql_check)
         # 黑名单未添加才记录

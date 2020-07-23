@@ -9,7 +9,7 @@ from setting import db_setting
 from datetime import datetime
 
 """
-英雄排行榜（英雄联盟）
+英雄排行榜（英雄联盟,王者荣耀）
 抓取规则：
 每个联赛都有一个tournament_id,以post请求：https://www.scoregg.com/services/api_url.php
 form_data 中主要有两个变动参数：tournament_id(联赛id), page(页数)
