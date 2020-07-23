@@ -22,7 +22,7 @@ header = {
               ' Chrome/84.0.4147.89 Safari/537.36'
 }
 
-league_exclude = ['2020 季中杯', '2020 LCK夏季升降级赛', '2019KeSPA杯', '2019LOL全明星']
+league_exclude = ['2020 季中杯', '2020 LCK夏季升降级赛', '2019KeSPA杯', '2019拉斯维加斯全明星', 'LPL公开训练赛']
 position_dict = {'上单':1, '打野':2, '中单':3, 'ADC':4, '辅助':5}
 
 # 请求英雄联盟联赛id的form_data  url:https://www.scoregg.com/services/api_url.php
@@ -194,21 +194,33 @@ def parse(types):
                             sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
                             # print('添加选手排行榜的类型以及sql:', types, sql_teamrank)
                             db.update_insert(sql_teamrank)
+                        else:
+                            # 记录到黑名单中的选手名称
+                            sql_blacklist = "select id from black_list where league_name ='{0}' " \
+                                            "and team_name ='{1}' and player_name ='{2}';".format(league_name, team_name, nick_name)
+                            sql_add_blacklist = "insert into black_list set league_name = '{0}',team_name = '{1}', player_name ='{2}', " \
+                                                "source_from = 1, judge_position=0010;".format(league_name,
+                                                                                                     team_name, nick_name)
+                            print('记录到选手黑名单sql:', sql_add_blacklist)
+                            api_return_200(sql_blacklist, sql_add_blacklist, db)
 
                     else:
-                        # 记录到黑名单
-                        sql_blacklist = "select id from api_check_200 where team_a_name = '{}';".format(team_name)
-                        sql_add_blacklist = "insert into api_check_200 set team_a_name = '{}';".format(team_name)
-                        # print('记录到选手黑名单sql:', sql_add_blacklist)
+                        # 记录到黑名单中的团队名称
+                        sql_blacklist = "select id from black_list where league_name = '{0}' " \
+                                        "and team_name = '{1}';".format(league_name, team_name)
+                        sql_add_blacklist = "insert into black_list set league_name = '{0}',team_name = '{1}', " \
+                                            "source_from = 1, judge_position=0100;".format(league_name, team_name)
+                        print('记录到战队黑名单sql:', sql_add_blacklist)
                         api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
 
         else:
             # 记录到黑名单
-            sql_blacklist = "select id from api_check_200 where league_name = '{}';".format(league_name)
-            sql_add_blacklist = "insert into api_check_200 set league_name = '{}';".format(league_name)
-            # print('记录到联赛黑名单sql:', sql_add_blacklist)
+            sql_blacklist = "select id from black_list where league_name = '{}';".format(league_name)
+            sql_add_blacklist = "insert into black_list set league_name = '{}', source_from = 1, " \
+                                "judge_position=1000;".format(league_name)
+            print('记录到联赛黑名单sql:', sql_add_blacklist)
             api_return_200(sql_blacklist, sql_add_blacklist, db)
 
 
@@ -218,7 +230,7 @@ def parse(types):
 
 
 
-# parse(1)
+parse(1)
 # # print('英雄联盟抓取完成')
 parse(2)
 # print('王者荣耀抓取完成')
