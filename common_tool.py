@@ -3,6 +3,27 @@ import requests
 import json
 import time
 from datetime import datetime, timedelta
+import logging
+import sys
+
+# 生成一个log,log级别为ERROR，用来打印调试和记录异常的log文件
+def get_log(log_name, level=logging.ERROR):
+        log_object = logging.getLogger(log_name)
+        log_object.setLevel(level)
+        # 规定log输出的格式
+        formatter = logging.Formatter(fmt='%(asctime)s - %(message)s', datefmt='%Y/%m/%d %H:%M:%S')
+        # 设置handler的控制台输出属性
+        StreamHandler = logging.StreamHandler(sys.stdout)
+        StreamHandler.setFormatter(formatter)
+        # 给logger对象添加handler文件输出属性
+        log_object.addHandler(StreamHandler)
+        # 设置handler的文件输出属性
+        filehandler = logging.FileHandler('./Log/%s.log' % (log_name))
+        filehandler.setFormatter(formatter)
+        # 给logger对象添加handler文件输出属性
+        log_object.addHandler(filehandler)
+        return log_object
+
 
 # 使用代理抓取,从proxies.txt中找到有效的代理，从第一个ip开始，设置7s延时，失败继续取
 def get_response_proxy(url, headers):
@@ -20,13 +41,14 @@ def get_response_proxy(url, headers):
                         continue
 
 
-
+# 本机ip使用request
 def get_response(url, headers):
         response = requests.get(url=url, headers=headers)
         response_text = response.text
         response_json = json.loads(response_text)
         return response_json
 
+# 本机ip使用post
 def post_response(url, data, headers):
         response = requests.post(url=url, data=data, headers=headers)
         response = response.text
@@ -313,10 +335,12 @@ def redis_check_data(redis, source, data):
                 return None
 
 # 将两个字典合并到字典1，键相同值相加，键不同值保留，并返回字典1
-def dict_merge(dict_one,dict_two):
+def merge_dict(dict_one,dict_two):
         for key, value in dict_two.items():
                 if key in dict_one:
                         dict_one[key] += value
                 else:
                         dict_one[key] = value
         return dict_one
+
+

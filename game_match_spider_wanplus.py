@@ -2,7 +2,7 @@
 import json
 import requests
 from common_tool import get_response, api_check, \
-    check_local, API_return_600, API_return_200, post_response, get_weeks
+    check_local, API_return_600, API_return_200, post_response
 from import_data_to_mysql import con_db
 from datetime import datetime
 from setting import db_setting

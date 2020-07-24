@@ -1,25 +1,15 @@
 # -*-coding:utf-8-*-
 
-
-# 导入redis模块
-
-'''
-使用单例模式创建redis 链接池
-'''
-from redis import ConnectionPool
 from setting import Redis_checkAPI, Redis_urldistict
 import redis
-
+"""
+使用单例模式创建redis 链接池
+由于考虑redis可能用法不太一样，定义的时候还是分不同redis库定义
+"""
 # 检测后端API之前现在redis中查询是否有记录/尚牛网存储本周和上周的url以及
 # 查询赛事id时要先访问后端接口返回规范的队伍名,保存到redis,然后再找到赛事的id
 # 下次再找赛事id先访问redis，有记录直接拿到主键
 # redis中存储的格式：str（ 源网站 + 源网站的赛事id ) : str（源网站+主键）
-# 尚牛url：week1/url_matchlist, week2/url_matchlist_l
-class RedisDBConfig_checkAPI:
-    HOST_checkAPI = Redis_checkAPI['host']
-    PORT_checkAPI = Redis_checkAPI['port']
-    DBID_checkAPI = Redis_checkAPI['db']
-
 class RedisCache_checkAPI(object):
     def __init__(self):
         if not hasattr(RedisCache_checkAPI, 'pool'):
@@ -29,17 +19,15 @@ class RedisCache_checkAPI(object):
     @staticmethod
     def create_pool():
         RedisCache_checkAPI.pool = redis.ConnectionPool(
-            host=RedisDBConfig_checkAPI.HOST_checkAPI,
-            port=RedisDBConfig_checkAPI.PORT_checkAPI,
-            db=RedisDBConfig_checkAPI.DBID_checkAPI)
+            host=Redis_checkAPI['host'],
+            port=Redis_checkAPI['port'],
+            db=Redis_checkAPI['db'])
 
-    # @operator_status
     def set_data(self, key, time, value):
         '''set data with (key, value)
         '''
         return self._connection.setex(key, time, value)
 
-    # @operator_status
     def get_data(self, key):
         '''get data by key
         '''
@@ -48,7 +36,6 @@ class RedisCache_checkAPI(object):
         else:
             return None
 
-    # @operator_status
     def del_data(self, key):
         '''delete cache by key
         '''
@@ -58,12 +45,6 @@ class RedisCache_checkAPI(object):
 
 # 为了减少数据库读写太频繁,记录选手id（类似于重复查询的redis缓存过滤）
 # 后续从redis检查到记录就过滤掉
-class RedisDBConfig_urldistict:
-    HOST_urldistict = Redis_urldistict['host']
-    PORT_urldistict = Redis_urldistict['port']
-    DBID_urldistict = Redis_urldistict['db']
-
-
 class RedisCache_urldistict(object):
     def __init__(self):
         if not hasattr(RedisCache_urldistict, 'pool'):
@@ -73,9 +54,9 @@ class RedisCache_urldistict(object):
     @staticmethod
     def create_pool():
         RedisCache_urldistict.pool = redis.ConnectionPool(
-            host=RedisDBConfig_urldistict.HOST_urldistict,
-            port=RedisDBConfig_urldistict.PORT_urldistict,
-            db=RedisDBConfig_urldistict.DBID_urldistict)
+            host=Redis_urldistict['host'],
+            port=Redis_urldistict['port'],
+            db=Redis_urldistict['db'])
 
     def set_data(self, key, time, value):
         '''设
