@@ -196,8 +196,7 @@ def parse(types):
                             db.update_insert(sql_teamrank)
                         else:
                             # 记录到黑名单中的选手名称
-                            sql_blacklist = "select id from black_list where league_name ='{0}' " \
-                                            "and team_name ='{1}' and player_name ='{2}';".format(league_name, team_name, nick_name)
+                            sql_blacklist = "select id from black_list where player_name ='{}';".format(nick_name)
                             sql_add_blacklist = "insert into black_list set league_name = '{0}',team_name = '{1}', player_name ='{2}', " \
                                                 "source_from = 1, judge_position=0010;".format(league_name,
                                                                                                      team_name, nick_name)
@@ -206,8 +205,7 @@ def parse(types):
 
                     else:
                         # 记录到黑名单中的团队名称
-                        sql_blacklist = "select id from black_list where league_name = '{0}' " \
-                                        "and team_name = '{1}';".format(league_name, team_name)
+                        sql_blacklist = "select id from black_list where team_name = '{}';".format(team_name)
                         sql_add_blacklist = "insert into black_list set league_name = '{0}',team_name = '{1}', " \
                                             "source_from = 1, judge_position=0100;".format(league_name, team_name)
                         # print('记录到战队黑名单sql:', sql_add_blacklist)

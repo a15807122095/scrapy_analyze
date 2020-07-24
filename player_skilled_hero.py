@@ -145,8 +145,7 @@ def parse(types):
                             parse_detail(response_hot_heroes, league_name, source, types, player_id)
                         else:
                             # 记录到黑名单中的选手名称
-                            sql_blacklist = "select id from black_list where league_name ='{0}' and " \
-                                            "player_name ='{1}';".format(league_name, player_name)
+                            sql_blacklist = "select id from black_list where player_name ='{}';".format(player_name)
                             sql_add_blacklist = "insert into black_list set league_name = '{0}',player_name ='{1}', " \
                                                 "source_from = 1, judge_position=0010;".format(league_name, player_name)
                             # print('记录到选手黑名单sql:', sql_add_blacklist)
