@@ -215,7 +215,7 @@ def parse(url, headers):
                                     if handicap != 'null':
                                         handicap = '\'' + handicap + '\''
                                     # print('核对两队名称:', option_one_name, option_one_team_id, source_a_name, option_two_name,
-                                          option_two_team_id, source_b_name)
+                                    #       option_two_team_id, source_b_name)
 
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
