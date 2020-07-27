@@ -251,5 +251,3 @@ print('英雄联盟抓取完成')
 parse(form_data_wzry, 2)
 print('王者荣耀抓取完成')
 
-
-# https://img1.famulei.com/match/teamrank/152.json?_=1594781931989
