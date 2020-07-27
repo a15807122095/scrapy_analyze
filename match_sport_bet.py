@@ -96,9 +96,9 @@ for message in messages:
                         "odds_1={7}, odds_1_trend={8}, odds_0={9}, odds_0_trend={10};".format(s_id, company_name, country,
                         update_num, handicap_type, odds_3, odds_3_trend, odds_1, odds_1_trend, odds_0, odds_0_trend)
 
-                        print('胜平负开始写入:', sql_3010)
+                        # print('胜平负开始写入:', sql_3010)
                         db.update_insert(sql_3010)
-                        print('胜平负写入完成')
+                        # print('胜平负写入完成')
 
             # 让球胜平负赔率
             results_3010 = html_1.xpath('//table[@class="table3 yylMt20"]//tr')
@@ -132,9 +132,9 @@ for message in messages:
                         "odds_1={8}, odds_1_trend={9}, odds_0={10}, odds_0_trend={11};".format(s_id, company_name, country,
                         update_num, handicap_type, rq_num, odds_3, odds_3_trend, odds_1, odds_1_trend, odds_0, odds_0_trend)
 
-                        print('让球胜平负开始写入:', sql_3006)
+                        # print('让球胜平负开始写入:', sql_3006)
                         db.update_insert(sql_3006)
-                        print('让球胜平负写入完成')
+                        # print('让球胜平负写入完成')
 
             # 总进球数赔率
             results_3010 = html_1.xpath('//table[@class="table5 yylMt20"]//tr')
@@ -191,9 +191,9 @@ for message in messages:
                         total_gold_0_trend, total_gold_1, total_gold_1_trend, total_gold_2, total_gold_2_trend, total_gold_3,
                         total_gold_3_trend, total_gold_4, total_gold_4_trend, total_gold_5, total_gold_5_trend, total_gold_6,
                         total_gold_6_trend, total_gold_7, total_gold_7_trend)
-                        print('进球数赔率开始写入:', sql_3008)
+                        # print('进球数赔率开始写入:', sql_3008)
                         db.update_insert(sql_3008)
-                        print('进球数赔率写入完成')
+                        # print('进球数赔率写入完成')
         except Exception as e:
             sport_bet_log.error('联赛种类异常')
             sport_bet_log.error(e, exc_info=True)
