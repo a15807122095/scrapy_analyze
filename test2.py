@@ -1,17 +1,49 @@
 # '''
 # 使用单例模式创建redis 链接池
 # '''
-import requests
 import json
-url_wzrygw = 'https://itea-cdn.qq.com/file/ingame/smoba/allMatchpage1.json'
-headers_wzrygw = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/'
-                         '537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
+from lxml import etree
+from common_tool import player_check, team_check, api_check, league_check, hero_check
+from datetime import datetime
+from import_data_to_mysql import con_db
+from setting import db_setting
+import requests
+from lxml import etree
+
+#
+# time1 = 1593446400
+# str = datetime.fromtimestamp(time1)
+# print(str)
+
+# #查询2020-06-30当日的数据
+# str1 = '2020-07-23 00:00:00'
+# str2 = '2020-07-25 00:00:00'
+# #
+# date1 = datetime.strptime(str1, '%Y-%m-%d %H:%M:%S')
+# date2 = datetime.strptime(str2, '%Y-%m-%d %H:%M:%S')
+# print(date1, date2)
+#
+# stamp1 = int(date1.timestamp())
+# stamp2 = int(date2.timestamp())
+# print(stamp1, stamp2)
+#
+# sql = 'select * from game_python_match where start_time between {0} and {1};'.format(stamp1, stamp2)
+# print(sql)
 
 
+# result = api_check('王者荣耀', '2020世界冠军杯', 'ROX Phoenix', '成都AG超玩会')
+# print(result)
+#
+result = league_check('2017 KPL秋季赛', 2)
+print(result)
+#
+# result = team_check('王者荣耀', '2020世界冠军杯')
+# print(result)
+#
+# result = player_check('王者荣耀', '2020世界冠军杯')
+# print(result)
+#
+# result = hero_check('王者荣耀', '2020世界冠军杯')
+# print(result)
 
-requests.packages.urllib3.disable_warnings()
-response = requests.get(url=url_wzrygw, headers=headers_wzrygw, verify = False)
-response = response.text
-response = json.loads(response)
-sources = response['matchList']
-print('抓取到的源数据：',len(sources), sources)
+
