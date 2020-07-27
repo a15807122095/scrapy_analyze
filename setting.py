@@ -1,7 +1,7 @@
 
 
 """
-游戏dev配置
+游戏dev的配置
 """
 db_setting = {
     'host': '127.0.0.1',
@@ -82,18 +82,4 @@ Redis_urldistict = {
 #     'db': 1
 # }
 
-
-
-
-# 王者荣耀官网的url  headers   # 已废弃
-# 官网默认加载2页
-url_wzrygw_1 = 'https://itea-cdn.qq.com/file/ingame/smoba/allMatchpage1.json'
-url_wzrygw_2 = 'https://itea-cdn.qq.com/file/ingame/smoba/allMatchpage2.json'
-url_wzrygw = [url_wzrygw_1, url_wzrygw_2]
-headers_wzrygw = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/'
-                         '537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
-
-proxy_pool = {
-    "http": "180.127.81.154:4534"
-}
 
