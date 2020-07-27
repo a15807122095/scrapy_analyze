@@ -211,7 +211,7 @@ def parse(url, headers):
                                     # 盘口数据根据id小的判断，id小的为主队
                                     handicap = handicap_one if id_one < id_two else handicap_two
                                     win = win_one if id_one < id_two else win_two
-                                    print(win)
+                                    # print(win)
                                     if handicap != 'null':
                                         handicap = '\'' + handicap + '\''
                                     # print('核对两队名称:', option_one_name, option_one_team_id, source_a_name, option_two_name,
