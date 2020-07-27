@@ -312,5 +312,3 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
 # 英雄联盟
 # print(url_matchlist_yxlm)
 parse(url_matchlist_yxlm, headers)
-## 王者荣耀
-# parse(url_matchlist, headers)
