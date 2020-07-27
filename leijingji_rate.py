@@ -180,7 +180,7 @@ def parse(url, headers):
                             source_status = rate_message['status']
                             if source_status in bet_status:
                                 status = bet_status[source_status]
-                                print('详细竞猜数据:', title, match_stage, source_status, status)
+                                # print('详细竞猜数据:', title, match_stage, source_status, status)
                                 if count:
                                     option_one_name = rate_message['name']
                                     option_one_odds = rate_message['odds']
@@ -214,7 +214,7 @@ def parse(url, headers):
                                     print(win)
                                     if handicap != 'null':
                                         handicap = '\'' + handicap + '\''
-                                    print('核对两队名称:', option_one_name, option_one_team_id, source_a_name, option_two_name,
+                                    # print('核对两队名称:', option_one_name, option_one_team_id, source_a_name, option_two_name,
                                           option_two_team_id, source_b_name)
 
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
@@ -231,7 +231,7 @@ def parse(url, headers):
                                         "option_two_team_id={16}, win={17}, source_status={18};".format(types, source, id, match_stage, match_id, board_num, title,
                                         bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
                                         option_two_odds, option_one_team_id, option_two_team_id, win, source_status)
-                                    print('记录竞猜表：', sql_bet_insert)
+                                    # print('记录竞猜表：', sql_bet_insert)
                                     db.update_insert(sql_bet_insert)
                                     # print('记录竞猜表插入完成')
 
