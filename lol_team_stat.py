@@ -23,7 +23,7 @@ header = {
               ' Chrome/84.0.4147.89 Safari/537.36'
 }
 
-league_exclude = ['2020 季中杯', '2020 LCK夏季升降级赛', '2019KeSPA杯', '2019拉斯维加斯全明星', 'LPL公开训练赛']
+league_exclude = ['2020 LCK夏季升降级赛', '2019KeSPA杯', '2019拉斯维加斯全明星', 'LPL公开训练赛', '2017 KPL秋季赛']
 
 # 请求英雄联盟联赛id的form_data  url:https://www.scoregg.com/services/api_url.php
 form_data_yxlm = {

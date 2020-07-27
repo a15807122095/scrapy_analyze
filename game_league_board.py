@@ -23,7 +23,7 @@ header = {
               'Chrome/83.0.4103.116 Safari/537.36'
 }
 
-league_unknow = ['2020 LCK夏季升降级赛', '2019KeSPA杯', '2019拉斯维加斯全明星', 'LPL公开训练赛']
+league_unknow = ['2020 LCK夏季升降级赛', '2019KeSPA杯', '2019拉斯维加斯全明星', 'LPL公开训练赛', '2017 KPL秋季赛']
 form_data_yxlm = {
     'api_path': '/services/match/web_tournament_group_list.php',
     'method': 'GET',
@@ -246,8 +246,8 @@ def parse_detail(match_detail, game_name, source_league_name, team_win_count, te
         league_board_log.error('计算胜/负/净胜分异常')
         league_board_log.error(e)
 
-# parse(form_data_yxlm, 1)
-# print('英雄联盟抓取完成')
+parse(form_data_yxlm, 1)
+print('英雄联盟抓取完成')
 parse(form_data_wzry, 2)
 print('王者荣耀抓取完成')
 

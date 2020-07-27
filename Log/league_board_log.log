@@ -38,3 +38,15 @@ Traceback (most recent call last):
   File "/home/yghl/桌面/scrapy_analyze/game_league_board.py", line 102, in parse
     group_name = type_response['group_name']
 KeyError: 'group_name'
+2020/07/27 09:40:07 - 每组队局之前的异常
+2020/07/27 09:40:07 - 'group_name'
+Traceback (most recent call last):
+  File "/home/yghl/桌面/scrapy_analyze/game_league_board.py", line 102, in parse
+    group_name = type_response['group_name']
+KeyError: 'group_name'
+2020/07/27 10:05:20 - 每组队局之前的异常
+2020/07/27 10:05:20 - 'group_name'
+Traceback (most recent call last):
+  File "/home/yghl/桌面/scrapy_analyze/game_league_board.py", line 102, in parse
+    group_name = type_response['group_name']
+KeyError: 'group_name'
