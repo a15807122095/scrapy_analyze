@@ -100,146 +100,155 @@ game_type = {
 }
 
 def parse(url, headers):
-    try:
-        responses = get_response(url, headers)
-        responses = responses['result']
-        # print('源数据：', len(responses))
-        source = '雷竞技'
-        for response in responses:
-            game_name = response['game_name']
-            leagueName = response['tournament_name']
-            # print('联赛名称:',game_name, leagueName)
-            # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
-            if game_name == '王者荣耀' or (game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS'
-                                                    in leagueName or 'LEC' in leagueName or 'LDL' in leagueName )):
-                # 有个lplol的需要过滤
-                if 'LPLOL' not in leagueName:
-                    types = game_type[game_name]
-                    id = response['id']
-                    # print('网站的赛事id：',id)
-                    match_url = match_url_start + str(id)
-                    # print('详情赔率url:', match_url)
-                    responses_detail = get_response(match_url, headers)
-                    responses_detail = responses_detail['result']
-                    # print('详情数据：', responses_detail)
-                    match_name = response['match_name']
-                    match_name = match_name.split(' - VS - ')
-                    source_a_name = match_name[0]
-                    source_b_name = match_name[1]
-                    start_time = response['start_time']
-                    start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
-                    leagueName_pre = str(start_time.year) + ' '
-                    # 雷竞技的联赛名不带年份，要自己加上去，用比赛的年份判断出那一年再拼接上去
-                    # 例如 start_time:'2020-07-08' ---'2020 ' + leagueName
-                    leagueName = leagueName_pre + leagueName
-                    # print('leagueName:',leagueName)
-                    start_time = int(start_time.timestamp())
-                    start_time = str(start_time)
-                    source_matchid = str(id)
-                    result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
-                    # print('match_id:', result, source_a_name, source_b_name)
+    responses = get_response(url, headers)
+    responses = responses['result']
+    # print('源数据：', len(responses))
+    source = '雷竞技'
+    for response in responses:
+        game_name = response['game_name']
+        leagueName = response['tournament_name']
+        # print('联赛名称:',game_name, leagueName)
+        # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
+        if game_name == '王者荣耀' or (game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS'
+                                                in leagueName or 'LEC' in leagueName or 'LDL' in leagueName )):
+            # 有个lplol的需要过滤
+            if 'LPLOL' not in leagueName:
+                types = game_type[game_name]
+                id = response['id']
+                # print('网站的赛事id：',id)
+                match_url = match_url_start + str(id)
+                # print('详情赔率url:', match_url)
+                responses_detail = get_response(match_url, headers)
+                responses_detail = responses_detail['result']
+                # print('详情数据：', responses_detail)
+                match_name = response['match_name']
+                match_name = match_name.split(' - VS - ')
+                source_a_name = match_name[0]
+                source_b_name = match_name[1]
+                start_time = response['start_time']
+                start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+                leagueName_pre = str(start_time.year) + ' '
+                # 雷竞技的联赛名不带年份，要自己加上去，用比赛的年份判断出那一年再拼接上去
+                # 例如 start_time:'2020-07-08' ---'2020 ' + leagueName
+                leagueName = leagueName_pre + leagueName
+                # print('leagueName:',leagueName)
+                start_time = int(start_time.timestamp())
+                start_time = str(start_time)
+                source_matchid = str(id)
+                result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
+                # print('match_id:', result, source_a_name, source_b_name)
 
-                    # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
-                    if result:
-                        match_id = result[0]
-                        team_a_id = result[1]
-                        team_b_id = result[2]
-                        # 0-139条赔率数据，每两组构成一条数据库中的数据
-                        # print(type(responses_detail['odds']), responses_detail['odds'])
+                # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
+                if result:
+                    match_id = result[0]
+                    team_a_id = result[1]
+                    team_b_id = result[2]
+                    # 0-139条赔率数据，每两组构成一条数据库中的数据
+                    # print(type(responses_detail['odds']), responses_detail['odds'])
 
-                        option_one_name = 'Null'
-                        option_two_name = 'Null'
-                        option_one_odds = 'Null'
-                        option_two_odds = 'Null'
-                        option_one_team_id = 'Null'
-                        option_two_team_id = 'Null'
-                        # odds中的数据两两拼成一条完整竞猜数据,用count的状态来判断添加到哪一个字段
-                        count = True
-                        judge_exclude = 0
-                        # 判断title_judge中的玩法是否超出两条数据，超出就过滤
-                        for rate_message in responses_detail['odds']:
-                            if rate_message['group_name'] == '地图让分':
-                                judge_exclude += 1
-                        for rate_message in responses_detail['odds']:
-                            # print('odds详情:', rate_message)
-                            title = rate_message['group_name']
-                            # match_stage: r1为第一局  r2为第二局...   final为整个大局
-                            match_stage = rate_message['match_stage']
-                            board_num = match_stage_bo[match_stage]
-                            # 暂时只要bet_type中的竞猜项目
-                            if title in bet_types:
-                                # 如果地图让分的数据超过两条就把这项赔率数据过滤掉
-                                if title == '地图让分' and judge_exclude > 2:
-                                    continue
+                    option_one_name = 'Null'
+                    option_two_name = 'Null'
+                    option_one_odds = 'Null'
+                    option_two_odds = 'Null'
+                    option_one_team_id = 'Null'
+                    option_two_team_id = 'Null'
+                    # odds中的数据两两拼成一条完整竞猜数据,用count的状态来判断添加到哪一个字段
+                    count = True
+                    # 计算地图让分出现次数，过滤假数据
+                    judge_exclude_dtrf = 0
+                    # 列表计数
+                    list_count = 0
+                    # 假数据的索引列表
+                    list_index = []
+                    # 判断title_judge中的玩法是否超出两条数据，超出就过滤
+                    #目前网站上只有‘地图让分’有假数据的存在
+                    for rate_message in responses_detail['odds']:
+                        if rate_message['group_name'] == '地图让分':
+                            judge_exclude_dtrf += 1
+                            if rate_message['status'] == 4:
+                                list_index.append(list_count)
+                        list_count += 1
+                    # print('假数据列表索引:', list_index)
+                    responses_detail_list = responses_detail['odds']
+                    # print('去除假数据之前：', len(responses_detail_list), responses_detail_list)
+                    # 存在假数据情况时，根据假数据的索引列表去掉接口返回列表的假数据
+                    if judge_exclude_dtrf > 2:
+                        responses_detail_list = [responses_detail_list[i] for i in range(len(responses_detail_list)) if (i not in list_index)]
+                    # print('去除假数据之后：', len(responses_detail_list), responses_detail_list)
+                    for rate_message in responses_detail_list:
+                        # print('odds详情:', rate_message)
+                        title = rate_message['group_name']
+                        # match_stage: r1为第一局  r2为第二局...   final为整个大局
+                        match_stage = rate_message['match_stage']
+                        board_num = match_stage_bo[match_stage]
+                        # 暂时只要bet_type中的竞猜项目
+                        if title in bet_types:
 
-                                # 将title为地图让分的标题更正为全场让分
-                                title = '全场让分' if rate_message['group_name'] == '地图让分' else rate_message['group_name']
-                                bet_type =3 if  title == '全场让分' else bet_types[title]
-                                # ’获胜者‘的match_stage不为final，bet_type改为‘输赢’
-                                if title == '获胜者' and match_stage != 'final':
-                                    bet_type = 2
-                                # 不知道是否保留所以先给0
-                                end_time = 0
-                                source_status = rate_message['status']
-                                if source_status in bet_status:
-                                    status = bet_status[source_status]
-                                    # print('详细竞猜数据:', title, match_stage, source_status, status)
-                                    if count:
-                                        option_one_name = rate_message['name']
-                                        option_one_odds = rate_message['odds']
-                                        win_one = rate_message['win']
-                                        id_one = rate_message['id']
-                                        handicap_one = rate_message['value'] if bet_type in bet_types_handicap else 'null'
-                                        if bet_type in bet_types_judge:
-                                            option_one_team_id = team_a_id if source_a_name in option_one_name  else team_b_id
-                                        else:
-                                            option_one_team_id = 'null'
-                                        count = False
-                                        # 如果存在status为4的赔率，过滤掉
+                            # 将title为地图让分的标题更正为全场让分
+                            title = '全场让分' if rate_message['group_name'] == '地图让分' else rate_message['group_name']
+                            bet_type =3 if  title == '全场让分' else bet_types[title]
+                            # ’获胜者‘的match_stage不为final，bet_type改为‘输赢’
+                            if title == '获胜者' and match_stage != 'final':
+                                bet_type = 2
+                            # 不知道是否保留所以先给0
+                            end_time = 0
+                            source_status = rate_message['status']
+                            if source_status in bet_status:
+                                status = bet_status[source_status]
+                                # print('详细竞猜数据:', title, match_stage, source_status, status)
+                                if count:
+                                    option_one_name = rate_message['name']
+                                    option_one_odds = rate_message['odds']
+                                    win_one = rate_message['win']
+                                    id_one = rate_message['id']
+                                    handicap_one = rate_message['value'] if bet_type in bet_types_handicap else 'null'
+                                    if bet_type in bet_types_judge:
+                                        option_one_team_id = team_a_id if source_a_name in option_one_name  else team_b_id
                                     else:
-                                        option_two_name = rate_message['name']
-                                        option_two_odds = rate_message['odds']
-                                        win_two = rate_message['win']
-                                        id_two = rate_message['id']
-                                        handicap_two = rate_message['value'] if bet_type in bet_types_handicap else 'null'
-                                        if bet_type in bet_types_judge:
-                                            # option_two_name 中带名
-                                            option_two_team_id = team_b_id if source_b_name in option_two_name  else team_a_id
-                                        else:
-                                            option_two_team_id = 'null'
-                                        count = True
+                                        option_one_team_id = 'null'
+                                    count = False
+                                    # 如果存在status为4的赔率，过滤掉
+                                else:
+                                    option_two_name = rate_message['name']
+                                    option_two_odds = rate_message['odds']
+                                    win_two = rate_message['win']
+                                    id_two = rate_message['id']
+                                    handicap_two = rate_message['value'] if bet_type in bet_types_handicap else 'null'
+                                    if bet_type in bet_types_judge:
+                                        # option_two_name 中带名
+                                        option_two_team_id = team_b_id if source_b_name in option_two_name  else team_a_id
+                                    else:
+                                        option_two_team_id = 'null'
+                                    count = True
 
-                                    # 添加竞猜数据的记录
-                                    if count and match_id != None:
-                                        # 盘口数据根据id小的判断，id小的为主队
-                                        handicap = handicap_one if id_one < id_two else handicap_two
-                                        win = win_one if id_one < id_two else win_two
-                                        # print(win)
-                                        if handicap != 'null':
-                                            handicap = '\'' + handicap + '\''
-                                        # print('核对两队名称:', option_one_name, option_one_team_id, source_a_name, option_two_name,
-                                        #       option_two_team_id, source_b_name)
+                                # 添加竞猜数据的记录
+                                if count and match_id != None:
+                                    # 盘口数据根据id小的判断，id小的为主队
+                                    handicap = handicap_one if id_one < id_two else handicap_two
+                                    win = win_one if id_one < id_two else win_two
+                                    # print(win)
+                                    if handicap != 'null':
+                                        handicap = '\'' + handicap + '\''
+                                    # print('核对两队名称:', option_one_name, option_one_team_id, source_a_name, option_two_name,
+                                    #       option_two_team_id, source_b_name)
 
-                                        # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
-                                        #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
-                                        sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
-                                            " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
-                                            "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id, win, source_status) " \
-                                                "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, {10}, '{11}', '{12}'," \
-                                                " {13}, {14}, {15}, {16}, {17}, {18}) " \
-                                                            "ON DUPLICATE KEY UPDATE " \
-                                            "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_time={8}," \
-                                            " status={9}, handicap={10}, option_one_name='{11}', option_two_name='{12}', " \
-                                            "option_one_odds={13}, option_two_odds={14}, option_one_team_id={15}, " \
-                                            "option_two_team_id={16}, win={17}, source_status={18};".format(types, source, id, match_stage, match_id, board_num, title,
-                                            bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
-                                            option_two_odds, option_one_team_id, option_two_team_id, win, source_status)
-                                        # print('记录竞猜表：', sql_bet_insert)
-                                        db.update_insert(sql_bet_insert)
-                                        # print('记录竞猜表插入完成')
-    except Exception as e:
-        leijingji_log.error(match_id)
-        leijingji_log.error(e, exc_info=True)
+                                    # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
+                                    #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
+                                    sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
+                                        " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
+                                        "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id, win, source_status) " \
+                                            "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, {10}, '{11}', '{12}'," \
+                                            " {13}, {14}, {15}, {16}, {17}, {18}) " \
+                                                        "ON DUPLICATE KEY UPDATE " \
+                                        "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_time={8}," \
+                                        " status={9}, handicap={10}, option_one_name='{11}', option_two_name='{12}', " \
+                                        "option_one_odds={13}, option_two_odds={14}, option_one_team_id={15}, " \
+                                        "option_two_team_id={16}, win={17}, source_status={18};".format(types, source, id, match_stage, match_id, board_num, title,
+                                        bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
+                                        option_two_odds, option_one_team_id, option_two_team_id, win, source_status)
+                                    # print('记录竞猜表：', sql_bet_insert)
+                                    db.update_insert(sql_bet_insert)
+                                    # print('记录竞猜表插入完成')
 
 # print('今日赔率',start_url)
 parse(start_url, headers)
