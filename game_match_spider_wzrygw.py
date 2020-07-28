@@ -1,13 +1,25 @@
 # -*-coding:utf-8-*-
 import json
+from setting import db_setting
 from common_tool import get_response, api_check, check_local, API_return_600, API_return_200
+from import_data_to_mysql import con_db
 import time
 from datetime import datetime
 
 
 """
-王者荣耀官网爬虫（已废弃）
+王者荣耀官网爬虫
 """
+
+headers_wzry = {
+'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+              ' Chrome/84.0.4147.89 Safari/537.36'
+}
+
+
+db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
+
+start_url = 'https://itea-cdn.qq.com/file/ingame/smoba/allMatchpage1.json'
 def parse_wzry(url, db, headers):
     response = get_response(url, headers)
     sources = response['matchList']
@@ -16,7 +28,6 @@ def parse_wzry(url, db, headers):
     type = 2
     for source in sources:
         league_sourcename = source['cate'] + source['match_name']
-        # cate为 "2020春季赛·总决赛"格式, 常规赛bo5  季后赛和总决赛bo7
         # cate可能也不是‘·’区分
         if '·' in source['cate']:
             cate = source['cate'].split('·')
@@ -50,6 +61,7 @@ def parse_wzry(url, db, headers):
             start_time = source_list['mtime']
             # 访问接口前先在表中用check_match字段匹配一下，有就不再访问接口（check_match字段就是四个源字段的字符串拼接）
             check_match = league_sourcename + team_a_sourcename + team_b_sourcename + start_time
+
             status_check = check_local(db, check_match)
             if status_check == None:
                 # 请求检测接口
@@ -81,5 +93,5 @@ def parse_wzry(url, db, headers):
                 # print('本地已有数据就直接更新完成')
 
 
-
+parse_wzry(start_url, db, headers_wzry)
 

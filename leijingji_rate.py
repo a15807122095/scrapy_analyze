@@ -91,7 +91,7 @@ bet_status = {
 }
 
 match_stage_bo = {
-    'final':0, 'r1':1, 'r2':2, 'r3':3
+    'final':0, 'r1':1, 'r2':2, 'r3':3, 'r4':4, 'r5':5
 }
 
 game_type = {
@@ -238,6 +238,7 @@ def parse(url, headers):
                                         db.update_insert(sql_bet_insert)
                                         # print('记录竞猜表插入完成')
     except Exception as e:
+        leijingji_log.error(match_id)
         leijingji_log.error(e, exc_info=True)
 
 # print('今日赔率',start_url)
