@@ -50,6 +50,7 @@ form_data = {
 'platform': 'web'
 }
 
+
 def parse(url, data, headers):
     types = 1
     game_name = '英雄联盟'

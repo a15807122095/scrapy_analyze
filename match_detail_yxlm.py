@@ -156,8 +156,8 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
       game_name = '英雄联盟'
       result = redis_check(redis, game_name, db, source, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
       match_id = result[0] if result else None
-      # 如果match_id为空，说明尚牛的赛事详情赛程在赛程表中没找到，这时不录入
-      if match_id:
+      # 后端返回600且match_id不为空，说明对局详情在赛程表中匹配到赛程
+      if result and match_id:
 
           # 收集详情数据并写入数据库
           for key, value_url in url_list.items():

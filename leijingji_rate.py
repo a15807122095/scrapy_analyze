@@ -141,8 +141,8 @@ def parse(url, headers):
                 # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
                 if result:
                     match_id = result[0]
-                    team_a_id = result[1]
-                    team_b_id = result[2]
+                    team_a_id = result[2]
+                    team_b_id = result[3]
                     # 0-139条赔率数据，每两组构成一条数据库中的数据
                     # print(type(responses_detail['odds']), responses_detail['odds'])
 

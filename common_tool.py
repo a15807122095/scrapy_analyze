@@ -81,7 +81,7 @@ def api_check(game_name, league_name, team_a_name, team_b_name):
                 'team_b_name': team_b_name,
         }
         # 请求接口拿到数据
-        url_check = 'http://dev.saishikong.com/data/backstage-api/python-search'
+        url_check = 'http://api.saishikong.com/data/backstage-api/python-search'
         final_response = requests.post(url=url_check, json=payload)
         result = json.loads(final_response.text)
         return result
@@ -118,7 +118,7 @@ def league_check(league_name, type):
                 'league_name': league_name,
                 'type': type,
         }
-        url_league = 'http://dev.saishikong.com/data/backstage-api/matching-league'
+        url_league = 'http://api.saishikong.com/data/backstage-api/matching-league'
         final_response = requests.post(url=url_league, json=payload_league)
         result = json.loads(final_response.text)
         return result
@@ -135,7 +135,7 @@ def team_check(team_name, type):
                 'team_name': team_name,
                 'type': type,
         }
-        url_league = 'http://dev.saishikong.com/data/backstage-api/matching-team'
+        url_league = 'http://api.saishikong.com/data/backstage-api/matching-team'
         final_response = requests.post(url=url_league, json=payload_team)
         result = json.loads(final_response.text)
         return result
@@ -191,13 +191,15 @@ def API_return_600(db, result, date_timestamp, insert_argument):
         bo = insert_argument['bo']
         team_a_score = insert_argument['team_a_score']
         team_b_score = insert_argument['team_b_score']
-        check_match = insert_argument['check_match']
         win_team = insert_argument['win_team']
         propertys = insert_argument['propertys']
         source_from = insert_argument['source_from']
         source_matchId = insert_argument['source_matchId']
+
+        # 不同网站比赛时间可能不一致，以联赛名，主客队名相同，比赛时间左右30分钟进行过滤判断是否为一场赛程
+
         # 将result_insert和date_timestamp与game_python_match进行对比确定是否有这场赛事
-        sql_check = "select id from game_python_match where source_matchId = '{}';".format(source_matchId)
+        sql_check = "select id from game_python_match where team_a_name = '{}' and team_a_name = '{}' and ;".format(source_matchId)
         # print('600的查询主键sql：', sql_check)
         status_update_or_insert = db.select_id(sql_check)
         # print('600的查询主键：', status_update_or_insert)
@@ -276,7 +278,7 @@ def get_weeks():
 # 如果没找到就访问后端api拿到赛程信息，再从game_python_match表中拿赛程id
 # 没拿到过滤掉，拿到后写入redis缓存
 # 保存到redis，设置1天的过期时间
-# 格式为：str（ 源网站 + 源网站的赛事id ) : str（源网站+主键）
+# 格式为：str（ 源网站 + 源网站的赛事id) : str（源网站+主键 + league_id + team_a_id + team_b_id + team_a_name + team_b_name + league_name）
 def redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, matchTime):
         redis_key = source + source_matchid
         redis_value = redis.get_data(redis_key)
@@ -285,9 +287,13 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
                 result = redis_value.split(source)[1]
                 results = result.split('+')
                 match_id = results[0]
-                team_a_id = results[1]
-                tea_b_id = results[2]
-                return match_id, team_a_id, tea_b_id
+                league_id = results[1]
+                team_a_id = results[2]
+                tea_b_id = results[3]
+                team_a_name = results[4]
+                tea_b_name = results[5]
+                league_name = results[6]
+                return match_id, league_id, team_a_id, tea_b_id, team_a_name, tea_b_name, league_name
         else:
                 # redis没记录，请求检测接口
                 # print('检验的参数:', game_name, leagueName, source_a_name, source_b_name)
@@ -297,6 +303,9 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
                         league_id = result['result']['league_id']
                         team_a_id = result['result']['team_a_id']
                         team_b_id = result['result']['team_b_id']
+                        team_a_name = result['result']['team_a_name']
+                        team_b_name = result['result']['team_b_name']
+                        league_name = result['result']['league_name']
                         # 尚牛和雷竞技的比赛时间与官网有差别，用源网的时间左右一个小时过滤官网的时间来查找赛事id
                         # 其它网站的比赛时间暂时还不清楚，后面再加条件区分
                         matchTime_before = int(matchTime) - 3600
@@ -311,17 +320,62 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
                         # print('匹配到的match_id:', match_id)
                         if match_id:
                                 # 保存到redis，设置1天的过期时间
-                                # 格式为：str（ 源网站 + 源网站的赛事id) : str（源网站+主键 + team_a_id + team_b_id）
+                                # 格式为：str（ 源网站 + 源网站的赛事id) : str（源网站+主键 + league_id + team_a_id + team_b_id +
+                                # team_a_name + team_b_name）
                                 # print('存入redis')
-                                redis_value = source + str(match_id) + '+' + str(team_a_id) + '+' + str(team_b_id)
+                                redis_value = source + str(match_id) + '+' + str(league_id) + '+' + \
+                                              str(team_a_id)+ '+' + str(team_b_id) + '+' + str(team_a_name)+ \
+                                              '+' + str(team_b_name) + '+' + str(league_name)
                                 redis.set_data(redis_key, 86400, redis_value)
                                 # print('已经保存到redis')
-                        return match_id, team_a_id, team_b_id
+                        return match_id, league_id, team_a_id, team_b_id, team_a_name, team_b_name, league_name
 
                 if result['code'] == 200:
                         # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
                         API_return_200(db, result)
                         return None
+
+# 赛程爬虫根据redis_check进行更新或者插入操作
+def redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId, team_a_sourcename, team_b_sourcename, start_time,
+                           types, team_a_score, team_b_score, status, bo, win_team, propertys):
+        # 先检查redis是否有记录
+        result = redis_check(redis, game_name, db, source_from, league_sourcename, source_matchId,
+                             team_a_sourcename, team_b_sourcename, start_time)
+        match_id = result[0] if result else None
+        league_id = result[1] if result else None
+        team_a_id = result[2] if result else None
+        team_b_id = result[3] if result else None
+        team_a_name = result[4] if result else None
+        team_b_name = result[5] if result else None
+        league_name = result[6] if result else None
+        print('redis返回的数据：',result)
+        # 后端返回600且match_id不为空,拿到match_id更新其他字段（其中比分要判断：以a,b队比分之和大的为准）
+        if result and match_id:
+                sql_score = 'select team_a_score, team_b_score from game_python_match where id = {};'.format(
+                        match_id)
+                result_score = db.select_all(sql_score)
+                # 以比分大的为准
+                team_a_score = int(team_a_score)
+                team_b_score = int(team_b_score)
+                if team_a_score < result_score[0]:
+                        team_a_score = result_score[0]
+                if team_b_score < result_score[1]:
+                        team_b_score = result_score[1]
+                db.update_by_id(types, status, bo, team_a_score, team_b_score, win_team, propertys, source_from,
+                                source_matchId, start_time, match_id)
+        # 后端返回600但match_id为空,说明赛程表没有这场赛程，直接插入
+        if result and not match_id:
+                sql_insert = "INSERT INTO `game_python_match` (type, league_id, status, start_time, bo," \
+                             " team_a_id, team_a_name, team_a_score, team_b_id, team_b_name, " \
+                             "team_b_score, league_name, propertys, source_from, source_matchId, win_team) VALUES ({0}, {1}, {2}," \
+                             " {3}, {4}, {5}, '{6}', {7}, {8}, '{9}', {10}, '{11}', '{12}', '{13}', '{14}', " \
+                             "'{15}');".format(types, league_id, status, start_time, bo, team_a_id,
+                                               team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
+                                               league_name, propertys, source_from, source_matchId,
+                                               win_team)
+                print('600的未有记录执行插入：', sql_insert)
+                db.update_insert(sql_insert)
+                # print('600的未有记录执行插入完成')
 
 # 校验后端返回的数据，并存入redis中
 def redis_check_data(redis, source, data):

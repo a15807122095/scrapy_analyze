@@ -4,8 +4,9 @@ from datetime import datetime
 import requests
 import time
 from import_data_to_mysql import con_db
-from common_tool import get_response, api_check, check_local, API_return_600, API_return_200, get_log
+from common_tool import get_response, redis_return_operation, get_log
 from setting import db_setting
+from import_data_to_redis import RedisCache_checkAPI
 
 """
 英雄联盟官网爬虫
@@ -38,6 +39,7 @@ headers_yxlmgw = {
         'USER-AGENT':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
     }
 
+redis = RedisCache_checkAPI()
 
 def parse_yxlm(url, db, match_status, headers):
     try:
@@ -48,7 +50,7 @@ def parse_yxlm(url, db, match_status, headers):
             # print('爬取的源数据：',len(sources), sources)
             game_name = '英雄联盟'
             source_from = '英雄联盟官网'
-            type = 1
+            types = 1
             status = match_status
             match_id = 0
             for each_source in sources:
@@ -86,43 +88,13 @@ def parse_yxlm(url, db, match_status, headers):
                 team_a_sourcename = bMatchName[0].strip()
                 team_b_sourcename = bMatchName[1].strip()
                 start_time = each_source['MatchDate']
-                #check_match字段就是四个源字段的字符串拼接
-                check_match= league_sourcename + team_a_sourcename + team_b_sourcename + start_time
-                status_check = check_local(db, source_matchId)
-                if status_check == None:
-                    # 请求检测接口
-                    result = api_check(game_name, league_sourcename, team_a_sourcename, team_b_sourcename)
-                    # print('检测接口返回：',result)
-                    # 检测为600, result['result']包含6个字段：
-                    # league_id, team_a_id, team_b_id,
-                    # league_name, team_a_name, team_b_name
-                    if result['code'] == 600:
-                        insert_argument = {}
-                        insert_argument['type'] = type
-                        insert_argument['status'] = status
-                        insert_argument['bo'] = bo
-                        insert_argument['team_a_score'] = team_a_score
-                        insert_argument['team_b_score'] = team_b_score
-                        insert_argument['check_match'] = check_match
-                        insert_argument['win_team'] = win_team
-                        insert_argument['propertys'] = propertys
-                        insert_argument['source_from'] = source_from
-                        insert_argument['source_matchId'] = source_matchId
-                        API_return_600(db, result, date_timestamp, insert_argument)
+                print(start_time)
 
-                    elif result['code'] == 200:
-                        # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
-                        API_return_200(db, result)
-                # 本地已有数据就直接更新
-                else:
-                    # print('本地已有数据就直接更新 ')
-                    # 这里把check_match拿进去再更新一次没关系
-                    db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match,
-                                    propertys, source_from, source_matchId, date_timestamp, status_check)
-                    # print('本地已有数据就直接更新完成')
-                # 返回最后一条赛程的bmatchid，拼成上一周的url
+                redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId,
+                       team_a_sourcename, team_b_sourcename, date_timestamp, types, team_a_score, team_b_score, status, bo,
+                       win_team, propertys)
+                # 取最后一个source_matchId作为url中的参数
                 match_id = source_matchId
-            # print('最后的matchid：', match_id)
             return match_id
     except Exception as e:
         match_yxlmgw_log.error(e, exc_info=True)
