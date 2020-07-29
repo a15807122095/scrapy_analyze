@@ -152,7 +152,7 @@ def parse(url, headers):
 # url_list对应的{小局第几场：场次的详情url，...}
 def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name, matchTime):
       # redis中加入网站源标记
-      source = 'SN'
+      source = 'SN网站'
       game_name = '英雄联盟'
       result = redis_check(redis, game_name, db, source, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
       match_id = result[0] if result else None

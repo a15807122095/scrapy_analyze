@@ -285,7 +285,9 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
         # print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 result = redis_value.split(source)[1]
+                # print(111, result)
                 results = result.split('+')
+                # print(222, results)
                 match_id = results[0]
                 league_id = results[1]
                 team_a_id = results[2]

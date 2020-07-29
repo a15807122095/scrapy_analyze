@@ -3,12 +3,7 @@
 __pycache__/
 
 
-
-<<<<<<< HEAD
+proxies.txt
 
 # ignore the Log file
 Log/*
-=======
-# ignore the Log file
-Log/*
->>>>>>> ee06929cc22a7e0cedfc1e04cf73bee4a3e41c16
