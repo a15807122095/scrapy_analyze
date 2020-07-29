@@ -111,15 +111,14 @@ def parse_wzry(url, headers, propertys, db):
         match_wzry_log.error(e, exc_info=True)
 
 
-for url in urls_xuanba:
-    propertys = '选拔赛'
-    parse_wzry(url, header_wzry, propertys, db)
+# for url in urls_xuanba:
+#     propertys = '选拔赛'
+#     parse_wzry(url, header_wzry, propertys, db)
+#
+# for url in url_groups_wzry:
+#     propertys = '小组赛'
+#     parse_wzry(url, header_wzry, propertys, db)
 
-for url in url_groups_wzry:
-    propertys = '小组赛'
-    parse_wzry(url, header_wzry, propertys, db)
-
-# 淘汰赛出来之后在加
 for url in url_knockout_list:
     propertys = '淘汰赛'
     parse_wzry(url, header_wzry, propertys, db)
