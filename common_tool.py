@@ -348,7 +348,7 @@ def redis_return_operation(redis, game_name, db, source_from, league_sourcename,
         team_a_name = result[4] if result else None
         team_b_name = result[5] if result else None
         league_name = result[6] if result else None
-        print('redis返回的数据：',result)
+        # print('redis返回的数据：',result)
         # 后端返回600且match_id不为空,拿到match_id更新其他字段（其中比分要判断：以a,b队比分之和大的为准）
         if result and match_id:
                 sql_score = 'select team_a_score, team_b_score from game_python_match where id = {};'.format(
@@ -382,7 +382,7 @@ def redis_check_data(redis, source, data):
         # print('key:', data)
         redis_key = source + data
         redis_value = redis.get_data(redis_key)
-        print('redis中的存储情况：', redis_key, redis_value)
+        # print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 return redis_value
         else:

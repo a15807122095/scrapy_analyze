@@ -42,6 +42,25 @@ url_group10 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&s
 url_groups_wzry = [url_group1, url_group2, url_group3, url_group4,
              url_group5, url_group6, url_group7, url_group8, url_group9, url_group10]
 
+
+# 淘汰赛
+url_knockout1 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1596067200&end_time=1596153600&seasonid=KCC2020S'
+url_knockout2 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1596153600&end_time=1596240000&seasonid=KCC2020S'
+url_knockout3 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1596240000&end_time=1596326400&seasonid=KCC2020S'
+url_knockout4 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1596326400&end_time=1596412800&seasonid=KCC2020S'
+url_knockout5 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1596844800&end_time=1596931200&seasonid=KCC2020S'
+url_knockout6 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1596931200&end_time=1597017600&seasonid=KCC2020S'
+url_knockout7 = 'https://app.tga.qq.com/openapi/tgabank/getSchedules?appid=10005&sign=K8tjxlHDt7HHFSJTlxxZW4A%2BalA%3D&begin_time=1597536000&end_time=1597622400&seasonid=KCC2020S'
+
+url_knockout_list = [url_knockout1, url_knockout2, url_knockout3, url_knockout4, url_knockout5, url_knockout6, url_knockout7]
+
+
+
+
+
+
+
+
 match_wzry_log = get_log('match_wzry')
 redis = RedisCache_checkAPI()
 db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
@@ -59,6 +78,9 @@ def parse_wzry(url, headers, propertys, db):
             league_sourcename = result['season']
             team_a_sourcename = result['hname']
             team_b_sourcename = result['gname']
+            # 过滤掉待定的赛程
+            if team_a_sourcename == '待定' or  team_b_sourcename == '待定':
+                continue
             # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上data中的‘time’才是表中的start_time类型
             start_time = result['match_timestamp']
             # 官网的状态：1为未开赛， 2为已经开打  4为已打完（需要转化成表中的字段对应值）
@@ -82,8 +104,8 @@ def parse_wzry(url, headers, propertys, db):
                 win_team = None
 
             redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId,
-                                   team_a_sourcename, team_b_sourcename, start_time, team_a_score, team_b_score, status,
-                                   bo, win_team, propertys)
+                           team_a_sourcename, team_b_sourcename, start_time, types, team_a_score, team_b_score, status,
+                           bo, win_team, propertys)
 
     except Exception as e:
         match_wzry_log.error(e, exc_info=True)
@@ -98,3 +120,6 @@ for url in url_groups_wzry:
     parse_wzry(url, header_wzry, propertys, db)
 
 # 淘汰赛出来之后在加
+for url in url_knockout_list:
+    propertys = '淘汰赛'
+    parse_wzry(url, header_wzry, propertys, db)
