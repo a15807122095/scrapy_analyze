@@ -77,8 +77,8 @@ bet_types_handicap = [3, 11, 12, 29]
 
 
 
-# 网站存在有些title类型的竞猜接口不一定两两成对返还，有可能是返还四条数据
-# 这样抓取的第三四条会覆盖第一二条造成问题，所以需要过滤掉其中的两条假数据
+# 网站存在有些title类型的竞猜接口不一定两两成对返还，有可能是返还四条数据（两条旧数据，两条新数据）
+# 这样抓取的第三四条会覆盖第一二条造成问题，所以需要过滤掉其中的两条新数据（保留旧数据）
 title_judge = ['地图让分']
 
 
@@ -160,18 +160,18 @@ def parse(url, headers):
                     list_count = 0
                     # 假数据的索引列表
                     list_index = []
-                    # 判断title_judge中的玩法是否超出两条数据，超出就过滤
-                    #目前网站上只有‘地图让分’有假数据的存在
+                    # 判断title_judge中的玩法是否超出两条数据，超出就过滤后来的新数据（status为1）
+                    #目前网站上只有‘地图让分’有新旧数据的存在（保留旧数据）
                     for rate_message in responses_detail['odds']:
                         if rate_message['group_name'] == '地图让分':
                             judge_exclude_dtrf += 1
-                            if rate_message['status'] == 4:
+                            if rate_message['status'] == 1:
                                 list_index.append(list_count)
                         list_count += 1
-                    # print('假数据列表索引:', list_index)
+                    # print('新数据列表索引:', list_index)
                     responses_detail_list = responses_detail['odds']
                     # print('去除假数据之前：', len(responses_detail_list), responses_detail_list)
-                    # 存在假数据情况时，根据假数据的索引列表去掉接口返回列表的假数据
+                    # 存在更新新数据情况时，根据新数据的索引列表去掉接口返回列表的假数据
                     if judge_exclude_dtrf > 2:
                         responses_detail_list = [responses_detail_list[i] for i in range(len(responses_detail_list)) if (i not in list_index)]
                     # print('去除假数据之后：', len(responses_detail_list), responses_detail_list)

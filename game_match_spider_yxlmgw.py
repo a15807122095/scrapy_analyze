@@ -88,7 +88,6 @@ def parse_yxlm(url, db, match_status, headers):
                 team_a_sourcename = bMatchName[0].strip()
                 team_b_sourcename = bMatchName[1].strip()
                 start_time = each_source['MatchDate']
-                print(start_time)
 
                 redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId,
                        team_a_sourcename, team_b_sourcename, date_timestamp, types, team_a_score, team_b_score, status, bo,

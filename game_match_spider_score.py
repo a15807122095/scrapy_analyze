@@ -110,7 +110,7 @@ def parse(url, data, headers):
                             insert_argument['win_team'] = win_team
                             insert_argument['propertys'] = propertys
                             insert_argument['source_from'] = source_from
-                            API_return_600(db, result, time_stamp, insert_argument)
+                            # API_return_600(db, result, time_stamp, insert_argument)
 
                         elif result['code'] == 200:
                             # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)

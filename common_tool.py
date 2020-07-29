@@ -175,54 +175,6 @@ def hero_check(hero_name, type):
 #                       }
 # }
 
-def API_return_600(db, result, date_timestamp, insert_argument):
-        # 检测为600, result['result']包含6个字段：
-        # league_id, team_a_id, team_b_id,
-        # league_name, team_a_name, team_b_name
-        result_insert = result['result']
-        league_id = result_insert['league_id']
-        team_a_id = result_insert['team_a_id']
-        team_b_id = result_insert['team_b_id']
-        league_name = result_insert['league_name']
-        team_a_name = result_insert['team_a_name']
-        team_b_name = result_insert['team_b_name']
-        type = insert_argument['type']
-        status = insert_argument['status']
-        bo = insert_argument['bo']
-        team_a_score = insert_argument['team_a_score']
-        team_b_score = insert_argument['team_b_score']
-        win_team = insert_argument['win_team']
-        propertys = insert_argument['propertys']
-        source_from = insert_argument['source_from']
-        source_matchId = insert_argument['source_matchId']
-
-        # 不同网站比赛时间可能不一致，以联赛名，主客队名相同，比赛时间左右30分钟进行过滤判断是否为一场赛程
-
-        # 将result_insert和date_timestamp与game_python_match进行对比确定是否有这场赛事
-        sql_check = "select id from game_python_match where team_a_name = '{}' and team_a_name = '{}' and ;".format(source_matchId)
-        # print('600的查询主键sql：', sql_check)
-        status_update_or_insert = db.select_id(sql_check)
-        # print('600的查询主键：', status_update_or_insert)
-        if status_update_or_insert == None:
-                # 确定没有这场赛事就执行插入数据
-                # 拿到其余需要更新的字段
-                sql_insert = "INSERT INTO `game_python_match` (type, league_id, status, start_time, bo," \
-                             " team_a_id, team_a_name, team_a_score, team_b_id, team_b_name, " \
-                             "team_b_score, league_name, check_match, propertys, source_from, source_matchId, win_team) VALUES ({0}, {1}, {2}," \
-                             " {3}, {4}, {5}, '{6}', {7}, {8}, '{9}', {10}, '{11}', '{12}', '{13}', '{14}', '{15}', " \
-                             "'{16}');".format(type, league_id, status, date_timestamp, bo, team_a_id,
-                                               team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
-                                               league_name, check_match, propertys, source_from, source_matchId, win_team)
-                # print('600的未有记录执行插入：', sql_insert)
-                db.update_insert(sql_insert)
-                # print('600的未有记录执行插入完成')
-        else:
-                # print('600的有记录执行修改', type, status, bo, team_a_score, team_b_score, win_team,
-                #       check_match,
-                #       status_update_or_insert)
-                db.update_by_id(type, status, bo, team_a_score, team_b_score, win_team, check_match, propertys,
-                                source_from, source_matchId, date_timestamp, status_update_or_insert)
-                # print('600的有记录执行修改完成')
 
 # 从有联赛名,对战双方的赛程检测API返回为200的处理(记录到旧的黑名单表：api_check_200)
 def API_return_200(db, result):
@@ -350,7 +302,7 @@ def redis_return_operation(redis, game_name, db, source_from, league_sourcename,
         team_a_name = result[4] if result else None
         team_b_name = result[5] if result else None
         league_name = result[6] if result else None
-        print('redis返回的数据：',result)
+        # print('redis返回的数据：',result)
         # 后端返回600且match_id不为空,拿到match_id更新其他字段（其中比分要判断：以a,b队比分之和大的为准）
         if result and match_id:
                 sql_score = 'select team_a_score, team_b_score from game_python_match where id = {};'.format(
@@ -375,7 +327,7 @@ def redis_return_operation(redis, game_name, db, source_from, league_sourcename,
                                                team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
                                                league_name, propertys, source_from, source_matchId,
                                                win_team)
-                print('600的未有记录执行插入：', sql_insert)
+                # print('600的未有记录执行插入：', sql_insert)
                 db.update_insert(sql_insert)
                 # print('600的未有记录执行插入完成')
 
@@ -384,7 +336,7 @@ def redis_check_data(redis, source, data):
         # print('key:', data)
         redis_key = source + data
         redis_value = redis.get_data(redis_key)
-        print('redis中的存储情况：', redis_key, redis_value)
+        # print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 return redis_value
         else:
