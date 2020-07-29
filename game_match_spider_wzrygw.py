@@ -65,7 +65,6 @@ def parse_wzry(url, db, headers):
             start_time = source_list['mtime'] + ':00'
             start_time_date = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
             start_time = start_time_date.timestamp()
-            print('时间戳:', start_time)
 
             redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId, team_a_sourcename,
                     team_b_sourcename, start_time, types, team_a_score, team_b_score, status, bo, win_team, propertys)

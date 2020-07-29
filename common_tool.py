@@ -282,7 +282,7 @@ def get_weeks():
 def redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, matchTime):
         redis_key = source + source_matchid
         redis_value = redis.get_data(redis_key)
-        print('redis中的存储情况：', redis_key, redis_value)
+        # print('redis中的存储情况：', redis_key, redis_value)
         if redis_value:
                 result = redis_value.split(source)[1]
                 results = result.split('+')
@@ -373,7 +373,7 @@ def redis_return_operation(redis, game_name, db, source_from, league_sourcename,
                                                team_a_name, team_a_score, team_b_id, team_b_name, team_b_score,
                                                league_name, propertys, source_from, source_matchId,
                                                win_team)
-                print('600的未有记录执行插入：', sql_insert)
+                # print('600的未有记录执行插入：', sql_insert)
                 db.update_insert(sql_insert)
                 # print('600的未有记录执行插入完成')
 

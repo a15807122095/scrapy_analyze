@@ -60,7 +60,7 @@ class con_db():
                       "team_b_score={4} , win_team='{5}', propertys='{6}', source_from='{7}', source_matchId='{8}', " \
                       "start_time={9} where id = {10};".format(type, status, bo, team_a_score, team_b_score, win_team,
                                                                propertys, source_from, source_matchId, start_time, id)
-        print('执行修改的sql:', sql_update)
+        # print('执行修改的sql:', sql_update)
         self.cursor.execute(sql_update)
         self.db.commit()
 
