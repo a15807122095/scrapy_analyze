@@ -52,23 +52,7 @@ cookie_detailmessage =  'UM_distinctid=172d9950ded60f-00916514fef24f-4353761-e10
                   'Hm_lvt_c95eb6bfdfb2628993e507a9f5e0ea01=1594349716,1594629849,1594689821,1594950270; ' \
                   'Hm_lpvt_c95eb6bfdfb2628993e507a9f5e0ea01={}; ' \
                   'CNZZDATA1278221275=1183247664-1592785074-%7C1594954362'.format(now_stamp)
-detail_heades = {
-'authority': 'www.shangniu.cn',
-'method': 'GET',
-'path': '/api/battle/lol/match/liveBattle?battleId=26806599103',
-'scheme': 'https',
-'accept': 'application/json, text/plain, */*',
-'accept-encoding': 'gzip, deflate, br',
-'accept-language': 'zh-CN,zh;q=0.9',
-'cookie': cookie_detailmessage,
-'ctype': 'pc',
-'referer': 'https://www.shangniu.cn/lol/268065991.html',
-'sec-fetch-dest': 'empty',
-'sec-fetch-mode': 'cors',
-'sec-fetch-site': 'same-origin',
-'token':'',
-'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
-}
+
 
 matchdetail_urlpre = 'https://www.shangniu.cn/live/lol/'
 # 爬取规则： 拿到本周的startTime和endTime的时间戳组成访问赛程url,根据时间戳差值拿到上周的赛程url
@@ -88,6 +72,24 @@ start_date = datetime.strptime(start_str, '%Y-%m-%d %H:%M:%S')
 last_date = datetime.strptime(last_str, '%Y-%m-%d %H:%M:%S')
 startTime = int(start_date.timestamp()) * 1000
 lastTime = int(last_date.timestamp()) * 1000
+
+detail_heades = {
+'authority': 'www.shangniu.cn',
+'method': 'GET',
+'path': '/api/battle/index/matchList?gameType=lol&startTime={0}&endTime={1}'.format(startTime, lastTime),
+'scheme': 'https',
+'accept': 'application/json, text/plain, */*',
+'accept-encoding': 'gzip, deflate, br',
+'accept-language': 'zh-CN,zh;q=0.9',
+'cookie': cookie_detailmessage,
+'ctype': 'pc',
+'referer': 'https://www.shangniu.cn/lol/268065991.html',
+'sec-fetch-dest': 'empty',
+'sec-fetch-mode': 'cors',
+'sec-fetch-site': 'same-origin',
+'token':'',
+'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'
+}
 
 # 一周的时间戳差值为604800000
 startTime_l = startTime - 604800000
@@ -152,7 +154,7 @@ def parse(url, headers):
 # url_list对应的{小局第几场：场次的详情url，...}
 def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name, matchTime):
       # redis中加入网站源标记
-      source = 'SN'
+      source = 'SN网站'
       game_name = '英雄联盟'
       result = redis_check(redis, game_name, db, source, leagueName, source_matchid, team_a_name, team_b_name, matchTime)
       match_id = result[0] if result else None
