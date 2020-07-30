@@ -1,7 +1,7 @@
 # -*-coding:utf-8-*-
 import json
 from setting import db_setting
-from common_tool import get_response, api_check, redis_return_operation, API_return_600, API_return_200
+from common_tool import get_response, api_check, redis_return_operation, API_return_200
 from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db
 import time

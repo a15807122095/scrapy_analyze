@@ -212,17 +212,16 @@ def fullday_remain(now_time):
         fullday_time = fullday_time.timestamp()
         return fullday_time - now_stamp
 
-#得到今日日期字符串：
-# '2020.06.29'， '2020.06.30'， '2020.07.01'， '2020.07.02'， '2020.07.03'， '2020.07.04'， '2020.07.05'
+#得到上周的日期和这周到今天的日期字符串列表：
+# ['2020.07.20', '2020.07.21', '2020.07.22', '2020.07.23', '2020.07.24', '2020.07.25', '2020.07.26', '2020.07.27']
 def get_weeks():
         week_str = []
-        num = 1
         now = datetime.now().date()
-        while num <= 7:
-                now_str = now.strftime('%Y.%m.%d')
-                week_str.append(now_str)
-                now += timedelta(days=1)
-                num += 1
+        num = 7 + now.weekday() + 1
+        for i in range(num):
+            now_str = now.strftime('%Y.%m.%d')
+            week_str.append(now_str)
+            now -= timedelta(days=1)
         return week_str
 
 # 有赛程id的表都会有一个匹配过程：
