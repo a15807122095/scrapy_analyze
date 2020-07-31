@@ -21,7 +21,8 @@ class RedisCache_checkAPI(object):
         RedisCache_checkAPI.pool = redis.ConnectionPool(
             host=Redis_checkAPI['host'],
             port=Redis_checkAPI['port'],
-            db=Redis_checkAPI['db'])
+            db=Redis_checkAPI['db'],
+            password=Redis_checkAPI['password'])
 
     def set_data(self, key, time, value):
         '''set data with (key, value)
@@ -56,7 +57,8 @@ class RedisCache_urldistict(object):
         RedisCache_urldistict.pool = redis.ConnectionPool(
             host=Redis_urldistict['host'],
             port=Redis_urldistict['port'],
-            db=Redis_urldistict['db'])
+            db=Redis_urldistict['db'],
+            password=Redis_urldistict['password'])
 
     def set_data(self, key, time, value):
         '''设
