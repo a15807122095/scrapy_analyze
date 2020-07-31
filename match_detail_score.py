@@ -86,35 +86,38 @@ def parse(url, data, headers):
                 for detail_list in results_detail:
                     # 拿到网站的赛程id，用于后面redis_check
                     source_matchid = detail_list['match_id']
+                    # 网站赛事的比赛时间为 "2020-07-30"和 "17:00" 转换为十位的时间戳
+                    start_time_str = detail_list['start_date'] + detail_list['start_time'] + ':00'
+                    start_time_date = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
+                    start_time = int(start_time_date.timestamp())
                     detail_list = detail_list['result']
                     for resultID in detail_list:
                         resultID = resultID['resultID']
                         detail_urls = detail_url.format(resultID, now_date_stamp)
                         print('详情url：', detail_urls)
-                        detail_parse(detail_urls, source_matchid, types, game_name, league_name, headers)
+                        detail_parse(detail_urls, source_matchid, types, game_name, league_name, start_time, headers)
     except Exception as e:
         match_detail_score_log.error(e)
 
 
 
-def detail_parse(url, source_matchid, types, game_name, league_name, headers):
+def detail_parse(url, source_matchid, types, game_name, league_name, start_time, headers):
     result = get_response(url, headers)
-    result = result['data']['result_list']
-    # 先暂且把蓝方当主队，红方当客队请求后端拿到规范后的队名
-    home_team = result['blue_name']
-    guest_name = result['red_name']
-    # redis中加入网站源标记
-    source = 'SN网站'
-    game_name = '英雄联盟'
-    result = redis_check(redis, game_name, db, source, league_name, source_matchid, home_team, guest_name, matchTime)
-    match_id = result[0] if result else None
-    # 后端返回600且match_id不为空，说明对局详情在赛程表中匹配到赛程
-    if result and match_id:
-
-
-
-
-
+    if not result:
+        result = result['data']['result_list']
+        # 先暂且把蓝方当主队，红方当客队请求后端拿到规范后的队名
+        home_team = result['blue_name']
+        guest_name = result['red_name']
+        # redis中加入网站源标记
+        source = 'SN网站'
+        game_name = '英雄联盟'
+        result = redis_check(redis, game_name, db, source, league_name, source_matchid, home_team, guest_name, start_time)
+        match_id = result[0] if result else None
+        # match_id, league_id, team_a_id, tea_b_id, team_a_name, tea_b_name, league_name
+        # 后端返回600且match_id不为空，说明对局详情在赛程表中匹配到赛程
+        if result and match_id:
+            team_a_name = result[4]
+            tea_b_name = result[5]
 
 
 

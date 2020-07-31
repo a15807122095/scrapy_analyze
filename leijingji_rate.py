@@ -43,6 +43,14 @@ befor_url_9 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=9&match_t
 befor_url = [befor_url_1, befor_url_2, befor_url_3, befor_url_4, befor_url_5, befor_url_6, befor_url_7,
              befor_url_8, befor_url_9]
 
+# 结束（此url进来的数据只用来更新win字段）
+end_url1 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=4'
+end_url2 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=2&match_type=4'
+end_url3 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=3&match_type=4'
+end_url4 = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=4&match_type=4'
+
+end_url = [end_url1, end_url2, end_url3, end_url4]
+
 match_url_start = 'https://incpgameinfo.esportsworldlink.com/v2/odds?match_id='
 
 leijingji_log = get_log('leijingji')
@@ -90,8 +98,9 @@ bet_status = {
     1:0, 4:4, 2:4, 5:2
 }
 
+# 考虑到王者荣耀有bo7，且
 match_stage_bo = {
-    'final':0, 'r1':1, 'r2':2, 'r3':3, 'r4':4, 'r5':5
+    'final':0, 'r1':1, 'r2':2, 'r3':3, 'r4':4, 'r5':5, 'r6':6, 'r7':7
 }
 
 game_type = {
@@ -99,7 +108,7 @@ game_type = {
     '王者荣耀':2
 }
 
-def parse(url, headers):
+def parse(url, headers, judge):
     responses = get_response(url, headers)
     responses = responses['result']
     # print('源数据：', len(responses))
@@ -234,31 +243,55 @@ def parse(url, headers):
 
                                     # print('竞猜双方信息:', count, option_one_name, source_a_name, option_one_odds, option_one_team_id,
                                     #       option_two_name, source_b_name, option_two_odds, option_two_team_id)
-                                    sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
-                                        " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
-                                        "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id, win, source_status) " \
-                                            "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, {10}, '{11}', '{12}'," \
-                                            " {13}, {14}, {15}, {16}, {17}, {18}) " \
-                                                        "ON DUPLICATE KEY UPDATE " \
-                                        "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_time={8}," \
-                                        " status={9}, handicap={10}, option_one_name='{11}', option_two_name='{12}', " \
-                                        "option_one_odds={13}, option_two_odds={14}, option_one_team_id={15}, " \
-                                        "option_two_team_id={16}, win={17}, source_status={18};".format(types, source, id, match_stage, match_id, board_num, title,
-                                        bet_type, end_time, status, handicap, option_one_name, option_two_name, option_one_odds,
-                                        option_two_odds, option_one_team_id, option_two_team_id, win, source_status)
-                                    # print('记录竞猜表：', sql_bet_insert)
-                                    db.update_insert(sql_bet_insert)
-                                    # print('记录竞猜表插入完成')
+                                    if judge == 1:
+                                        sql_bet_insert = "INSERT INTO `game_bet_info_copy` (type, source, source_matchid, match_stage," \
+                                            " match_id, board_num, title, bet_type, end_time, status, handicap, option_one_name, " \
+                                            "option_two_name, option_one_odds, option_two_odds, option_one_team_id, option_two_team_id, win, source_status) " \
+                                                "VALUES({0}, '{1}', '{2}', '{3}', {4}, {5}, '{6}', {7}, {8}, {9}, {10}, '{11}', '{12}'," \
+                                                " {13}, {14}, {15}, {16}, {17}, {18}) " \
+                                                            "ON DUPLICATE KEY UPDATE " \
+                                            "type={0}, source='{1}', match_id={4}, board_num={5}, title='{6}', bet_type={7}, end_time={8}," \
+                                            " status={9}, handicap={10}, option_one_name='{11}', option_two_name='{12}', " \
+                                            "option_one_odds={13}, option_two_odds={14}, option_one_team_id={15}, " \
+                                            "option_two_team_id={16}, win={17}, source_status={18};".format(types, source, id,
+                                            match_stage, match_id, board_num, title, bet_type, end_time, status, handicap,
+                                            option_one_name, option_two_name, option_one_odds, option_two_odds,
+                                            option_one_team_id, option_two_team_id, win, source_status)
+
+                                        # print('记录竞猜表更新或插入：', sql_bet_insert)
+                                        db.update_insert(sql_bet_insert)
+                                        # print('记录竞猜表更新或插入完成')
+                                    else:
+                                        sql_searchid = "select id from game_bet_info_copy where source_matchid={0} and" \
+                                                       " title='{1}' and match_stage='{2}';".format(source_matchid, title, match_stage)
+                                        # 找到已经更新的赔率，在已结束的接口中更新win字段
+                                        # print('找到需要更新win字段的赔率id:', sql_searchid)
+                                        bet_id = db.select_id(sql_searchid)
+                                        if bet_id:
+                                            sql_bet_update_win = "update game_bet_info_copy set win={0} where id={1};".format(win, bet_id)
+                                            # print('记录竞猜表只更新win字段：', bet_id, sql_bet_update_win)
+                                            db.update_insert(sql_bet_update_win)
+                                            # print('记录竞猜表只更新win字段完成')
+
+
+
+
 
 # print('今日赔率',start_url)
-parse(start_url, headers)
+parse(start_url, headers, 1)
 # print('今日赔率抓取完成')
+
 # print('滚盘赔率',gunpan_url1)
 for gunpan_url in gunpan_urls:
-    parse(gunpan_url, headers)
-parse(gunpan_url1, headers)
+    parse(gunpan_url, headers, 1)
 # print('滚盘赔率抓取完成')
+
 # print('赛前赔率',befor_url)
 for url in befor_url:
-    parse(url, headers)
+    parse(url, headers, 1)
 # print('赛前赔率抓取完成')
+
+# print('结束后赔率',befor_url)
+for url in end_url:
+    parse(url, headers, 0)
+# print('结束后赔率抓取完成')
