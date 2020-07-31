@@ -101,9 +101,11 @@ def parse(types):
             if result_league['code'] == 600:
                 # 战队榜单的url请求抓取2页,抓2次
                 form_data['tournament_id'] = tournamentID
-                for i in range(2):
+                for i in range(4):
                     form_data['page'] = i+1
                     responses = post_response(start_url, form_data, header)
+                    if not responses:
+                        continue
                     responses = responses['data']['data']['list']
 
                     for responses_team in responses:
@@ -111,9 +113,11 @@ def parse(types):
                         team_name = responses_team['team_name']
                         # 访问后端拿到正确的团队名
                         result_team = team_check(team_name, types)
+                        if not result_team:
+                            continue
                         team_name = result_team['result']['team_name']
                         team_id = result_team['result']['team_id']
-                        # print('访问后端得到的团队结果：', result_player)
+                        # print('访问后端得到的团队结果：', result_team)
                         if result_team['code']==600:
                             nick_name = responses_team['player_name']
                             # 根据昵称访问后端拿到正确的player_id

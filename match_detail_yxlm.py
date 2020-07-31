@@ -198,7 +198,10 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                        team_b_small_dragon_count = team_stats_1['small_dragon_count']
                        team_a_tower_count = team_stats_0['tower_success_count']
                        team_b_tower_count = team_stats_1['tower_success_count']
-                       win_team = 'A' if team_stats_0['is_win'] == True else 'B'
+                       if team_stats_0['is_win'] != team_stats_1['is_win']:
+                           win_team = 'A' if team_stats_0['is_win'] == True else 'B'
+                       else:
+                           win_team = None
                        first_big_dragon_team = 'A' if team_stats_0['is_first_big_dragon'] == True else 'B'
                        first_small_dragon_team = 'A' if team_stats_0['is_first_small_dragon'] == True else 'B'
                        first_blood_team = 'A' if team_stats_0['is_first_blood'] == True else 'B'
@@ -280,29 +283,59 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
 
                        # print('得到的match_id和index_num：',match_id, index_num)
                        # 添加或修改对局详情记录
-                       sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num, economic_diff," \
-                       " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
-                       "team_a_assist_count, team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count, " \
-                       "team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team, " \
-                       "first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills, " \
-                       "team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_hero, team_b_hero, " \
-                       "team_a_side, team_b_side, source_matchid) VALUES({0}, {1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
-                       "{13}, {14}, {15}, {16}, {17}, '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}', '{26}'," \
-                       " {27}, {28}, '{29}', '{30}', '{31}', '{32}', '{33}') ON DUPLICATE KEY UPDATE match_id = {0}, duration = {1}, " \
-                       "economic_diff = '{3}', status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
-                       "team_a_death_count = {8}, team_b_death_count = {9}, team_a_assist_count = {10}, team_b_assist_count = {11}, " \
-                       "team_a_big_dragon_count = {12}, team_b_big_dragon_count = {13}, team_a_small_dragon_count = {14}, " \
-                       "team_b_small_dragon_count = {15}, team_a_tower_count = {16}, team_b_tower_count = {17}, " \
-                       "win_team = '{18}', first_big_dragon_team = '{19}', first_small_dragon_team = '{20}', " \
-                       "first_blood_team = '{21}', team_a_five_kills = '{22}', team_b_five_kills = '{23}', team_a_ten_kills = '{24}'," \
-                       "team_b_ten_kills = '{25}', first_tower_team = '{26}', team_a_money = {27}, team_b_money = {28}, " \
-                       "team_a_hero = '{29}', team_b_hero = '{30}', team_a_side = '{31}', team_b_side = '{32}', source_matchid ='{33}';".format(
-                       match_id, duration, index_num, economic_diff, status, types, team_a_kill_count, team_b_kill_count,
-                       team_a_death_count, team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_big_dragon_count,
-                       team_b_big_dragon_count, team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count,
-                       team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
-                       team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
-                       team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side, source_matchid)
+                       if win_team != None:
+                           sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num, economic_diff," \
+                           " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
+                           "team_a_assist_count, team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count, " \
+                           "team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team, " \
+                           "first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills, " \
+                           "team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_hero, team_b_hero, " \
+                           "team_a_side, team_b_side, source_matchid) VALUES({0}, {1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
+                           "{13}, {14}, {15}, {16}, {17}, '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}', '{26}'," \
+                           " {27}, {28}, '{29}', '{30}', '{31}', '{32}', '{33}') ON DUPLICATE KEY UPDATE match_id = {0}, duration = {1}, " \
+                           "economic_diff = '{3}', status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
+                           "team_a_death_count = {8}, team_b_death_count = {9}, team_a_assist_count = {10}, team_b_assist_count = {11}, " \
+                           "team_a_big_dragon_count = {12}, team_b_big_dragon_count = {13}, team_a_small_dragon_count = {14}, " \
+                           "team_b_small_dragon_count = {15}, team_a_tower_count = {16}, team_b_tower_count = {17}, " \
+                           "win_team = '{18}', first_big_dragon_team = '{19}', first_small_dragon_team = '{20}', " \
+                           "first_blood_team = '{21}', team_a_five_kills = '{22}', team_b_five_kills = '{23}', team_a_ten_kills = '{24}'," \
+                           "team_b_ten_kills = '{25}', first_tower_team = '{26}', team_a_money = {27}, team_b_money = {28}, " \
+                           "team_a_hero = '{29}', team_b_hero = '{30}', team_a_side = '{31}', team_b_side = '{32}', source_matchid ='{33}';".format(
+                           match_id, duration, index_num, economic_diff, status, types, team_a_kill_count, team_b_kill_count,
+                           team_a_death_count, team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_big_dragon_count,
+                           team_b_big_dragon_count, team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count,
+                           team_b_tower_count, win_team, first_big_dragon_team, first_small_dragon_team, first_blood_team,
+                           team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money,
+                           team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side, source_matchid)
+                       else:
+                           sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num, economic_diff," \
+                           " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, " \
+                           "team_a_assist_count, team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count, " \
+                           "team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, " \
+                           "first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills, " \
+                           "team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_hero, team_b_hero, " \
+                           "team_a_side, team_b_side, source_matchid) VALUES({0}, {1}, {2}, '{3}', {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, " \
+                           "{13}, {14}, {15}, {16}, {17}, '{18}', '{19}', '{20}', '{21}', '{22}', '{23}', '{24}', '{25}'," \
+                           " {26}, {27}, '{28}', '{29}', '{30}', '{31}', '{32}') ON DUPLICATE KEY UPDATE match_id = {0}, duration = {1}, " \
+                           "economic_diff = '{3}', status = {4}, type = {5}, team_a_kill_count = {6}, team_b_kill_count = {7}, " \
+                           "team_a_death_count = {8}, team_b_death_count = {9}, team_a_assist_count = {10}, team_b_assist_count = {11}, " \
+                           "team_a_big_dragon_count = {12}, team_b_big_dragon_count = {13}, team_a_small_dragon_count = {14}, " \
+                           "team_b_small_dragon_count = {15}, team_a_tower_count = {16}, team_b_tower_count = {17}, " \
+                           "first_big_dragon_team = '{18}', first_small_dragon_team = '{19}', " \
+                           "first_blood_team = '{20}', team_a_five_kills = '{21}', team_b_five_kills = '{22}', team_a_ten_kills = '{23}'," \
+                           "team_b_ten_kills = '{24}', first_tower_team = '{25}', team_a_money = {26}, team_b_money = {27}, " \
+                           "team_a_hero = '{28}', team_b_hero = '{29}', team_a_side = '{30}', team_b_side = '{31}', source_matchid ='{32}';".format(
+                           match_id, duration, index_num, economic_diff, status, types, team_a_kill_count,
+                           team_b_kill_count,
+                           team_a_death_count, team_b_death_count, team_a_assist_count, team_b_assist_count,
+                           team_a_big_dragon_count,
+                           team_b_big_dragon_count, team_a_small_dragon_count, team_b_small_dragon_count,
+                           team_a_tower_count,
+                           team_b_tower_count, first_big_dragon_team, first_small_dragon_team,
+                           first_blood_team,
+                           team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills,
+                           first_tower_team, team_a_money,
+                           team_b_money, team_a_hero, team_b_hero, team_a_side, team_b_side, source_matchid)
                        # print('记录对局详情表：', sql_battle_insert)
                        db.update_insert(sql_battle_insert)
                        # print('记录对局详情表插入完成')

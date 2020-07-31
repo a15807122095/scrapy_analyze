@@ -99,9 +99,11 @@ def parse(types):
             if result_league['code'] == 600:
                 # 战队榜单的url请求抓取2页,抓2次
                 form_data['tournament_id'] = tournamentID
-                for i in range(2):
+                for i in range(3):
                     form_data['page'] = i+1
                     responses = post_response(start_url, form_data, header)
+                    if not responses:
+                        continue
                     responses = responses['data']['data']['list']
 
                     for responses_team in responses:
