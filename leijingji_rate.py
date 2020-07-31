@@ -2,7 +2,7 @@
 import time
 import requests
 from datetime import datetime, timedelta
-from common_tool import get_response, redis_check, get_log
+from common_tool import get_response, get_log, API_return_200
 from lxml import etree
 from common_tool import api_check
 from import_data_to_mysql import con_db
@@ -64,6 +64,7 @@ headers = {
 db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 # 创建redis对象
 redis = RedisCache_checkAPI()
+redis_zset = redis.obj()
 # 竞猜类型
 # 1: 全场获胜；2: 输赢（单局）；3: 让分；4: 1血； 5: 5杀；6: 10杀；7: 首塔；8: 小龙首杀；9: 大龙首杀；10: 人头总数单双；
 # 11: 总击杀数大小；12: 比赛时长大小；13：五分钟内是否出现1血；14：击杀数最多；15：第一条小龙元素为；16：第一条小龙元素为“水”；
@@ -144,9 +145,45 @@ def parse(url, headers):
                 start_time = int(start_time.timestamp())
                 start_time = str(start_time)
                 source_matchid = str(id)
-                result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
-                # print('match_id:', result, source_a_name, source_b_name)
 
+                # 先查找redis的zset集合中有没有对应网站的source_matchid，没有就添加
+                result = redis_zset.zscore('ray:odds', source_matchid)
+                # 没有就找后端匹配，拿到赛事id
+                if not result:
+                    # redis没记录，请求检测接口
+                    # print('检验的参数:', game_name, leagueName, source_a_name, source_b_name)
+                    result = api_check(game_name, leagueName, source_a_name, source_b_name)
+                    # print('返回的api接口：', result)
+                    if result['code'] == 600:
+                        league_id = result['result']['league_id']
+                        team_a_id = result['result']['team_a_id']
+                        team_b_id = result['result']['team_b_id']
+                        # 尚牛和雷竞技的比赛时间与官网有差别，用源网的时间左右一个小时过滤官网的时间来查找赛事id
+                        # 其它网站的比赛时间暂时还不清楚，后面再加条件区分
+                        matchTime_before = int(start_time) - 3600
+                        matchTime_after = int(start_time) + 3600
+                        sql_check = 'select id from game_python_match where league_id = {0} and team_a_id in ({1}, {2})' \
+                                    ' and team_b_id in ({1}, {2}) and start_time between {3} and {4};'.format(league_id,
+                                    team_a_id, team_b_id, matchTime_before, matchTime_after)
+                        # print('检测api返回拼凑的sql：', sql_check)
+                        # 拿到数据再去赛程表拿到赛事id（未拿到赛事id的暂时不处理）
+                        match_id = db.select_id(sql_check)
+                        # print('匹配到的match_id:', match_id)
+                        if match_id:
+                            # 保存到redis，设置1天的过期时间
+                            # 格式为zset: 'ray:odds' : {37233313:100000101, 37233327: 100000011}
+                            # print('存入redis')
+                            redis_zset.zadd('ray:odds', {source_matchid:match_id})
+                            redis_zset.expire('ray:odds', 86400)
+                            # print('已经保存到redis')
+
+                    if result['code'] == 200:
+                        # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
+                        API_return_200(db, result)
+                        return None
+
+                # result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
+                # print('match_id:', result, source_a_name, source_b_name)
                 # # 如果match_id为空，说明雷竞技的竞猜赛程在赛程表中没找到，这时不录入
                 # if result:
                 #     match_id = result[0]

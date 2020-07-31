@@ -42,6 +42,11 @@ class RedisCache_checkAPI(object):
         '''
         return self._connection.delete(key)
 
+    def obj(self):
+        '''直接返回redis对象，自定义操作
+        '''
+        return self._connection
+
 
 
 # 为了减少数据库读写太频繁,记录选手id（类似于重复查询的redis缓存过滤）
