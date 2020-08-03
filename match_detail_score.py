@@ -94,7 +94,7 @@ def parse(url, data, headers):
                     for resultID in detail_list:
                         resultID = resultID['resultID']
                         detail_urls = detail_url.format(resultID, now_date_stamp)
-                        print('详情url：', detail_urls)
+                        print('详情url：', resultID, detail_urls)
                         detail_parse(detail_urls, source_matchid, types, game_name, league_name, start_time, headers)
     except Exception as e:
         match_detail_score_log.error(e)

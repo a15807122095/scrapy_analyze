@@ -45,7 +45,7 @@ today_stamp = str_today.timestamp()
 # 这周1的00:00:00时间戳
 monday_stamp = int(today_stamp - 86400 * week_day)
 # # 上周日的00:00:00时间戳
-# last_weekstamp = int(monday_stamp - 86400)
+last_weekstamp = int(monday_stamp - 86400)
 # 下周1的00:00:00时间戳
 next_weekstamp = int(monday_stamp + 86400 * 7)
 
@@ -66,9 +66,13 @@ def parse_wanplus(url, data, db, headers):
         for key_list, result in results.items():
             date_time = result['time']
             result = result['list']
-            # print('赛程数据1:', type(result), result)
+            print(result)
+            # 有的字段是bool类型，过滤掉
+            if type(result) == bool:
+                continue
+            print('赛程数据1:', key_list, type(result), result)
             for match in result:
-                # print('赛程数据2:', type(match), match)
+                print('赛程数据2:', key_list, type(match), match)
                 league_sourcename = match['ename']
                 # 只抓取LCK, LCS, LEC, LDL联赛
                 if 'LCK' in league_sourcename or 'LCS' in league_sourcename or 'LEC' in league_sourcename or 'LDL' in league_sourcename:
@@ -106,35 +110,35 @@ def parse_wanplus(url, data, db, headers):
 
 
 
-# # # 上周的赛程
-# print('开始抓上周赛程')
+# 上周的赛程
+print('开始抓上周赛程')
+form_data = {
+    '_gtk': 806653903,
+    'game': 2,
+    'time': last_weekstamp,
+    'eids': ''
+}
+parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
+# print('上周赛程已抓取')
+
+# # 本周的赛程
+# # print('开始抓本周赛程')
 # form_data = {
-#     '_gtk': 806653903,
+#     '_gtk': 121196025,
 #     'game': 2,
-#     'time': last_weekstamp,
+#     'time': monday_stamp,
 #     'eids': ''
 # }
-# parse(start_url, form_data, db, headers)
-# # print('上周赛程已抓取')
-
-# 本周的赛程
-# print('开始抓本周赛程')
-form_data = {
-    '_gtk': 806653903,
-    'game': 2,
-    'time': monday_stamp,
-    'eids': ''
-}
-parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
-# print('本周赛程已抓取')
-
-# # 下周的赛程
-# print('开始抓下周赛程')
-form_data = {
-    '_gtk': 806653903,
-    'game': 2,
-    'time': next_weekstamp,
-    'eids': ''
-}
-parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
-# print('下周赛程已抓取')
+# parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
+# # print('本周赛程已抓取')
+#
+# # # 下周的赛程
+# # print('开始抓下周赛程')
+# form_data = {
+#     '_gtk': 121196025,
+#     'game': 2,
+#     'time': next_weekstamp,
+#     'eids': ''
+# }
+# parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
+# # print('下周赛程已抓取')
