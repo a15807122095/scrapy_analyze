@@ -109,15 +109,15 @@ def parse_wanplus(url, data, db, headers):
 
 
 
-# 上周的赛程
-print('开始抓上周赛程')
-form_data = {
-    '_gtk': 806653903,
-    'game': 2,
-    'time': last_weekstamp,
-    'eids': ''
-}
-parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
+## 上周的赛程
+# print('开始抓上周赛程')
+# form_data = {
+#     '_gtk': 806653903,
+#     'game': 2,
+#     'time': last_weekstamp,
+#     'eids': ''
+# }
+# parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
 # print('上周赛程已抓取')
 
 # 本周的赛程
