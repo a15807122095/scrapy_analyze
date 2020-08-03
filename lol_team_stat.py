@@ -158,18 +158,19 @@ def parse(types):
                                         " time_average, death_average, kill_average, economic_minute, first_blood_rate, tower_fail_average," \
                                         " tower_success_average, kda, damage_average, big_dragon_rate, big_dragon_average, small_dragon_rate," \
                                         "small_dragon_average, first_tower_rate, damage_minute, hit_minute, economic_average, type, " \
-                                        "wards_placed_minute, wards_killed_minute) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, " \
-                                        "{8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}) " \
+                                        "wards_placed_minute, wards_killed_minute, assist_average) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, " \
+                                        "{8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, {20}, {21}, {22}, {23}, {24}) " \
                                                 "ON DUPLICATE KEY UPDATE " \
                                         "team_id={0}, league_id={1}, play_count={2}, win_rate={3}, time_average={4}, death_average={5}, " \
                                         "kill_average={6}, economic_minute={7}, first_blood_rate={8}, tower_fail_average={9}, " \
                                         "tower_success_average={10}, kda={11}, damage_average={12}, big_dragon_rate={13}, big_dragon_average={14}, " \
                                         "small_dragon_rate={15}, small_dragon_average={16}, first_tower_rate={17}, damage_minute={18}, " \
-                                        "hit_minute={19}, economic_average={20}, type={21}, wards_placed_minute={22}, wards_killed_minute={23};".format(
-                                        team_id, league_id, play_count, win_rate, time_averages, death_average, kill_average,
-                                        economic_minute, first_blood_rate, tower_fail_average, tower_success_average, kda, damage_average,
-                                        big_dragon_rate, big_dragon_average, small_dragon_rate, small_dragon_average, first_tower_rate,
-                                        damage_minute, hit_minute, economic_average, types, wards_placed_minute, wards_killed_minute)
+                                        "hit_minute={19}, economic_average={20}, type={21}, wards_placed_minute={22}, wards_killed_minute={23}, " \
+                                        "assist_average={24};".format(team_id, league_id, play_count, win_rate, time_averages, death_average,
+                                        kill_average, economic_minute, first_blood_rate, tower_fail_average, tower_success_average, kda,
+                                        damage_average, big_dragon_rate, big_dragon_average, small_dragon_rate, small_dragon_average,
+                                        first_tower_rate, damage_minute, hit_minute, economic_average, types, wards_placed_minute,
+                                        wards_killed_minute, assist_average)
 
 
                             sql_teamrank_wzry = "INSERT INTO `game_kog_team_league_stats` (team_id, league_id, win_count, lost_count, " \
@@ -191,7 +192,7 @@ def parse(types):
                                        kill_average, death_average, assist_average, economic_average, economic_minute, hit_minute,
                                        wards_placed_minute, wards_killed_minute, damage_average, damage_minute, win_rate, score)
                             sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
-                            # print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
+                            print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
                             db.update_insert(sql_teamrank)
 
                         else:

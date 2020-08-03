@@ -263,10 +263,9 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
                         # 其它网站的比赛时间暂时还不清楚，后面再加条件区分
                         matchTime_before = int(matchTime) - 3600
                         matchTime_after = int(matchTime) + 3600
-                        sql_check = 'select id from game_python_match where league_id = {0} and team_a_id in ({1}, {2})' \
-                        ' and team_b_id in ({1}, {2}) and start_time between {3} and {4};'.format(league_id, team_a_id,
-                                                                                     team_b_id, matchTime_before,
-                                                                                     matchTime_after)
+                        sql_check = 'select id from game_python_match where league_id = {0} ' \
+                        'and team_a_id in ({1}, {2}) and team_b_id in ({1}, {2}) and start_time between {3} and {4};'.\
+                        format(league_id, team_a_id, team_b_id, matchTime_before, matchTime_after)
                         # print('检测api返回拼凑的sql：', sql_check)
                         # 拿到数据再去赛程表拿到赛事id（未拿到赛事id的暂时不处理）
                         match_id = db.select_id(sql_check)
