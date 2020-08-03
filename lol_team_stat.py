@@ -192,7 +192,7 @@ def parse(types):
                                        kill_average, death_average, assist_average, economic_average, economic_minute, hit_minute,
                                        wards_placed_minute, wards_killed_minute, damage_average, damage_minute, win_rate, score)
                             sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
-                            print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
+                            # print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
                             db.update_insert(sql_teamrank)
 
                         else:
