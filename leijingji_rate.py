@@ -170,12 +170,10 @@ def parse(url, headers):
                         match_id = db.select_id(sql_check)
                         # print('匹配到的match_id:', match_id)
                         if match_id:
-                            # 保存到redis，设置1天的过期时间
-                            # 格式为zset: 'ray:odds' : {37233313:100000101, 37233327: 100000011}
-                            # print('存入redis')
-                            redis_zset.zadd('ray:odds', {source_matchid:match_id})
-                            redis_zset.expire('ray:odds', 86400)
-                            # print('已经保存到redis')
+                        # 将雷竞技的网站源赛事id记录到赛程表中
+                            sql_insert = 'update game_python_match set bet_id={0} where id={1}'.format(id, match_id)
+                            db.update_insert(sql_insert)
+                            # print('记录bet_id字段完成')
 
                     if result['code'] == 200:
                         # 判断为200就将不存在的添加到‘api_check_200’表中,让后端完善赛事名称(只添加返回的id为0的,不为0就是None)
