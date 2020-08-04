@@ -7,6 +7,7 @@ from import_data_to_mysql import con_db
 from import_data_to_redis import RedisCache_checkAPI
 from datetime import datetime, timedelta
 from setting import db_setting
+import json
 
 
 """
@@ -448,6 +449,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 for value in values:
                     value = result[value]
                     equip_ids_list.append(value)
+                equip_ids_list = str(equip_ids_list)
                 hero_player_dict[hero_sourcename].append(equip_ids_list)
             print('添加23值索引后的英雄选手字典', hero_player_dict)
 
@@ -459,6 +461,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 for value in values:
                     value = result[value]
                     skill_ids_list.append(value)
+                    print(111, skill_ids_list)
                 hero_player_dict[hero_sourcename].append(skill_ids_list)
             print('添加24值索引后的英雄选手字典', hero_player_dict)
 
@@ -527,11 +530,13 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 score = value_player[21]
                 position = value_player[22]
                 equip_ids = value_player[23]
-                equip_ids = str(equip_ids)
-                equip_ids.replace('\'', '\"')
+                # equip_ids = json.dumps(equip_ids)
+                equip_ids = equip_ids.replace('\'', '\"')
+                print(str(equip_ids))
                 skill_ids = value_player[24]
-                skill_ids = str(skill_ids)
-                skill_ids.replace('\'', '\"')
+                skill_ids = json.dumps(skill_ids)
+                skill_ids = skill_ids.replace('\'', '\"')
+
 
 
                 # 添加或修改选手对局记录
@@ -541,13 +546,13 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                     "damage_taken_minute, damage_taken_percent, kda, money_count, money_minute, offered_rate, score, " \
                     "equip_ids, skill_ids, position, type, source_matchid, team_id, source_from) VALUES({0}, {1}, '{2}', \"{3}\", " \
                     "{4}, {5}, '{6}', '{7}', {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, " \
-                    "{20}, {21}, {22}, {23}, \"{24}\", \"{25}\", '{26}', {27}, {28}, {29}, '{30}') " \
+                    "{20}, {21}, {22}, {23}, '{24}', '{25}', '{26}', {27}, {28}, {29}, '{30}') " \
                     "ON DUPLICATE KEY UPDATE match_id = {0}, player_name = '{2}', player_avatar = \"{3}\", " \
                     "hero_id = {4}, hero_level = {5}, hero_name = '{6}', hero_avatar = '{7}', kill_count = {8}, " \
                     "death_count = {9}, assist_count = {10}, last_hit_count = {11}, last_hit_minute = {12}, " \
                     "damage_count = {13}, damage_minute = {14}, damage_percent = {15}, damage_taken_count = {16}, " \
                     "damage_taken_minute = {17}, damage_taken_percent = {18}, kda = {19}, money_count = {20}, " \
-                    "money_minute = {21}, offered_rate = {22}, score = {23}, equip_ids = \"{24}\", skill_ids = \"{25}\"," \
+                    "money_minute = {21}, offered_rate = {22}, score = {23}, equip_ids = '{24}', skill_ids = '{25}'," \
                     " position='{26}', type={27}, source_matchid={28}, team_id={29}, source_from='{30}';".format(match_id,
                     player_id, player_name, player_avatar, hero_id, hero_level, hero_name, hero_avatar, kill_count,
                     death_count, assist_count, last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent,
