@@ -232,13 +232,13 @@ def parse(url, data, headers):
     results = post_response(url, data, headers)
     results = results['data']['list']
     # print('需要拿的赛程日期:', date_list)
-    print(len(results), type(results), results)
+    # print(len(results), type(results), results)
     for key_list, results_list in results.items():
         # 排除掉今天和昨天之外的赛程
         if key_list not in date_list:
             continue
         result_list = results_list['info']
-        print('所有赛程:', key_list, type(result_list), result_list)
+        # print('所有赛程:', key_list, type(result_list), result_list)
         for key_detail, results_detail in result_list.items():
             # 排除不需要的联赛
             if key_detail not in tournamentID:
@@ -262,7 +262,7 @@ def parse(url, data, headers):
                         # 赛程的小局id,用这个id存到对局详情表中才能作为判断更新或插入条件
                         resultID = resultID['resultID']
                         detail_urls = detail_url.format(resultID, now_date_stamp)
-                        print('详情url：', resultID, detail_urls)
+                        # print('详情url：', resultID, detail_urls)
                         detail_parse(detail_urls, source_matchid, resultID, types, index_num, game_name,
                                      league_name, start_time, headers)
                         index_num += 1
@@ -273,7 +273,7 @@ def parse(url, data, headers):
 
 def detail_parse(url, source_matchid, resultID, types, index_num, game_name, league_name, start_time, headers):
     result_all = get_response(url, headers)
-    print('详情数据：', result_all)
+    # print('详情数据：', result_all)
     source = 'score'
     last_hit_minute = 0
 
@@ -290,12 +290,12 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
             # redis存储结构：（源+player+player_name:player_id）‘score+player+uzi:'123'
             key_player = source + '+' + 'player' + '+' + player_name
             result = redis.get_data(key_player)
-            print('redis查询player的结果：', result)
+            # print('redis查询player的结果：', result)
             if result:
-                print('redis有记录：', result)
+                # print('redis有记录：', result)
                 player_id = result
             else:
-                print('redis中没记录：', result)
+                # print('redis中没记录：', result)
                 # redis中不存在就访问后端接口
                 result_player = player_check(player_name, types)
                 # print('访问后端拿到的选手信息：', result_player)
@@ -303,13 +303,13 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                     player_id = result_player['result']['player_id']
                     # 记录到redis中，格式为：（源+player+source_player_id:player_id）‘score+player+8377:'123'
                     redis.set_data(key_player, 86400, player_id)
-                    print('redis记录player完成：',key_player, player_id)
+                    # print('redis记录player完成：',key_player, player_id)
                 else:
                     # 记录到黑名单中的选手名称
                     sql_blacklist = "select id from black_list where player_name ='{}';".format(player_name)
                     sql_add_blacklist = "insert into black_list set league_name = '{0}',player_name ='{1}', " \
                                         "source_from = 1, judge_position=0010;".format(league_name, player_name)
-                    print('记录到选手黑名单sql:', sql_add_blacklist)
+                    # print('记录到选手黑名单sql:', sql_add_blacklist)
                     player_id = None
                     api_return_200(sql_blacklist, sql_add_blacklist, db)
             # 存在player_id
@@ -326,7 +326,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 # redis存储结构：（源+player+hero_name:hero_id）‘score+hero+8377:'123'
                 key_hero = source + '+' + 'hero' + '+' + hero_name
                 result = redis.get_data(key_hero)
-                print('redis查询hero的结果：', result)
+                # print('redis查询hero的结果：', result)
                 if result:
                     hero_id = result
                 else:
@@ -335,13 +335,13 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                         hero_id = result_hero['result']['hero_id']
                         # 记录到redis中，格式为：（源+player+source_hero_id:hero_id）‘score+hero+8377:'123'
                         redis.set_data(key_hero, 86400, hero_id)
-                        print('redis记录hero完成：', key_hero, hero_id)
+                        # print('redis记录hero完成：', key_hero, hero_id)
                     else:
                         # 记录到黑名单中的英雄名称
                         sql_blacklist = "select id from black_list where hero_name='{}';".format(hero_name)
                         sql_add_blacklist = "insert into black_list set league_name = '{0}',hero_name = '{1}', " \
                                             "source_from = 1, judge_position=0001;".format(league_name, hero_name)
-                        print('记录到英雄黑名单sql:', sql_add_blacklist)
+                        # print('记录到英雄黑名单sql:', sql_add_blacklist)
                         api_return_200(sql_blacklist, sql_add_blacklist, db)
                         hero_id = None
 
@@ -349,7 +349,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 if hero_id:
                     hero_player_dict[hero_name] = [player_name, player_id, player_avatar, hero_id, kill_count,
                                                      assist_count, death_count, team_color]
-        print('英雄选手字典:', hero_player_dict)
+        # print('英雄选手字典:', hero_player_dict)
 
         result = result_all['data']['result_list']
         # 先暂且把蓝方当主队，红方当客队请求后端拿到规范后的队名
@@ -363,7 +363,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
         if result_check and match_id:
             # 网站的比赛时长有个‘game_time_m’代表分钟，‘game_time_s’代表秒
             duration = int(result['game_time_m'])*60 + int(result['game_time_s'])
-            print('比赛时长：', result['game_time_m'], result['game_time_s'], duration)
+            # print('比赛时长：', result['game_time_m'], result['game_time_s'], duration)
             status = 1
             team_a_name = result_check[4]
             team_b_name = result_check[5]
@@ -381,8 +381,8 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
             if team_a_name == team_b_realname and team_b_name == team_a_realname:
                 judge_reversal = True
                 team_judge = {'red': team_a_id, 'blue': team_b_id}
-            print('a,b队的名字：',judge_reversal, home_team, team_a_name, team_a_realname, team_a_id,
-                  guest_name, team_b_name, team_b_realname, team_b_id)
+            # print('a,b队的名字：',judge_reversal, home_team, team_a_name, team_a_realname, team_a_id,
+            #       guest_name, team_b_name, team_b_realname, team_b_id)
 
             # 团队的数据
             team_a_kill_count = result['red_kill'] if judge_reversal else result['blue_kill']
@@ -431,14 +431,14 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 for key, value in iter_obj.items():
                     hero_sourcename = result[key]
                     hero_player_dict[hero_sourcename].append(result[value])
-            print('添加8-21值索引后的英雄选手字典', hero_player_dict)
+            # print('添加8-21值索引后的英雄选手字典', hero_player_dict)
 
 
             # 选手的位置数据补充到hero_player_dict的值列表索引为22
             for key, value in position_dict.items():
                 hero_sourcename = result[key]
                 hero_player_dict[hero_sourcename].append(value)
-            print('添加22值索引后的英雄选手字典', hero_player_dict)
+            # print('添加22值索引后的英雄选手字典', hero_player_dict)
 
             # 选手的装备数据补充到hero_player_dict的值列表索引为23
             # 值存储为json格式,存储到equip_ids_list中
@@ -451,7 +451,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                     equip_ids_list.append(value)
                 equip_ids_list = str(equip_ids_list)
                 hero_player_dict[hero_sourcename].append(equip_ids_list)
-            print('添加23值索引后的英雄选手字典', hero_player_dict)
+            # print('添加23值索引后的英雄选手字典', hero_player_dict)
 
             # 选手的位置数据补充到hero_player_dict的值列表索引为24
             # 值存储为json格式,存储到skill_ids_list = []中
@@ -461,9 +461,9 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 for value in values:
                     value = result[value]
                     skill_ids_list.append(value)
-                    print(111, skill_ids_list)
+                    # print(111, skill_ids_list)
                 hero_player_dict[hero_sourcename].append(skill_ids_list)
-            print('添加24值索引后的英雄选手字典', hero_player_dict)
+            # print('添加24值索引后的英雄选手字典', hero_player_dict)
 
             # 添加或插入到对局详情表中
             sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num," \
@@ -490,9 +490,9 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
             first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills,
             team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money,  team_a_side, team_b_side,
             resultID, source)
-            print('记录对局详情表：', sql_battle_insert)
+            # print('记录对局详情表：', sql_battle_insert)
             db.update_insert(sql_battle_insert)
-            print('记录对局详情表插入完成')
+            # print('记录对局详情表插入完成')
 
             # 开始更新或插入选手表的数据
             # hero_player_dict的格式：
@@ -532,7 +532,6 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                 equip_ids = value_player[23]
                 # equip_ids = json.dumps(equip_ids)
                 equip_ids = equip_ids.replace('\'', '\"')
-                print(str(equip_ids))
                 skill_ids = value_player[24]
                 skill_ids = json.dumps(skill_ids)
                 skill_ids = skill_ids.replace('\'', '\"')
@@ -558,9 +557,9 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
                     death_count, assist_count, last_hit_count, last_hit_minute, damage_count, damage_minute, damage_percent,
                     damage_taken_count, damage_taken_minute, damage_taken_percent, kda, money_count, money_minute,
                     offered_rate, score, equip_ids, skill_ids, position, types, resultID, team_id, source)
-                print('记录选手表：', sql_player_insert)
+                # print('记录选手表：', sql_player_insert)
                 db.update_insert(sql_player_insert)
-                print('记录选手表插入完成')
+                # print('记录选手表插入完成')
 
 
 
@@ -568,10 +567,10 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
 # 本周的比赛：form_data中的date参数为空
 form_data['data'] = ''
 parse(start_url, form_data, headers)
-print('----------------')
+# print('----------------')
 # 上周的比赛：form_data中的date参数为上周五的日期，例如：2020-07-26
 form_data['date'] = last_friday_str
-print(form_data)
+# print(form_data)
 parse(start_url, form_data, headers)
 
 
