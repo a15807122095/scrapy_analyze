@@ -2,5 +2,5 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.spider_api)
+    url(r'^spider_api$', views.spider_api, name='spider_api')
 ]

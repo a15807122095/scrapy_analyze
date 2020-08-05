@@ -377,7 +377,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
             judge_reversal = False
             # 正常情况下网站的a,b队就是表中的a，b队
             team_judge = {'blue':team_a_id, 'red':team_b_id}
-            # 如果score网站的a（蓝），b（红）队校正后与表中a,b队相反，以表为准，此时score的b队是主队
+            # 如果score网站的a（蓝），b（红）队校正后与表中a,b队相反，以表为准，此时score的b队是主队(一般不会)
             if team_a_name == team_b_realname and team_b_name == team_a_realname:
                 judge_reversal = True
                 team_judge = {'red': team_a_id, 'blue': team_b_id}

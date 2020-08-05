@@ -8,7 +8,7 @@ from import_data_to_redis import RedisCache_checkAPI
 from setting import db_setting
 
 """
-尚牛电竞网比赛详情爬虫
+尚牛电竞网比赛详情爬虫(数据不稳定,已弃用)
 """
 
 # 创建数据库对象
