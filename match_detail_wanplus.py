@@ -4,6 +4,8 @@ from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db
 from datetime import datetime
 from setting import db_setting
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from lxml import etree
 import re
 import requests
@@ -43,6 +45,11 @@ headers_wanplus= {
 'x-csrf-token': '806653903',
 'x-requested-with': 'XMLHttpRequest'
 }
+
+# 构建selenium对象
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+driver = webdriver.Chrome(chrome_options=chrome_options)
 
 #得到上周的日期和这周到今天的日期字符串列表：
 # 将工具函数中的 ['2020.08.05', '2020.08.04', '2020.08.03', '2020.08.02']转换成
@@ -119,7 +126,6 @@ def parse_wanplus(url, data, db, headers):
                     # 如果wanplus主客队校正后与表中a,b队相反，以表为准，此时wanplus的b队是主队(一般不会)
                     if team_a_name == team_b_realname and team_b_name == team_a_realname:
                         judge_reversal = True
-
 
                     # 拿到网站的赛事id,拼凑出详情的url
                     match_details_url = match_detail_url.format(source_matchid)

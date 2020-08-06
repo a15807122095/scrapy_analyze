@@ -227,54 +227,55 @@ form_data = {
 def parse(url, data, headers):
     types = 1
     game_name = '英雄联盟'
-    source_from = 'score详情赛事' # 爬虫网站源
-    # try:
-    results = post_response(url, data, headers)
-    results = results['data']['list']
-    # print('需要拿的赛程日期:', date_list)
-    # print(len(results), type(results), results)
-    for key_list, results_list in results.items():
-        # 排除掉今天和昨天之外的赛程
-        if key_list not in date_list:
-            continue
-        result_list = results_list['info']
-        # print('所有赛程:', key_list, type(result_list), result_list)
-        for key_detail, results_detail in result_list.items():
-            # 排除不需要的联赛
-            if key_detail not in tournamentID:
+    try:
+        results = post_response(url, data, headers)
+        results = results['data']['list']
+        # print('需要拿的赛程日期:', date_list)
+        # print(len(results), type(results), results)
+        for key_list, results_list in results.items():
+            # 排除掉今天和昨天之外的赛程
+            if key_list not in date_list:
                 continue
-            league_name = tournamentID[key_detail]
-            # print('现有联赛：', key_detail, results_detail)
-            results_detail = results_detail['list']
-            for detail_list in results_detail:
-                # 拿到网站的赛程id，用于后面redis_check
-                source_matchid = detail_list['match_id']
-                # 网站赛事的比赛时间为 "2020-07-30"和 "17:00" 转换为十位的时间戳
-                start_time_str = detail_list['start_date'] + ' ' + detail_list['start_time'] + ':00'
-                start_time_date = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
-                start_time = int(start_time_date.timestamp())
-                detail_list = detail_list['result']
-                # print('得到的时间：', start_time_str, start_time_date, detail_list)
-                if detail_list:
-                    # 以detail_list中遍历次数计为bo
-                    index_num = 1
-                    for resultID in detail_list:
-                        # 赛程的小局id,用这个id存到对局详情表中才能作为判断更新或插入条件
-                        resultID = resultID['resultID']
-                        detail_urls = detail_url.format(resultID, now_date_stamp)
-                        # print('详情url：', resultID, detail_urls)
-                        detail_parse(detail_urls, source_matchid, resultID, types, index_num, game_name,
-                                     league_name, start_time, headers)
-                        index_num += 1
-    # except Exception as e:
-    #     match_detail_score_log.error(e)
+            result_list = results_list['info']
+            # print('所有赛程:', key_list, type(result_list), result_list)
+            for key_detail, results_detail in result_list.items():
+                # 排除不需要的联赛
+                if key_detail not in tournamentID:
+                    continue
+                league_name = tournamentID[key_detail]
+                # print('现有联赛：', key_detail, results_detail)
+                results_detail = results_detail['list']
+                for detail_list in results_detail:
+                    # 拿到网站的赛程id，用于后面redis_check
+                    source_matchid = detail_list['match_id']
+                    # 网站赛事的比赛时间为 "2020-07-30"和 "17:00" 转换为十位的时间戳
+                    start_time_str = detail_list['start_date'] + ' ' + detail_list['start_time'] + ':00'
+                    start_time_date = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
+                    start_time = int(start_time_date.timestamp())
+                    if 'result' not in detail_list:
+                        continue
+                    detail_list = detail_list['result']
+                    # print('得到的时间：', start_time_str, start_time_date, detail_list)
+                    if detail_list:
+                        # 以detail_list中遍历次数计为bo
+                        index_num = 1
+                        for resultID in detail_list:
+                            # 赛程的小局id,用这个id存到对局详情表中才能作为判断更新或插入条件
+                            resultID = resultID['resultID']
+                            detail_urls = detail_url.format(resultID, now_date_stamp)
+                            # print('详情url：', resultID, detail_urls)
+                            detail_parse(detail_urls, resultID, types, index_num, game_name,
+                                         league_name, start_time, headers)
+                            index_num += 1
+    except Exception as e:
+        match_detail_score_log.error(e)
 
 
 
-def detail_parse(url, source_matchid, resultID, types, index_num, game_name, league_name, start_time, headers):
+def detail_parse(url, resultID, types, index_num, game_name, league_name, start_time, headers):
     result_all = get_response(url, headers)
     # print('详情数据：', result_all)
-    source = 'score'
+    source = 'score详情赛事'
     last_hit_minute = 0
 
     if result_all:
@@ -356,7 +357,7 @@ def detail_parse(url, source_matchid, resultID, types, index_num, game_name, lea
         home_team = result['blue_name']
         guest_name = result['red_name']
         # redis中加入网站源标记
-        result_check = redis_check(redis, game_name, db, source, league_name, source_matchid, home_team, guest_name, start_time)
+        result_check = redis_check(redis, game_name, db, source, league_name, resultID, home_team, guest_name, start_time)
         match_id = result_check[0]
         # match_id, league_id, team_a_id, tea_b_id, team_a_name, tea_b_name, league_name
         # 后端返回600且match_id不为空，说明对局详情在赛程表中匹配到赛程
