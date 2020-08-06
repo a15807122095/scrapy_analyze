@@ -7,8 +7,8 @@ from setting import db_setting
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from lxml import etree
-import re
-import requests
+import requests, re, time
+from threading import Thread
 
 """
 王者荣耀赛事详情爬虫
@@ -86,6 +86,7 @@ def parse_wanplus(url, data, db, headers):
         game_name = '王者荣耀'
         source_from = 'wanplus王者荣耀详情'  # 爬虫源网站
         types = 2
+        status = 1
         for key_list, result in results.items():
             if key_list not in date_lists:
                 continue
@@ -96,6 +97,8 @@ def parse_wanplus(url, data, db, headers):
                 continue
             for result_match in results_match:
                 source_matchid = result_match['scheduleid']
+                if source_matchid != 65121:
+                    continue
                 league_name = result_match['ename']
                 home_team = result_match['oneseedname']
                 guest_name = result_match['twoseedname']
@@ -104,64 +107,127 @@ def parse_wanplus(url, data, db, headers):
                 strs = time.split(':')
                 start_time = int(strs[0]) * 3600 + int(strs[1]) * 60 + date_time
                 start_time = str(start_time)
-                result_check = redis_check(redis, game_name, db, source_from, league_name, source_matchid,
-                                           home_team, guest_name, start_time)
-                match_id = result_check[0]
 
-                # 赛程在赛程表中找到记录
-                if match_id:
-                    status = 1
-                    team_a_name = result_check[4]
-                    team_b_name = result_check[5]
-                    sql_check = 'select team_a_name, team_a_id, team_b_name, team_b_id from game_python_match ' \
-                                'where id = {}'.format(match_id)
-                    result_team = db.select_message(sql_check)
-                    team_a_realname = result_team[0]
-                    team_b_realname = result_team[2]
-                    team_a_id = result_team[1]
-                    team_b_id = result_team[3]
+                # 拿到网站的赛事id,拼凑出详情的url
+                match_details_url = match_detail_url.format(source_matchid)
+                print('拿到的对局url:', source_matchid, match_details_url)
 
-                    # 判断网站的主客队与赛程表中主客队是否一致
-                    judge_reversal = False
-                    # 如果wanplus主客队校正后与表中a,b队相反，以表为准，此时wanplus的b队是主队(一般不会)
-                    if team_a_name == team_b_realname and team_b_name == team_a_realname:
-                        judge_reversal = True
+                # 用xpath提取出对局页面的小局id存到列表中
+                response = requests.get(match_details_url, headers)
+                response = response.text
+                html = etree.HTML(response)
 
-                    # 拿到网站的赛事id,拼凑出详情的url
-                    match_details_url = match_detail_url.format(source_matchid)
-                    print('拿到的对局url:', source_matchid, match_details_url)
+                match_detail_ids = html.xpath('//*[@id="info"]/div[2]/div[3]/ul/li/@match')
+                print('得到的小局id:', match_detail_ids)
 
-                    # 用xpath提取出对局页面的小局id存到列表中
-                    response = requests.get(match_details_url, headers)
-                    response = response.text
-                    html = etree.HTML(response)
+                # 模拟点击拿该场赛程所有小场比赛时长字典
+                duration_dict = parse_duration(match_details_url, match_detail_ids)
+                index_num = len(match_detail_ids)
+                for match_detail_id in match_detail_ids:
+                    # 拿到每场小局id去redis查找赛程记录
+                    result_check = redis_check(redis, game_name, db, source_from, league_name, match_detail_id,
+                                               home_team, guest_name, start_time)
+                    match_id = result_check[0]
 
-                    # 拿到时长格式为'26:53'
-                    try:
-                        duration = html.xpath('//*[@id="info"]/div[2]/div[3]/ul/li/@match')
-                        duration = duration[-5::]
-                        result_time = duration.split(':')
-                        duration = int(result_time[0]) * 60 + int(result_time[1])
-                    except TypeError:
-                        match_detail_wanplus_log.error('时长异常')
+                    # 赛程在赛程表中找到记录
+                    if match_id:
+                        team_a_name = result_check[4]
+                        team_b_name = result_check[5]
+                        sql_check = 'select team_a_name, team_a_id, team_b_name, team_b_id from game_python_match ' \
+                                    'where id = {}'.format(match_id)
+                        result_team = db.select_message(sql_check)
+                        team_a_realname = result_team[0]
+                        team_b_realname = result_team[2]
+                        team_a_id = result_team[1]
+                        team_b_id = result_team[3]
 
-                    match_detail_ids = html.xpath('//*[@id="info"]/div[2]/div[3]/ul/li/@match')
-                    print('得到的小局id:', match_detail_ids)
+                        # 判断网站的主客队与赛程表中主客队是否一致
+                        judge_reversal = False
+                        # 如果wanplus主客队校正后与表中a,b队相反，以表为准，此时wanplus的b队是主队(一般不会)
+                        if team_a_name == team_b_realname and team_b_name == team_a_realname:
+                            judge_reversal = True
 
-                    for match_detail_id in match_detail_ids:
                         #拿到小局id拼凑出更细致的详情页面
                         match_more_details_url = match_more_detail_url.format(match_detail_id)
                         print('小局的对局详情url:', match_more_details_url)
 
 
-
+                        # 开始分析小局详情页
+                        parse_detail_wanplus(match_more_details_url, type, match_id, status, index_num, duration_dict, judge_reversal)
     except Exception as e:
         match_detail_wanplus_log.error(e, exc_info=True)
+
+# 模拟点击获取比赛时长
+def parse_duration(match_details_url, match_detail_ids):
+    # 字典键值对形式: 小局第几场: 小局比赛时长
+    duration_dict = {}
+    driver.get(match_details_url)
+    # 小场个数,判断需要点击几次(最后一次比赛时长不需要点击,因为默认展示的是最后一场的)
+    count = len(match_detail_ids)
+    for i in range(count):
+        # 先给字典的值默认为0
+        duration_dict[7-i] = 0
+        if i !=1:
+            # 第一个比赛时长(最后一场)不需要点击
+            driver.find_element_by_xpath('//*[@id="info"]/div[2]/div[3]/ul/li[{}]'.format(i+1)).click()
+            time.sleep(0.5)
+            # 拿到时长格式为'26:53'
+            try:
+                duration = driver.find_element_by_xpath('//*[@id="info"]/div[2]/div[3]/div[2]/ul/li[1]/div/div[2]').text
+                duration = duration[-5::]
+                result_time = duration.split(':')
+                duration = int(result_time[0]) * 60 + int(result_time[1])
+            except TypeError:
+                duration = 0
+                match_detail_wanplus_log.error('时长异常')
+            duration_dict[7-i] = duration
+    driver.quit()
+    print('拿到比赛时长字典为:', duration_dict)
+    return duration_dict
+
+
+def parse_detail_wanplus(match_more_details_url, type, match_id, status, index_num, duration_dict, judge_reversal):
+    response = requests.get(match_more_details_url, headers_wanplus)
+    response = response.text
+    html = etree.HTML(response)
+
+    # 对局详情数据
+    # xpath拿到左右队伍的数据,默认左边为主队,右边为客队,但要根据judge_reversal判断
+    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')
+    left_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[1]')
+    right_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[3]')
+    left_death_count = 0
+    right_death_count = 0
+    left_assist_count = 0
+    right_assist_count = 0
+    left_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[1]')
+    left_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[3]')
+    left_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[1]')
+    left_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]')
+
+
+
+    # 选手对局记录
+
+
+    if judge_reversal:
+        # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
+        win_team = 'B' if win_left == '胜' else 'A'
+    else:
+        win_team = 'A' if win_left == '胜' else 'B'
+    duration = duration_dict[index_num]
+    team_a_kill_count =
+
+
+
+
+
+
 
 
 
 # 上周的赛程
-print('开始抓上周赛程')
+print('开始抓上周赛程11')
 form_data = {
     '_gtk': 121196025,
     'game': 6,
