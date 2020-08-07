@@ -83,19 +83,26 @@ def parse_wanplus(url, data, db, headers):
                     strs = time.split(':')
                     start_time = int(strs[0]) * 3600 + int(strs[1]) * 60 + date_time
                     start_time = str(start_time)
+
+                    bo = match['bonum']
+                    team_a_score = match['onewin']
+                    team_b_score = match['twowin']
+
                     # match['isover']表示是否结束， match['live']表示是否进行中
+                    # 同时也要用两队比分之和是否等于bo来判断是否结束
                     if match['live']:
                         status = '1'
                     elif not match['live'] and not match['isover']:
                         status = '0'
                     else:
-                        status = '2'
-                    bo = match['bonum']
-                    team_a_score = match['onewin']
-                    team_b_score = match['twowin']
-                    if team_a_score > team_b_score and status == '2':
+                        # 判断两队的分值和是否为bo,网站有可能status为2但是没打完
+                        if int(team_a_score) + int(team_b_score) == bo:
+                            status = '2'
+                        else:
+                            status = '1'
+                    if int(team_a_score) > int(team_b_score) and status == '2':
                         win_team = 'A'
-                    elif team_a_score < team_b_score and status == '2':
+                    elif int(team_a_score) < int(team_b_score) and status == '2':
                         win_team = 'B'
                     else:
                         win_team = None

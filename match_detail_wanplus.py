@@ -204,20 +204,42 @@ def parse_detail_wanplus(match_more_details_url, type, match_id, status, index_n
     left_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[3]')
     left_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[1]')
     left_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]')
-
-
-
-    # 选手对局记录
-
-
     if judge_reversal:
         # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
         win_team = 'B' if win_left == '胜' else 'A'
     else:
         win_team = 'A' if win_left == '胜' else 'B'
     duration = duration_dict[index_num]
-    team_a_kill_count =
 
+    # 选手对局记录
+
+
+
+    # 更新或插入表(有部分字段没有就不用写)
+    sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num," \
+    " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, team_a_assist_count, " \
+    "team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count, team_a_small_dragon_count, " \
+    "team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team, first_big_dragon_team, " \
+    "first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills," \
+    " first_tower_team, team_a_money, team_b_money, team_a_side, team_b_side, source_matchid, source_from) VALUES({0}, " \
+    "{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, '{17}', '{18}', '{19}', " \
+    "'{20}', '{21}',' {22}', '{23}', '{24}', '{25}', {26}, {27}, '{28}', '{29}', {30}, '{31}') " \
+                        "ON DUPLICATE KEY UPDATE " \
+    "match_id = {0}, duration = {1}, index_num={2}, status = {3}, type = {4}, team_a_kill_count = {5}, " \
+    "team_b_kill_count = {6}, team_a_death_count = {7}, team_b_death_count = {8}, team_a_assist_count = {9}, " \
+                        "team_b_assist_count = {10}, team_a_big_dragon_count = {11}, team_b_big_dragon_count = {12}, " \
+                        "team_a_small_dragon_count = {13}, team_b_small_dragon_count = {14}, team_a_tower_count = {15}, " \
+                        "team_b_tower_count = {16}, win_team = '{17}', first_big_dragon_team = '{18}', first_small_dragon_team = '{19}', " \
+                        "first_blood_team = '{20}', team_a_five_kills = '{21}', team_b_five_kills = '{22}', team_a_ten_kills = '{23}'," \
+                        "team_b_ten_kills = '{24}', first_tower_team = '{25}', team_a_money = {26}, team_b_money = {27}, " \
+                        "team_a_side = '{28}', team_b_side = '{29}', source_matchid={30}, source_from='{31}';".format(
+        match_id, duration, index_num,
+        status, types, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count,
+        team_a_assist_count, team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count,
+        team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team,
+        first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills,
+        team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_side, team_b_side,
+        resultID, source)
 
 
 
