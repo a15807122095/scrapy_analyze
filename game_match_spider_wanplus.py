@@ -96,7 +96,7 @@ def parse_wanplus(url, data, db, headers):
                         status = '0'
                     else:
                         # 判断两队的分值和是否为bo,网站有可能status为2但是没打完
-                        if int(team_a_score) + int(team_b_score) == bo:
+                        if int(team_a_score) + int(team_b_score) >= (bo/2):
                             status = '2'
                         else:
                             status = '1'

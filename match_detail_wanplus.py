@@ -193,11 +193,12 @@ def parse_detail_wanplus(match_more_details_url, type, match_id, status, index_n
 
     # 对局详情数据
     # xpath拿到左右队伍的数据,默认左边为主队,右边为客队,但要根据judge_reversal判断
-    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')
-    left_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[1]')
-    right_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[3]')
-    left_death_count = 0
-    right_death_count = 0
+    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')[0]
+    left_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[1]/text()')[0]
+    right_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[3]/text()')[0]
+    # 死亡数得到值列表: 3/3/6 ,需要计算得到总的死亡数
+    left_kill_death_assist = html.xpath('//*[@id="data"]/ul[3]/li/div/div[2]/ul/li[1]/span[1]/text()')[0]
+    right_kill_death_assist = html.xpath('//*[@id="data"]/ul[3]/li/div/div[2]/ul/li[1]/span[3]/text()')[0]
     left_assist_count = 0
     right_assist_count = 0
     left_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[1]')
@@ -212,6 +213,7 @@ def parse_detail_wanplus(match_more_details_url, type, match_id, status, index_n
     duration = duration_dict[index_num]
 
     # 选手对局记录
+
 
 
 
