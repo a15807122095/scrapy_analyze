@@ -1,5 +1,5 @@
 # -*-coding:utf-8-*-
-from common_tool import post_response, get_log, redis_check, get_weeks
+from common_tool import post_response, get_log, redis_check, get_weeks, redis_check_playerID
 from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db
 from datetime import datetime
@@ -25,6 +25,10 @@ match_detail_url = 'https://www.wanplus.com/schedule/{}.html'
 
 match_more_detail_url = 'https://www.wanplus.com/match/{}.html#data'
 
+player_avater = 'https://static.wanplus.com/data/kog/player/{}_mid.png'
+
+hero_avater = 'https://static.wanplus.com/data/kog/hero/square/{}.png'
+
 headers_wanplus= {
 'authority': 'www.wanplus.com',
 'method': 'POST',
@@ -45,6 +49,17 @@ headers_wanplus= {
 'x-csrf-token': '806653903',
 'x-requested-with': 'XMLHttpRequest'
 }
+
+# 根据列表索引可以判断选手的位置信息,因为在页面上是固定的
+# 将选手的字段数据填充到选手字典中
+# 格式为: position : [kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, money_count]
+player_left = {
+    1:[], 2:[], 3:[], 4:[], 5:[]
+}
+player_right = {
+    1:[], 2:[], 3:[], 4:[], 5:[]
+}
+
 
 # 构建selenium对象
 chrome_options = Options()
@@ -153,7 +168,8 @@ def parse_wanplus(url, data, db, headers):
 
 
                         # 开始分析小局详情页
-                        parse_detail_wanplus(match_more_details_url, type, match_id, status, index_num, duration_dict, judge_reversal)
+                        parse_detail_wanplus(match_more_details_url, source_from, types, league_name, match_id, status,
+                                             index_num, duration_dict, judge_reversal)
     except Exception as e:
         match_detail_wanplus_log.error(e, exc_info=True)
 
@@ -186,7 +202,8 @@ def parse_duration(match_details_url, match_detail_ids):
     return duration_dict
 
 
-def parse_detail_wanplus(match_more_details_url, type, match_id, status, index_num, duration_dict, judge_reversal):
+def parse_detail_wanplus(match_more_details_url, source, types, league_name, match_id, status, index_num,
+                         duration_dict, judge_reversal):
     response = requests.get(match_more_details_url, headers_wanplus)
     response = response.text
     html = etree.HTML(response)
@@ -194,17 +211,53 @@ def parse_detail_wanplus(match_more_details_url, type, match_id, status, index_n
     # 对局详情数据
     # xpath拿到左右队伍的数据,默认左边为主队,右边为客队,但要根据judge_reversal判断
     win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')[0]
-    left_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[1]/text()')[0]
-    right_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[3]/text()')[0]
-    # 死亡数得到值列表: 3/3/6 ,需要计算得到总的死亡数
-    left_kill_death_assist = html.xpath('//*[@id="data"]/ul[3]/li/div/div[2]/ul/li[1]/span[1]/text()')[0]
-    right_kill_death_assist = html.xpath('//*[@id="data"]/ul[3]/li/div/div[2]/ul/li[1]/span[3]/text()')[0]
-    left_assist_count = 0
-    right_assist_count = 0
-    left_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[1]')
-    left_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[3]')
-    left_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[1]')
-    left_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]')
+    left_death_assist_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[1]/span[1]/text()")
+    right_death_assist_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[1]/span[3]/text()")
+    left_damage_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[3]/span[1]/text()")[0]
+    right_damage_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[3]/span[3]/text()")[0]
+
+    # 死亡数和助攻数得到值列表:['3/3/6', '7/3/3', '3/2/4', '0/4/10', '0/4/10'] ,需要计算得到总的死亡数和助攻数
+    # 记录每个选手的 击杀/阵亡/助攻到player_left字典
+    team_a_death_count = 0
+    team_a_assist_count = 0
+    count_left = 1
+    for kill_death_assist in left_death_assist_count:
+        message = kill_death_assist.split('/')
+        #计算左边团队死亡和助攻总数
+        team_a_death_count += int(message[1])
+        team_a_assist_count += int(message[2])
+        # 记录左边每个选手的 击杀 死亡 助攻
+        player_left[count_left].extend(message)
+        count_left += 1
+    print('左边的死亡数和助攻数:', team_a_death_count, team_a_assist_count, player_left)
+
+    # 死亡数和助攻数得到值列表:['3/3/6', '7/3/3', '3/2/4', '0/4/10', '0/4/10'] ,需要计算得到总的死亡数和助攻数
+    # 记录每个选手的 击杀/阵亡/助攻到player_right字典
+    team_b_death_count = 0
+    team_b_assist_count = 0
+    count_right = 1
+    for kill_death_assist in right_death_assist_count:
+        message = kill_death_assist.split('/')
+        # 计算右边团队死亡和助攻总数
+        team_b_death_count += int(message[1])
+        team_b_assist_count += int(message[2])
+        # 记录左边每个选手的 击杀 死亡 助攻
+        player_right[count_right].extend(message)
+        count_right += 1
+    print('右边的死亡数和助攻数:', team_b_death_count, team_b_assist_count, player_right)
+
+    # 添加damage_count
+
+
+    # 格式为: position : [kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, money_count]
+
+
+
+
+    team_a_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[1]/text()')[0]
+    team_b_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[3]/text()')[0]
+    team_a_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[1]/text()')[0]
+    team_b_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]/text()')[0]
     if judge_reversal:
         # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
         win_team = 'B' if win_left == '胜' else 'A'
@@ -213,6 +266,18 @@ def parse_detail_wanplus(match_more_details_url, type, match_id, status, index_n
     duration = duration_dict[index_num]
 
     # 选手对局记录
+    messages = html.xpath("//div[@class='match_bans']")
+    # 每组message有两个对位选手
+    for message in messages:
+        player_a_name = message.xpath('div[1]/div[1]/div[2]/p/a/strong/text()')
+        player_id = redis_check_playerID(player_a_name, source, redis, types, league_name, db)
+        playerId_heroId = message.xpath('div[1]/div[1]/div[2]/p/a/@href')
+        source_playerId = playerId_heroId[0].split('/')[-1]
+        player_a_avater = player_avater.format(source_playerId)
+        source_heroId = playerId_heroId[1].split('/')[-1]
+        hero_a_avater = player_avater.format(source_playerId)
+
+
 
 
 
