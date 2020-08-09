@@ -1,5 +1,5 @@
 # -*-coding:utf-8-*-
-from common_tool import post_response, get_log, redis_check, get_weeks, redis_check_playerID
+from common_tool import post_response, get_log, redis_check, get_weeks, redis_check_playerID, redis_check_heroID
 from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db
 from datetime import datetime
@@ -71,10 +71,12 @@ driver = webdriver.Chrome(chrome_options=chrome_options)
 # ['20200805', '20200804', '20200803', '20200802']
 date_list = get_weeks()
 date_lists = []
+date_lists = ['20200810', '20200809', '20200808', '20200807', '20200806', '20200805', '20200804', '20200803', '20200730']
+
 for date in date_list:
     date = re.sub(r'[^0-9]+','',date)
     date_lists.append(date)
-# print(date_lists)
+print(date_lists)
 
 # 玩加网站的post参数主要拿time，上周为周日的00：00:00的时间戳，本周和下周为周1的00:00:00时间戳
 # 应该是点击上周就以上周日00:00:00的时间戳为time，点击下周就以下周1的00:00:00的时间戳为time
@@ -108,15 +110,18 @@ def parse_wanplus(url, data, db, headers):
             date_time = result['time']
             results_match = result['list']
             # 有的字段是bool类型，过滤掉
+            print(results_match)
             if type(results_match) == bool:
                 continue
             for result_match in results_match:
                 source_matchid = result_match['scheduleid']
-                if source_matchid != 65121:
+                print(source_matchid)
+                if source_matchid != '65121':
                     continue
                 league_name = result_match['ename']
                 home_team = result_match['oneseedname']
                 guest_name = result_match['twoseedname']
+                print('赛程信息：', league_name, home_team, guest_name)
                 # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上result['time']才是表中的start_time类型
                 time = result_match['starttime']
                 strs = time.split(':')
@@ -142,6 +147,7 @@ def parse_wanplus(url, data, db, headers):
                     # 拿到每场小局id去redis查找赛程记录
                     result_check = redis_check(redis, game_name, db, source_from, league_name, match_detail_id,
                                                home_team, guest_name, start_time)
+                    print('redis返回的赛程信息：', result_check)
                     match_id = result_check[0]
 
                     # 赛程在赛程表中找到记录
@@ -169,7 +175,7 @@ def parse_wanplus(url, data, db, headers):
 
                         # 开始分析小局详情页
                         parse_detail_wanplus(match_more_details_url, source_from, types, league_name, match_id, status,
-                                             index_num, duration_dict, judge_reversal)
+                                             index_num, duration_dict, judge_reversal, match_detail_id)
     except Exception as e:
         match_detail_wanplus_log.error(e, exc_info=True)
 
@@ -203,61 +209,20 @@ def parse_duration(match_details_url, match_detail_ids):
 
 
 def parse_detail_wanplus(match_more_details_url, source, types, league_name, match_id, status, index_num,
-                         duration_dict, judge_reversal):
+                         duration_dict, judge_reversal, match_detail_id):
     response = requests.get(match_more_details_url, headers_wanplus)
     response = response.text
     html = etree.HTML(response)
 
-    # 对局详情数据
-    # xpath拿到左右队伍的数据,默认左边为主队,右边为客队,但要根据judge_reversal判断
-    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')[0]
-    left_death_assist_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[1]/span[1]/text()")
-    right_death_assist_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[1]/span[3]/text()")
-    left_damage_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[3]/span[1]/text()")[0]
-    right_damage_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[3]/span[3]/text()")[0]
-
-    # 死亡数和助攻数得到值列表:['3/3/6', '7/3/3', '3/2/4', '0/4/10', '0/4/10'] ,需要计算得到总的死亡数和助攻数
-    # 记录每个选手的 击杀/阵亡/助攻到player_left字典
-    team_a_death_count = 0
-    team_a_assist_count = 0
-    count_left = 1
-    for kill_death_assist in left_death_assist_count:
-        message = kill_death_assist.split('/')
-        #计算左边团队死亡和助攻总数
-        team_a_death_count += int(message[1])
-        team_a_assist_count += int(message[2])
-        # 记录左边每个选手的 击杀 死亡 助攻
-        player_left[count_left].extend(message)
-        count_left += 1
-    print('左边的死亡数和助攻数:', team_a_death_count, team_a_assist_count, player_left)
-
-    # 死亡数和助攻数得到值列表:['3/3/6', '7/3/3', '3/2/4', '0/4/10', '0/4/10'] ,需要计算得到总的死亡数和助攻数
-    # 记录每个选手的 击杀/阵亡/助攻到player_right字典
-    team_b_death_count = 0
-    team_b_assist_count = 0
-    count_right = 1
-    for kill_death_assist in right_death_assist_count:
-        message = kill_death_assist.split('/')
-        # 计算右边团队死亡和助攻总数
-        team_b_death_count += int(message[1])
-        team_b_assist_count += int(message[2])
-        # 记录左边每个选手的 击杀 死亡 助攻
-        player_right[count_right].extend(message)
-        count_right += 1
-    print('右边的死亡数和助攻数:', team_b_death_count, team_b_assist_count, player_right)
-
-    # 添加damage_count
-
-
-    # 格式为: position : [kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, money_count]
-
-
-
-
+    # 团队推塔,团队经济
+    team_a_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[1]/text()')[0]
+    team_b_kill_count = html.xpath('//*[@id="data"]/ul[1]/li[3]/div[1]/span[3]/text()')[0]
     team_a_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[1]/text()')[0]
     team_b_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[3]/text()')[0]
     team_a_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[1]/text()')[0]
     team_b_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]/text()')[0]
+    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')[0]
+
     if judge_reversal:
         # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
         win_team = 'B' if win_left == '胜' else 'A'
@@ -265,48 +230,143 @@ def parse_detail_wanplus(match_more_details_url, source, types, league_name, mat
         win_team = 'A' if win_left == '胜' else 'B'
     duration = duration_dict[index_num]
 
+
+
+    # 选手死亡,,,,,
+    # xpath拿到左右队伍的数据,默认左边为主队,右边为客队,但要根据judge_reversal判断
+
+    left_death_assist_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[1]/span[1]/text()")
+    right_death_assist_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[1]/span[3]/text()")
+    left_damage_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[3]/span[1]/text()")
+    right_damage_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[3]/span[3]/text()")
+    left_damage_taken_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[4]/span[1]/text()")
+    right_damage_taken_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[4]/span[3]/text()")
+    left_money_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[2]/span[1]/text()")
+    right_money_count = html.xpath("//div[@class='match_bans']/div[2]/ul/li[2]/span[3]/text()")
+
+    # 死亡数和助攻数得到值列表:['3/3/6', '7/3/3', '3/2/4', '0/4/10', '0/4/10'] ,需要计算得到总的死亡数和助攻数
+    # 记录每个选手的 击杀/阵亡/助攻到player_left字典
+    # 格式为: position : [kill_count, death_count, assist_count, kda, damage_count, damage_taken_count, money_count]
+    team_a_death_count = 0
+    team_a_assist_count = 0
+    count_left = 1
+    for kill_death_assist in left_death_assist_count:
+        message = kill_death_assist.split('/')
+        #计算左边团队死亡和助攻总数
+        kda = (int(message[0]) + int(message[2])) / (int(message[1]) + 1)
+        team_a_death_count += int(message[1])
+        team_a_assist_count += int(message[2])
+        # 记录左边每个选手的 击杀 死亡 助攻
+        player_left[count_left].extend(message)
+        player_left[count_left].append(kda)
+        count_left += 1
+
+
+    # 死亡数和助攻数得到值列表:['3/3/6', '7/3/3', '3/2/4', '0/4/10', '0/4/10'] ,需要计算得到总的死亡数和助攻数
+    # 记录每个选手的 击杀/阵亡/助攻到player_right字典
+    # 格式为: position : [kill_count, death_count, assist_count, kda, damage_count, damage_taken_count, money_count]
+    team_b_death_count = 0
+    team_b_assist_count = 0
+    count_right = 1
+    for kill_death_assist in right_death_assist_count:
+        message = kill_death_assist.split('/')
+        print(message, type(message[0]))
+        kda = (int(message[0]) + int(message[2]))/(int(message[1])+1)
+        # 计算右边团队死亡和助攻总数
+        team_b_death_count += int(message[1])
+        team_b_assist_count += int(message[2])
+        # 记录左边每个选手的 击杀 死亡 助攻
+        player_right[count_right].extend(message)
+        player_right[count_right].append(kda)
+        count_right += 1
+
+
+    # 左边添加money_count
+    count_left = 1
+    for money in left_money_count:
+        player_left[count_left].append(money)
+        count_left += 1
+
+    # 右边添加money_count
+    count_right = 1
+    for money in right_money_count:
+        player_right[count_right].append(money)
+        count_right += 1
+
+    # 左边添加damage_count
+    count_left = 1
+    for damage in left_damage_count:
+        player_left[count_left].append(damage)
+        count_left += 1
+
+    # 右边添加damage_count
+    count_right = 1
+    for damage in right_damage_count:
+        player_right[count_right].append(damage)
+        count_right += 1
+
+    # 左边添加damage_taken_count
+    count_left = 1
+    for damage_taken in left_damage_taken_count:
+        player_left[count_left].append(damage_taken)
+        count_left += 1
+
+    # 右边添加damage_taken_count
+    count_right = 1
+    for damage_taken in right_damage_taken_count:
+        player_right[count_right].append(damage_taken)
+        count_right += 1
+
+    print('左边的死亡数和助攻数:', team_a_death_count, team_a_assist_count, player_left)
+    print('右边的死亡数和助攻数:', team_b_death_count, team_b_assist_count, player_right)
+
     # 选手对局记录
     messages = html.xpath("//div[@class='match_bans']")
     # 每组message有两个对位选手
+    insert_count = 1
     for message in messages:
-        player_a_name = message.xpath('div[1]/div[1]/div[2]/p/a/strong/text()')
-        player_id = redis_check_playerID(player_a_name, source, redis, types, league_name, db)
-        playerId_heroId = message.xpath('div[1]/div[1]/div[2]/p/a/@href')
-        source_playerId = playerId_heroId[0].split('/')[-1]
-        player_a_avater = player_avater.format(source_playerId)
-        source_heroId = playerId_heroId[1].split('/')[-1]
-        hero_a_avater = player_avater.format(source_playerId)
+        player_left_name = message.xpath('div[1]/div[1]/div[2]/p/a/strong/text()')[0]
+        print(1111, player_left_name)
+        player_left_id = redis_check_playerID(player_left_name, source, redis, types, league_name, db)
+        left_playerId_heroId = message.xpath('div[1]/div[1]/div[2]/p/a/@href')
+        source_left_playerId = left_playerId_heroId[0].split('/')[-1]
+        player_left_avater = player_avater.format(source_left_playerId)
+        source_left_heroname = message.xpath('div[1]/div[1]/div[2]/p[2]/a/text()')[0]
+        source_left_heroId = left_playerId_heroId[1].split('/')[-1]
+        hero_left_avater = hero_avater.format(source_left_heroId)
+        hero_left_id = redis_check_heroID(source_left_heroname, source, redis, types, league_name, db)
+        # 击杀/死亡/助攻 在player_left(player_left)字典的值列表[击杀, 死亡, 助攻]
+        # position: [kill_count, death_count, assist_count, kda, damage_count, damage_taken_count, money_count]
+        kill_left_count = player_left[insert_count][0]
+        death_left_count = player_left[insert_count][1]
+        assist_left_count = player_left[insert_count][2]
+        kda = player_left[insert_count][3]
+        damage_count = player_left[insert_count][4]
+        damage_taken_count = player_left[insert_count][5]
+        money_count = player_left[insert_count][6]
 
+        # # 更新或插入选手对局详情表(有部分字段没有就不用写)
+        sql_player = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, player_avata, " \
+        "hero_id, hero_name, hero_avatar, kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, " \
+        "money_count, position)"
 
-
-
-
-
-    # 更新或插入表(有部分字段没有就不用写)
+    # 更新或插入对局详情表(有部分字段没有就不用写)
     sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num," \
     " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, team_a_assist_count, " \
-    "team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count, team_a_small_dragon_count, " \
-    "team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team, first_big_dragon_team, " \
-    "first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills, team_a_ten_kills, team_b_ten_kills," \
-    " first_tower_team, team_a_money, team_b_money, team_a_side, team_b_side, source_matchid, source_from) VALUES({0}, " \
-    "{1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, '{17}', '{18}', '{19}', " \
-    "'{20}', '{21}',' {22}', '{23}', '{24}', '{25}', {26}, {27}, '{28}', '{29}', {30}, '{31}') " \
-                        "ON DUPLICATE KEY UPDATE " \
+    "team_b_assist_count, team_a_tower_count, team_b_tower_count, win_team, team_a_money, team_b_money, " \
+    "source_matchid, source_from) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, " \
+    "{14}, {15}, {16}, '{17}') " \
+               "ON DUPLICATE KEY UPDATE " \
     "match_id = {0}, duration = {1}, index_num={2}, status = {3}, type = {4}, team_a_kill_count = {5}, " \
     "team_b_kill_count = {6}, team_a_death_count = {7}, team_b_death_count = {8}, team_a_assist_count = {9}, " \
-                        "team_b_assist_count = {10}, team_a_big_dragon_count = {11}, team_b_big_dragon_count = {12}, " \
-                        "team_a_small_dragon_count = {13}, team_b_small_dragon_count = {14}, team_a_tower_count = {15}, " \
-                        "team_b_tower_count = {16}, win_team = '{17}', first_big_dragon_team = '{18}', first_small_dragon_team = '{19}', " \
-                        "first_blood_team = '{20}', team_a_five_kills = '{21}', team_b_five_kills = '{22}', team_a_ten_kills = '{23}'," \
-                        "team_b_ten_kills = '{24}', first_tower_team = '{25}', team_a_money = {26}, team_b_money = {27}, " \
-                        "team_a_side = '{28}', team_b_side = '{29}', source_matchid={30}, source_from='{31}';".format(
-        match_id, duration, index_num,
-        status, types, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count,
-        team_a_assist_count, team_b_assist_count, team_a_big_dragon_count, team_b_big_dragon_count,
-        team_a_small_dragon_count, team_b_small_dragon_count, team_a_tower_count, team_b_tower_count, win_team,
-        first_big_dragon_team, first_small_dragon_team, first_blood_team, team_a_five_kills, team_b_five_kills,
-        team_a_ten_kills, team_b_ten_kills, first_tower_team, team_a_money, team_b_money, team_a_side, team_b_side,
-        resultID, source)
+    "team_b_assist_count = {10}, team_a_tower_count = {11}, team_b_tower_count = {12}, win_team = '{13}', " \
+    "team_a_money = {14}, team_b_money = {15}, source_matchid={16}, source_from={17};".format(
+    match_id, duration, index_num, status, types, team_a_kill_count, team_b_kill_count, team_a_death_count,
+    team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_tower_count, team_b_tower_count,
+    win_team, team_a_money, team_b_money, match_detail_id, source)
+
+    print('团队的sql:', sql_battle_insert)
+
 
 
 
@@ -316,11 +376,12 @@ def parse_detail_wanplus(match_more_details_url, source, types, league_name, mat
 
 
 # 上周的赛程
-print('开始抓上周赛程11')
+print('开始抓上周赛程')
 form_data = {
-    '_gtk': 121196025,
+    '_gtk': 160568389,
     'game': 6,
-    'time': last_weekstamp,
+    # 'time': last_weekstamp,
+    'time': 1596297600,
     'eids': ''
 }
 parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)

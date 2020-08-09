@@ -292,13 +292,14 @@ def redis_check(redis, game_name, db, source, leagueName, source_matchid, source
 # 如果没找到就访问后端api拿到player_id
 # 没拿到过滤掉，拿到后写入redis缓存
 # 保存到redis，设置1天的过期时间
-# 格式为：str（ 源网站 + 源网站的player_name) : str（源网站+player_id）
+# 格式为：str（ 源网站 + 源网站的player_name) : player_id
 def redis_check_playerID(player_name, source, redis, types, league_name, db):
         # 先从redis中找到player_id，有记录代表之前已记录,取出player
         # redis存储结构：（源+player+player_name:player_id）‘score+player+uzi:'123'
         key_player = source + '+' + 'player' + '+' + player_name
+        print('key:', key_player)
         result = redis.get_data(key_player)
-        # print('redis查询player的结果：', result)
+        print('redis查询player的结果：', result)
         if result:
                 # print('redis有记录：', result)
                 return result
@@ -323,6 +324,40 @@ def redis_check_playerID(player_name, source, redis, types, league_name, db):
                         return None
 
 
+# 匹配英雄id:
+# 先去redis中找，如果找到说明之前已经访问过，直接拿到hero_id
+# 如果没找到就访问后端api拿到hero_id
+# 没拿到过滤掉，拿到后写入redis缓存
+# 保存到redis，设置1天的过期时间
+# 格式为：str（ 源网站 + 源网站的hero_name) : hero_id
+def redis_check_heroID(hero_name, source, redis, types, league_name, db):
+        # 先从redis中找到hero_id，有记录代表之前已记录,取出player
+        # redis存储结构：（源+hero+hero_name:hero_id）‘score+hero+uzi:'123'
+        key_hero = source + '+' + 'hero' + '+' + hero_name
+        result = redis.get_data(key_hero)
+        # print('redis查询hero的结果：', result)
+        if result:
+                # print('redis有记录：', result)
+                return result
+        else:
+                # print('redis中没记录：', result)
+                # redis中不存在就访问后端接口
+                result_player = hero_check(hero_name, types)
+                # print('访问后端拿到的选手信息：', result_player)
+                if result_player['code'] == 600:
+                        hero_id = result_player['result']['hero_id']
+                        # 记录到redis中，格式为：（源+player+source_hero_id:hero_name_id）‘score+hero+8377:'123'
+                        redis.set_data(key_hero, 86400, hero_id)
+                        # print('redis记录player完成：',key_hero, player_id)
+                        return hero_id
+                else:
+                        # 记录到黑名单中的选手名称
+                        sql_blacklist = "select id from black_list where player_name ='{}';".format(hero_name)
+                        sql_add_blacklist = "insert into black_list set league_name = '{0}',hero_name ='{1}', " \
+                                            "source_from = 1, judge_position=0001;".format(league_name, hero_name)
+                        # print('记录到英雄黑名单sql:', sql_add_blacklist)
+                        api_return_200(sql_blacklist, sql_add_blacklist, db)
+                        return None
 
 
 
