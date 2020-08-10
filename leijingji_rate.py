@@ -146,7 +146,9 @@ def parse(url, headers):
                 source_matchid = str(id)
 
                 # 先查找redis的zset集合中有没有对应网站的source_matchid，没有就添加
-                result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
+                # print('查找前的数据:', leagueName, source_a_name, source_b_name, start_time)
+                result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name,
+                                     source_b_name, start_time)
                 # print(result)
                 if result:
                     match_id = result[0]

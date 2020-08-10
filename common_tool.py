@@ -297,9 +297,9 @@ def redis_check_playerID(player_name, source, redis, types, league_name, db):
         # 先从redis中找到player_id，有记录代表之前已记录,取出player
         # redis存储结构：（源+player+player_name:player_id）‘score+player+uzi:'123'
         key_player = source + '+' + 'player' + '+' + player_name
-        print('key:', key_player)
+        # print('key:', key_player)
         result = redis.get_data(key_player)
-        print('redis查询player的结果：', result)
+        # print('redis查询player的结果：', result)
         if result:
                 # print('redis有记录：', result)
                 return result
@@ -342,10 +342,10 @@ def redis_check_heroID(hero_name, source, redis, types, league_name, db):
         else:
                 # print('redis中没记录：', result)
                 # redis中不存在就访问后端接口
-                result_player = hero_check(hero_name, types)
-                # print('访问后端拿到的选手信息：', result_player)
-                if result_player['code'] == 600:
-                        hero_id = result_player['result']['hero_id']
+                result_hero = hero_check(hero_name, types)
+                # print('访问后端拿到的选手信息：', result_hero)
+                if result_hero['code'] == 600:
+                        hero_id = result_hero['result']['hero_id']
                         # 记录到redis中，格式为：（源+player+source_hero_id:hero_name_id）‘score+hero+8377:'123'
                         redis.set_data(key_hero, 86400, hero_id)
                         # print('redis记录player完成：',key_hero, player_id)
