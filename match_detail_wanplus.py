@@ -3,7 +3,7 @@ from common_tool import post_response, get_log, redis_check, get_weeks, redis_ch
 from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db
 from datetime import datetime
-from setting import db_setting
+from setting import db_setting, chrome_path
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from lxml import etree
@@ -64,7 +64,8 @@ player_right = {
 # 构建selenium对象
 chrome_options = Options()
 chrome_options.add_argument('--headless')
-driver = webdriver.Chrome(chrome_options=chrome_options)
+
+driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=chrome_path)
 
 #得到上周的日期和这周到今天的日期字符串列表：
 # 将工具函数中的 ['2020.08.05', '2020.08.04', '2020.08.03', '2020.08.02']转换成
