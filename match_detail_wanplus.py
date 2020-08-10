@@ -222,7 +222,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     team_b_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[3]/text()')[0]
     team_a_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[1]/text()')[0]
     team_b_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]/text()')[0]
-    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')
+    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[1]/span/span/text()')
 
     # 比赛时长
     # print('拿到的比赛时长和索引:', duration_dict, index_num, type(duration_dict), type(index_num))
@@ -321,6 +321,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     # team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_tower_count, team_b_tower_count,
     # win_team, team_a_money, team_b_money, match_detail_id, source
     # 根据judge_reversal判断左右数据需不需要反转(页面与赛程表中主客队相反,需要以赛程表)
+    # print(judge_reversal, win_left)
     if judge_reversal:
         # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
         win_team = 'B' if win_left == ['胜'] else 'A'
