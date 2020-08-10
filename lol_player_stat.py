@@ -115,6 +115,8 @@ def parse(types):
                         result_team = team_check(team_name, types)
                         if not result_team:
                             continue
+                        if 'result' not in result_team:
+                            continue
                         team_name = result_team['result']['team_name']
                         team_id = result_team['result']['team_id']
                         # print('访问后端得到的团队结果：', result_team)
