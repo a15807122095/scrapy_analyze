@@ -224,11 +224,12 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     team_b_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]/text()')[0]
     win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')
 
+    print('胜负数据:', win_left)
     if judge_reversal:
         # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
-        win_team = 'B' if win_left == '胜' else 'A'
+        win_team = 'B' if win_left == ['胜'] else 'A'
     else:
-        win_team = 'A' if win_left == '胜' else 'B'
+        win_team = 'A' if win_left == ['胜'] else 'B'
     # 比赛时长
     # print('拿到的比赛时长和索引:', duration_dict, index_num, type(duration_dict), type(index_num))
     duration = duration_dict[index_num]
@@ -354,7 +355,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             equip_left = message.xpath('div[1]/div[2]/a/img/@src')
             equip_left = str(equip_left)
             equip_left = equip_left.replace('\'', '\"')
-            skill_left = message.xpath('div[1]/div[1]/div[1]/img/@src')
+            skill_left = message.xpath('div[3]/div[1]/div[1]/img/@src')
             skill_left = str(skill_left)
             skill_left = skill_left.replace('\'', '\"')
             # print('装备和技能:', equip_left, skill_left)
@@ -402,7 +403,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             money_count = player_right[insert_count][6]
 
             # 装备和技能
-            equip_right = message.xpath('div[1]/div[2]/a/img/@src')
+            equip_right = message.xpath('div[3]/div[2]/a/img/@src')
             equip_right = str(equip_right)
             equip_right = equip_right.replace('\'', '\"')
             skill_right = message.xpath('div[1]/div[1]/div[1]/img/@src')
