@@ -224,12 +224,6 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     team_b_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]/text()')[0]
     win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')
 
-    print('胜负数据:', win_left)
-    if judge_reversal:
-        # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
-        win_team = 'B' if win_left == ['胜'] else 'A'
-    else:
-        win_team = 'A' if win_left == ['胜'] else 'B'
     # 比赛时长
     # print('拿到的比赛时长和索引:', duration_dict, index_num, type(duration_dict), type(index_num))
     duration = duration_dict[index_num]
@@ -323,6 +317,22 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     # print('左边的死亡数和助攻数:', team_a_death_count, team_a_assist_count, player_left)
     # print('右边的死亡数和助攻数:', team_b_death_count, team_b_assist_count, player_right)
 
+    # match_id, duration, index_num, status, types, team_a_kill_count, team_b_kill_count, team_a_death_count,
+    # team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_tower_count, team_b_tower_count,
+    # win_team, team_a_money, team_b_money, match_detail_id, source
+    # 根据judge_reversal判断左右数据需不需要反转(页面与赛程表中主客队相反,需要以赛程表)
+    if judge_reversal:
+        # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
+        win_team = 'B' if win_left == ['胜'] else 'A'
+        team_a_kill_count, team_b_kill_count = team_b_kill_count, team_a_kill_count
+        team_a_death_count, team_b_death_count = team_b_death_count, team_a_death_count
+        team_a_assist_count, team_b_assist_count = team_b_assist_count, team_a_assist_count
+        team_a_tower_count, team_b_tower_count = team_b_tower_count, team_a_tower_count
+        team_a_money, team_b_money = team_b_money, team_a_money
+    else:
+        win_team = 'A' if win_left == ['胜'] else 'B'
+
+
     # 选手对局记录
     messages = html.xpath("//div[@class='match_bans']")
     # 每组message有两个对位选手
@@ -359,7 +369,8 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             skill_left = str(skill_left)
             skill_left = skill_left.replace('\'', '\"')
             # print('装备和技能:', equip_left, skill_left)
-
+            # judge_reversal对于选手详情表的影响只有team_id
+            team_id = team_b_id if judge_reversal else team_a_id
             # # 更新或插入选手对局详情表(有部分字段没有就不用写)
             sql_player = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, player_avatar, " \
             "hero_id, hero_name, hero_avatar, kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, " \
@@ -373,7 +384,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             "position = '{16}', type = '{17}', source_matchid={18}, team_id={19}, source_from='{20}';".format(
             match_id, player_left_id, player_left_name, player_left_avater, hero_left_id, source_left_heroname,
             hero_left_avater, kill_left_count, death_left_count, assist_left_count, damage_count, damage_taken_count,
-            kda, money_count, equip_left, skill_left, insert_count, types, match_detail_id, team_a_id, source)
+            kda, money_count, equip_left, skill_left, insert_count, types, match_detail_id, team_id, source)
             # print('记录左边选手表：', sql_player)
             db.update_insert(sql_player)
             # print('记录左边选手表插入完成')
@@ -410,6 +421,8 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             skill_right = str(skill_right)
             skill_right = skill_right.replace('\'', '\"')
 
+            # judge_reversal对于选手详情表的影响只有team_id
+            team_id = team_a_id if judge_reversal else team_b_id
             # # 更新或插入选手对局详情表(有部分字段没有就不用写)
             sql_player = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, player_avatar, " \
             "hero_id, hero_name, hero_avatar, kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, " \
@@ -423,7 +436,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             "type = {17}, source_matchid={18}, team_id={19}, source_from='{20}';".format(match_id, player_right_id,
             player_right_name, player_right_avater, hero_right_id, source_right_heroname, hero_right_avater,
             kill_right_count, death_right_count, assist_right_count, damage_count, damage_taken_count, kda,
-            money_count, equip_right, skill_right,insert_count, types, match_detail_id, team_b_id, source)
+            money_count, equip_right, skill_right,insert_count, types, match_detail_id, team_id, source)
             # print('记录右边选手表：', sql_player)
             db.update_insert(sql_player)
             # print('记录右边选手表插入完成')

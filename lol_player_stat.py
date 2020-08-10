@@ -23,7 +23,7 @@ header = {
 }
 
 league_exclude = ['2020 LCK夏季升降级赛', '2019KeSPA杯', '2019拉斯维加斯全明星', 'LPL公开训练赛', '2017 KPL秋季赛']
-position_dict = {'上单':1, '打野':2, '中单':3, 'ADC':4, '辅助':5}
+position_dict = {'上单':1, '打野':2, '中单':3, 'ADC':4, '辅助':5, 'None':6}
 
 lol_player_log = get_log('lol_player')
 
@@ -124,6 +124,7 @@ def parse(types):
                             result_player = player_check(nick_name, types)
                             # print('访问后端得到的选手结果：', result_player)
                             if result_player['code'] == 600:
+                                # print(11111,responses_team)
                                 player_id = result_player['result']['player_id']
                                 kda = responses_team['KDA']
                                 mvp_count = responses_team['MVP']

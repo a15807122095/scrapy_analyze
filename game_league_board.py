@@ -147,7 +147,7 @@ def parse(form_data_yxlm, types):
                         if result_detail:
                             league_id = result_detail
 
-                print('拿到的联赛阶段统计结果：', league_id, '胜', team_win_count, '负', team_lose_count, '净胜分', team_score_count)
+                # print('拿到的联赛阶段统计结果：', league_id, '胜', team_win_count, '负', team_lose_count, '净胜分', team_score_count)
                 # 联赛阶段的积分数据已统计完，遍历更新或插入到表中
                 # 字典的键：‘team_a_name’+ ‘+’ + ‘team_b_id’
                 # 理论上 team_win_final， team_lose_final， team_score_final的长度一样
@@ -247,7 +247,7 @@ def parse_detail(match_detail, game_name, source_league_name, team_win_count, te
         league_board_log.error(e)
 
 parse(form_data_yxlm, 1)
-print('英雄联盟抓取完成')
+# print('英雄联盟抓取完成')
 parse(form_data_wzry, 2)
-print('王者荣耀抓取完成')
+# print('王者荣耀抓取完成')
 
