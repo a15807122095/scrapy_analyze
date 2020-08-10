@@ -25,12 +25,15 @@ db_sport_setting = {
 Redis_checkAPI = {
     'host': '127.0.0.1',
     'port': 6379,
-    'db': 0
+    'db': 0,
+    'password': 123456
 }
 Redis_urldistict = {
     'host': '127.0.0.1',
     'port': 6379,
-    'db': 1
+    'db': 1,
+    'password': 123456
+
 }
 
 
@@ -81,5 +84,3 @@ Redis_urldistict = {
 #     'port': 6379,
 #     'db': 1
 # }
-
-
