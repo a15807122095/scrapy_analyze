@@ -147,12 +147,14 @@ def parse(url, headers):
 
                 # 先查找redis的zset集合中有没有对应网站的source_matchid，没有就添加
                 result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)
-                match_id = result[0]
-                if result and match_id:
+                # print(result)
+                if result:
                     match_id = result[0]
-                    sql_insert = 'update game_python_match set bet_id={0} where id={1}'.format(id, match_id)
-                    db.update_insert(sql_insert)
-                    # print('记录bet_id字段完成')
+                    if match_id:
+                        sql_insert = 'update game_python_match set bet_id={0} where id={1}'.format(id, match_id)
+                        # print(sql_insert)
+                        db.update_insert(sql_insert)
+                        # print('记录bet_id字段完成')
 
 
 

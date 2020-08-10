@@ -221,7 +221,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, league_name, mat
     team_b_tower_count = html.xpath('//*[@id="data"]/ul[1]/li[4]/div[1]/span[3]/text()')[0]
     team_a_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[1]/text()')[0]
     team_b_money = html.xpath('//*[@id="data"]/ul[1]/li[2]/div[1]/span[3]/text()')[0]
-    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')[0]
+    win_left = html.xpath('//*[@id="data"]/ul[1]/li[1]/div/a[2]/span/span/text()')
 
     if judge_reversal:
         # wanplus的主客队与赛程表中相反,以赛程表的主客队为准(一般不会出现)
@@ -325,6 +325,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, league_name, mat
     # 每组message有两个对位选手
     insert_count = 1
     for message in messages:
+        # 左侧选手
         player_left_name = message.xpath('div[1]/div[1]/div[2]/p/a/strong/text()')[0]
         print(1111, player_left_name)
         player_left_id = redis_check_playerID(player_left_name, source, redis, types, league_name, db)
@@ -348,14 +349,63 @@ def parse_detail_wanplus(match_more_details_url, source, types, league_name, mat
         # # 更新或插入选手对局详情表(有部分字段没有就不用写)
         sql_player = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, player_avata, " \
         "hero_id, hero_name, hero_avatar, kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, " \
-        "money_count, position)"
+        "money_count, position, type) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, " \
+        "{14}, {15}) " \
+                     "ON DUPLICATE KEY UPDATE " \
+         "match_id = {0}, player_id = {1}, player_name={2}, player_avata = {3}, hero_id = {4}, hero_name = {5}, " \
+         "hero_avatar = {6}, kill_count = {7}, death_count = {8}, assist_count = {9}, damage_count = {10}, " \
+         "damage_taken_count = {11}, kda = {12}, money_count = '{13}', position = {14}, type = {15};".format(match_id,
+        player_left_id, player_left_name, player_left_avater, hero_left_id, source_left_heroname, hero_left_avater,
+        kill_left_count, death_left_count, assist_left_count,
+        damage_count, damage_taken_count, kda, money_count, insert_count, types)
+        print('记录左边选手表：', sql_player)
+        db.update_insert(sql_player)
+        print('记录左边选手表插入完成')
+
+        # 右侧选手
+        player_left_name = message.xpath('div[3]/div[1]/div[2]/p/a/strong/text()')[0]
+        print(1111, player_left_name)
+        player_left_id = redis_check_playerID(player_left_name, source, redis, types, league_name, db)
+        left_playerId_heroId = message.xpath('div[3]/div[1]/div[2]/p/a/@href')
+        source_left_playerId = left_playerId_heroId[0].split('/')[-1]
+        player_left_avater = player_avater.format(source_left_playerId)
+        source_left_heroname = message.xpath('div[3]/div[1]/div[2]/p[2]/a/text()')[0]
+        source_left_heroId = left_playerId_heroId[1].split('/')[-1]
+        hero_left_avater = hero_avater.format(source_left_heroId)
+        hero_left_id = redis_check_heroID(source_left_heroname, source, redis, types, league_name, db)
+        # 击杀/死亡/助攻 在player_left(player_left)字典的值列表[击杀, 死亡, 助攻]
+        # position: [kill_count, death_count, assist_count, kda, damage_count, damage_taken_count, money_count]
+        kill_left_count = player_left[insert_count][0]
+        death_left_count = player_left[insert_count][1]
+        assist_left_count = player_left[insert_count][2]
+        kda = player_left[insert_count][3]
+        damage_count = player_left[insert_count][4]
+        damage_taken_count = player_left[insert_count][5]
+        money_count = player_left[insert_count][6]
+
+        # # 更新或插入选手对局详情表(有部分字段没有就不用写)
+        sql_player = "INSERT INTO `game_player_battle_record` (match_id, player_id, player_name, player_avata, " \
+         "hero_id, hero_name, hero_avatar, kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, " \
+         "money_count, position, type) VALUES({0}, {1}, '{2}', '{3}', {4}, '{5}', '{6}', {7}, {8}, {9}, {10}, {11}, {12}, {13}, " \
+         "{14}, {15}) " \
+         "ON DUPLICATE KEY UPDATE " \
+         "match_id = {0}, player_id = {1}, player_name='{2}', player_avata ='{3}', hero_id = {4}, hero_name ='{5}', " \
+         "hero_avatar = '{6}', kill_count = {7}, death_count = {8}, assist_count = {9}, damage_count = {10}, " \
+         "damage_taken_count = {11}, kda = {12}, money_count = '{13}', position = {14}, type = {15};".format(
+        match_id,
+        player_left_id, player_left_name, player_left_avater, hero_left_id, source_left_heroname, hero_left_avater,
+        kill_left_count, death_left_count, assist_left_count,
+        damage_count, damage_taken_count, kda, money_count, insert_count, types)
+        print('记录右边选手表：', sql_player)
+        db.update_insert(sql_player)
+        print('记录右边选手表插入完成')
 
     # 更新或插入对局详情表(有部分字段没有就不用写)
     sql_battle_insert = "INSERT INTO `game_match_battle` (match_id, duration, index_num," \
     " status, type, team_a_kill_count, team_b_kill_count, team_a_death_count, team_b_death_count, team_a_assist_count, " \
     "team_b_assist_count, team_a_tower_count, team_b_tower_count, win_team, team_a_money, team_b_money, " \
-    "source_matchid, source_from) VALUES({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, " \
-    "{14}, {15}, {16}, '{17}') " \
+    "source_matchid, source_from) VALUES({0}, {1}, '{2}',' {3}', {4}, '{5}',' {6}', {7}, {8}, {9}, {10}, {11}, {12}, {13}, " \
+    "{14}, {15}, {16}, {17}) " \
                "ON DUPLICATE KEY UPDATE " \
     "match_id = {0}, duration = {1}, index_num={2}, status = {3}, type = {4}, team_a_kill_count = {5}, " \
     "team_b_kill_count = {6}, team_a_death_count = {7}, team_b_death_count = {8}, team_a_assist_count = {9}, " \
@@ -364,8 +414,9 @@ def parse_detail_wanplus(match_more_details_url, source, types, league_name, mat
     match_id, duration, index_num, status, types, team_a_kill_count, team_b_kill_count, team_a_death_count,
     team_b_death_count, team_a_assist_count, team_b_assist_count, team_a_tower_count, team_b_tower_count,
     win_team, team_a_money, team_b_money, match_detail_id, source)
-
     print('团队的sql:', sql_battle_insert)
+    db.update_insert(sql_battle_insert)
+    print('团队sql执行完成')
 
 
 
