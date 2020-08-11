@@ -227,48 +227,48 @@ form_data = {
 def parse(url, data, headers):
     types = 1
     game_name = '英雄联盟'
-    try:
-        results = post_response(url, data, headers)
-        results = results['data']['list']
-        # print('需要拿的赛程日期:', date_list)
-        # print(len(results), type(results), results)
-        for key_list, results_list in results.items():
-            # 排除掉今天和昨天之外的赛程
-            if key_list not in date_list:
+    # try:
+    results = post_response(url, data, headers)
+    results = results['data']['list']
+    # print('需要拿的赛程日期:', date_list)
+    # print(len(results), type(results), results)
+    for key_list, results_list in results.items():
+        # 排除掉今天和昨天之外的赛程
+        if key_list not in date_list:
+            continue
+        result_list = results_list['info']
+        # print('所有赛程:', key_list, type(result_list), result_list)
+        for key_detail, results_detail in result_list.items():
+            # 排除不需要的联赛
+            if key_detail not in tournamentID:
                 continue
-            result_list = results_list['info']
-            # print('所有赛程:', key_list, type(result_list), result_list)
-            for key_detail, results_detail in result_list.items():
-                # 排除不需要的联赛
-                if key_detail not in tournamentID:
+            league_name = tournamentID[key_detail]
+            # print('现有联赛：', key_detail, results_detail)
+            results_detail = results_detail['list']
+            for detail_list in results_detail:
+                # 拿到网站的赛程id，用于后面redis_check
+                source_matchid = detail_list['match_id']
+                # 网站赛事的比赛时间为 "2020-07-30"和 "17:00" 转换为十位的时间戳
+                start_time_str = detail_list['start_date'] + ' ' + detail_list['start_time'] + ':00'
+                start_time_date = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
+                start_time = int(start_time_date.timestamp())
+                if 'result' not in detail_list:
                     continue
-                league_name = tournamentID[key_detail]
-                # print('现有联赛：', key_detail, results_detail)
-                results_detail = results_detail['list']
-                for detail_list in results_detail:
-                    # 拿到网站的赛程id，用于后面redis_check
-                    source_matchid = detail_list['match_id']
-                    # 网站赛事的比赛时间为 "2020-07-30"和 "17:00" 转换为十位的时间戳
-                    start_time_str = detail_list['start_date'] + ' ' + detail_list['start_time'] + ':00'
-                    start_time_date = datetime.strptime(start_time_str, '%Y-%m-%d %H:%M:%S')
-                    start_time = int(start_time_date.timestamp())
-                    if 'result' not in detail_list:
-                        continue
-                    detail_list = detail_list['result']
-                    # print('得到的时间：', start_time_str, start_time_date, detail_list)
-                    if detail_list:
-                        # 以detail_list中遍历次数计为bo
-                        index_num = 1
-                        for resultID in detail_list:
-                            # 赛程的小局id,用这个id存到对局详情表中才能作为判断更新或插入条件
-                            resultID = resultID['resultID']
-                            detail_urls = detail_url.format(resultID, now_date_stamp)
-                            # print('详情url：', resultID, detail_urls)
-                            detail_parse(detail_urls, resultID, types, index_num, game_name,
-                                         league_name, start_time, headers)
-                            index_num += 1
-    except Exception as e:
-        match_detail_score_log.error(e)
+                detail_list = detail_list['result']
+                # print('得到的时间：', start_time_str, start_time_date, detail_list)
+                if detail_list:
+                    # 以detail_list中遍历次数计为bo
+                    index_num = 1
+                    for resultID in detail_list:
+                        # 赛程的小局id,用这个id存到对局详情表中才能作为判断更新或插入条件
+                        resultID = resultID['resultID']
+                        detail_urls = detail_url.format(resultID, now_date_stamp)
+                        # print('详情url：', resultID, detail_urls)
+                        detail_parse(detail_urls, resultID, types, index_num, game_name,
+                                     league_name, start_time, headers)
+                        index_num += 1
+    # except Exception as e:
+    #     match_detail_score_log.error(e)
 
 
 
@@ -431,14 +431,16 @@ def detail_parse(url, resultID, types, index_num, game_name, league_name, start_
             for iter_obj in iter_list:
                 for key, value in iter_obj.items():
                     hero_sourcename = result[key]
-                    hero_player_dict[hero_sourcename].append(result[value])
+                    if hero_sourcename in hero_player_dict:
+                        hero_player_dict[hero_sourcename].append(result[value])
             # print('添加8-21值索引后的英雄选手字典', hero_player_dict)
 
 
             # 选手的位置数据补充到hero_player_dict的值列表索引为22
             for key, value in position_dict.items():
                 hero_sourcename = result[key]
-                hero_player_dict[hero_sourcename].append(value)
+                if hero_sourcename in hero_player_dict:
+                    hero_player_dict[hero_sourcename].append(value)
             # print('添加22值索引后的英雄选手字典', hero_player_dict)
 
             # 选手的装备数据补充到hero_player_dict的值列表索引为23
@@ -451,7 +453,8 @@ def detail_parse(url, resultID, types, index_num, game_name, league_name, start_
                     value = result[value]
                     equip_ids_list.append(value)
                 equip_ids_list = str(equip_ids_list)
-                hero_player_dict[hero_sourcename].append(equip_ids_list)
+                if hero_sourcename in hero_player_dict:
+                    hero_player_dict[hero_sourcename].append(equip_ids_list)
             # print('添加23值索引后的英雄选手字典', hero_player_dict)
 
             # 选手的位置数据补充到hero_player_dict的值列表索引为24
@@ -463,7 +466,8 @@ def detail_parse(url, resultID, types, index_num, game_name, league_name, start_
                     value = result[value]
                     skill_ids_list.append(value)
                     # print(111, skill_ids_list)
-                hero_player_dict[hero_sourcename].append(skill_ids_list)
+                if hero_sourcename in hero_player_dict:
+                    hero_player_dict[hero_sourcename].append(skill_ids_list)
             # print('添加24值索引后的英雄选手字典', hero_player_dict)
 
             # 添加或插入到对局详情表中
@@ -566,8 +570,8 @@ def detail_parse(url, resultID, types, index_num, game_name, league_name, start_
 
 
 # 本周的比赛：form_data中的date参数为空
-form_data['data'] = ''
-parse(start_url, form_data, headers)
+# form_data['data'] = ''
+# parse(start_url, form_data, headers)
 # print('----------------')
 # 上周的比赛：form_data中的date参数为上周五的日期，例如：2020-07-26
 form_data['date'] = last_friday_str
