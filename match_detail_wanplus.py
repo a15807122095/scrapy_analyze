@@ -50,15 +50,6 @@ headers_wanplus= {
 'x-requested-with': 'XMLHttpRequest'
 }
 
-# 根据列表索引可以判断选手的位置信息,因为在页面上是固定的
-# 将选手的字段数据填充到选手字典中
-# 格式为: position : [kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, money_count]
-player_left = {
-    1:[], 2:[], 3:[], 4:[], 5:[]
-}
-player_right = {
-    1:[], 2:[], 3:[], 4:[], 5:[]
-}
 
 
 # 构建selenium对象
@@ -247,10 +238,21 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     team_a_death_count = 0
     team_a_assist_count = 0
     count_left = 1
+
+    # 根据列表索引可以判断选手的位置信息,因为在页面上是固定的
+    # 将选手的字段数据填充到选手字典中
+    # 格式为: position : [kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, money_count]
+    player_left = {
+        1: [], 2: [], 3: [], 4: [], 5: []
+    }
+    player_right = {
+        1: [], 2: [], 3: [], 4: [], 5: []
+    }
+
     for kill_death_assist in left_death_assist_count:
         message = kill_death_assist.split('/')
         #计算左边团队死亡和助攻总数
-        kda = (int(message[0]) + int(message[2])) / (int(message[1]) + 1)
+        kda = round((int(message[0]) + int(message[2])) / (int(message[1]) + 1), 1)
         team_a_death_count += int(message[1])
         team_a_assist_count += int(message[2])
         # 记录左边每个选手的 击杀 死亡 助攻
@@ -268,7 +270,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     for kill_death_assist in right_death_assist_count:
         message = kill_death_assist.split('/')
         # print(message, type(message[0]))
-        kda = (int(message[0]) + int(message[2]))/(int(message[1])+1)
+        kda = round((int(message[0]) + int(message[2]))/(int(message[1])+1), 1)
         # 计算右边团队死亡和助攻总数
         team_b_death_count += int(message[1])
         team_b_assist_count += int(message[2])
@@ -333,7 +335,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
     else:
         win_team = 'A' if win_left == ['胜'] else 'B'
 
-
+    # print('左右位置的数据集合', player_left, player_right)
     # 选手对局记录
     messages = html.xpath("//div[@class='match_bans']")
     # 每组message有两个对位选手
