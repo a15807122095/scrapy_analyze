@@ -119,17 +119,17 @@ db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_s
 """
 # 0:未开始 1:进行中 2:已结束
 # 已完成的抓两次
-print('开始抓取已完成比赛')
+# print('开始抓取已完成比赛')
 url_finish_1 = url_finish_1 + now_time
 match_id = parse_yxlm(url_finish_1, db, '2', headers_yxlmgw)
 # 上周已完成的url中的matchid是以当页最后一场已完成的matchid
 url_finish_2 = url_finish_2.format(match_id) + now_time
 parse_yxlm(url_finish_2, db, '2', headers_yxlmgw)
 print(url_finish_1, url_finish_2)
-print('已完成比赛抓取完毕')
+# print('已完成比赛抓取完毕')
 
 # 未进行的
-print('开始抓取未进行比赛')
+# print('开始抓取未进行比赛')
 url_unfinish_1 = url_unfinish_1 + now_time
 print(url_unfinish_1)
 match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
@@ -141,12 +141,12 @@ match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
 # print(url_unfinish_3)
 # parse_yxlm(url_unfinish_3, db, '0', headers_yxlmgw)
 
-print('未进行比赛抓取完毕')
+# print('未进行比赛抓取完毕')
 
-print('开始抓取进行中比赛')
+# print('开始抓取进行中比赛')
 parse_yxlm(url_matching, db, '1', headers_yxlmgw)
 print(url_matching)
-print('进行中比赛抓取完毕')
+# print('进行中比赛抓取完毕')
 
 
 
