@@ -1,4 +1,5 @@
 # -*-coding:utf-8-*-
+
 from flask import Flask, request
 import json
 
@@ -14,7 +15,6 @@ def check():
     if request.args is None:
         return_dict['return_code'] = '5004'
         return_dict['return_info'] = '请求参数为空'
-        # ensure_ascii指定输出可以显示中文
         return json.dumps(return_dict, ensure_ascii=False)
     # 获取传入的params参数
     get_data = request.args.to_dict()
@@ -27,11 +27,10 @@ def check():
 
 
 # 功能函数
-@app.route("/test_1.0", methods=["GET"])
 def tt(name, age):
-    result_str = "这是一条关于%s和%s的信息" % (name, age)
+    result_str = "%s今年%s岁" % (name, age)
     return result_str
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port='5000')
