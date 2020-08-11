@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 
 # 只接受get方法访问
-@app.route("/test_1.0", methods=["GET"])
+@app.route("/index", methods=["GET"])
 def check():
     # 默认返回内容
     return_dict = {'return_code': '200', 'return_info': '处理成功', 'result': False}
@@ -33,4 +33,4 @@ def tt(name, age):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8050)
+    app.run(host='0.0.0.0')
