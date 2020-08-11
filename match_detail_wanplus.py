@@ -241,7 +241,7 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
 
     # 根据列表索引可以判断选手的位置信息,因为在页面上是固定的
     # 将选手的字段数据填充到选手字典中
-    # 格式为: position : [kill_count, death_count, assist_count, damage_count, damage_taken_count, kda, money_count]
+    # 格式为: position : [kill_count, death_count, assist_count, kda, money_count, damage_count, damage_taken_count]
     player_left = {
         1: [], 2: [], 3: [], 4: [], 5: []
     }
@@ -360,9 +360,10 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             death_left_count = player_left[insert_count][1]
             assist_left_count = player_left[insert_count][2]
             kda = player_left[insert_count][3]
-            damage_count = player_left[insert_count][4]
-            damage_taken_count = player_left[insert_count][5]
-            money_count = player_left[insert_count][6]
+            money_count = player_left[insert_count][4]
+            damage_count = player_left[insert_count][5]
+            damage_taken_count = player_left[insert_count][6]
+
 
             # 装备和技能
             equip_left = message.xpath('div[1]/div[2]/a/img/@src')
@@ -412,9 +413,10 @@ def parse_detail_wanplus(match_more_details_url, source, types, team_a_id, team_
             death_right_count = player_right[insert_count][1]
             assist_right_count = player_right[insert_count][2]
             kda = player_right[insert_count][3]
-            damage_count = player_right[insert_count][4]
-            damage_taken_count = player_right[insert_count][5]
-            money_count = player_right[insert_count][6]
+            money_count = player_right[insert_count][4]
+            damage_count = player_right[insert_count][5]
+            damage_taken_count = player_right[insert_count][6]
+
 
             # 装备和技能
             equip_right = message.xpath('div[3]/div[2]/a/img/@src')
