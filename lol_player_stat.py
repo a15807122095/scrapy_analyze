@@ -72,7 +72,9 @@ form_data = {
     'page': 1
 }
 
-
+# 网站有可能没有选手头像,就用默认头像
+default_avatar = 'https://qn.feijing88.com/feijing-home/egame/image/' \
+                 '20190629/7f6fef25f8b5416f94545846c3308370.png'
 
 redis = RedisCache_checkAPI()
 db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
@@ -155,7 +157,9 @@ def parse(types):
                                 most_kill_per_games = responses_team['total_kills']
                                 most_death_per_games = responses_team['total_deaths']
                                 most_assist_per_games = responses_team['total_assists']
-                                avatar = responses_team['player_image']
+                                # 网站没有头像就用默认头像
+                                avatar = responses_team['player_image'] if responses_team['player_image'] \
+                                    else default_avatar
                                 position = responses_team['position']
                                 position = position_dict[position]
 

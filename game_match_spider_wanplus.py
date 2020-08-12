@@ -148,3 +148,37 @@ form_data = {
 }
 parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
 # print('下周赛程已抓取')
+
+# def run_game_match_spider_wanplus():
+#     ## 上周的赛程
+#     # print('开始抓上周赛程')
+#     # form_data = {
+#     #     '_gtk': 806653903,
+#     #     'game': 2,
+#     #     'time': last_weekstamp,
+#     #     'eids': ''
+#     # }
+#     # parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
+#     # print('上周赛程已抓取')
+#
+#     # 本周的赛程
+#     # print('开始抓本周赛程')
+#     form_data = {
+#         '_gtk': 121196025,
+#         'game': 2,
+#         'time': monday_stamp,
+#         'eids': ''
+#     }
+#     parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
+#     # print('本周赛程已抓取')
+#
+#     # # 下周的赛程
+#     # print('开始抓下周赛程')
+#     form_data = {
+#         '_gtk': 121196025,
+#         'game': 2,
+#         'time': next_weekstamp,
+#         'eids': ''
+#     }
+#     parse_wanplus(start_url_wanplus, form_data, db, headers_wanplus)
+#     # print('下周赛程已抓取')
