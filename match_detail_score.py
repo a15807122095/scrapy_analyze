@@ -233,8 +233,8 @@ def parse(url, data, headers):
     # print('需要拿的赛程日期:', date_list)
     # print(len(results), type(results), results)
     for key_list, results_list in results.items():
-        # 排除掉今天和昨天之外的赛程
-        if key_list not in date_list:
+        # 排除掉今天和昨天之外的赛程或者接口数据为空
+        if key_list not in date_list or not results_list:
             continue
         result_list = results_list['info']
         # print('所有赛程:', key_list, type(result_list), result_list)
@@ -570,8 +570,8 @@ def detail_parse(url, resultID, types, index_num, game_name, league_name, start_
 
 
 # 本周的比赛：form_data中的date参数为空
-# form_data['data'] = ''
-# parse(start_url, form_data, headers)
+form_data['data'] = ''
+parse(start_url, form_data, headers)
 # print('----------------')
 # 上周的比赛：form_data中的date参数为上周五的日期，例如：2020-07-26
 form_data['date'] = last_friday_str
