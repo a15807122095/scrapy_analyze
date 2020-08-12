@@ -28,9 +28,9 @@ def check():
 
 # 功能函数
 def tt(name, age):
-    result_str = "%s今年%s岁" % (name, age)
+    result_str = "message about %s and %s" % (name, age)
     return result_str
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', port=8080)
