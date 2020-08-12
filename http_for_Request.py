@@ -9,7 +9,7 @@ app = Flask(__name__)
 此脚本用于将爬虫脚本以HTTP请求方式调用
 """
 
-# 只接受get方法访问
+# 只接受get的方法访问
 @app.route("/index", methods=["GET"])
 def check():
     # 默认返回内容
