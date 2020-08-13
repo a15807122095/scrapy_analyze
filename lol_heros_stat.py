@@ -127,7 +127,7 @@ def parse(types):
                             win_count = responses_hero['victory_count']
                             position = responses_hero['position_name']
                             # 记录英雄联盟表
-                            sql_teamrank_yxlm = "INSERT INTO `game_lol_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
+                            sql_herorank_yxlm = "INSERT INTO `game_lol_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
                                         "assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate, " \
                                         "win_rate, pick_count, ban_count, win_count, position, league_id) VALUES({0}, '{1}', " \
                                         "'{2}', {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, '{13}', {14}) " \
@@ -138,19 +138,19 @@ def parse(types):
                                         assist_average, death_average, kill_average, kda_average, pick_rate, ban_rate,
                                         win_rate, pick_count, ban_count, win_count, position, league_id)
 
-                            sql_teamrank_wzry = "INSERT INTO `game_kog_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
+                            sql_herorank_wzry = "INSERT INTO `game_kog_heroes_league_stats` (hero_id, hero_avatar, hero_name, " \
                                         "assist_average, death_average, kill_average, kda_average, show_rate, ban_rate, " \
                                         "win_rate, pick_count, ban_count, win_count, league_id, position) VALUES({0}, " \
                                         "'{1}', '{2}', {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, '{14}') " \
                                         "ON DUPLICATE KEY UPDATE " \
                                         "hero_id={0}, hero_avatar='{1}', hero_name='{2}', assist_average={3},death_average={4}," \
                                         " kill_average={5}, kda_average={6}, show_rate={7}, ban_rate={8}, win_rate={9}, pick_count={10}," \
-                                        "ban_count={11}, win_count={12} league_id={13}, position='{14}';".format(hero_id, hero_avatar,
+                                        "ban_count={11}, win_count={12}, league_id={13}, position='{14}';".format(hero_id, hero_avatar,
                                         hero_name, assist_average, death_average, kill_average, kda_average, pick_rate,
                                         ban_rate, win_rate, pick_count, ban_count, win_count, league_id, position)
-                            sql_teamrank = sql_teamrank_yxlm if types == 1 else sql_teamrank_wzry
-                            # print('添加团队排行榜的类型以及sql:', types, sql_teamrank)
-                            db.update_insert(sql_teamrank)
+                            sql_herorank = sql_herorank_yxlm if types == 1 else sql_herorank_wzry
+                            # print('添加英雄排行榜的类型以及sql:', types, sql_herorank)
+                            db.update_insert(sql_herorank)
                         else:
                             # 记录到黑名单中的英雄名称
                             sql_blacklist = "select id from black_list where hero_name = '{}';".format(hero_name)
