@@ -1,18 +1,16 @@
 # -*-coding:utf-8-*-
-import time
-import requests
-from datetime import datetime, timedelta
-from common_tool import get_response, get_log, API_return_200, redis_check
-from lxml import etree
-from common_tool import api_check
-from import_data_to_mysql import con_db
-from import_data_to_redis import RedisCache_checkAPI
+from datetime import datetime
+from common_tool import get_response, get_log, redis_check
+from db.import_data_to_mysql import con_db
+from db.import_data_to_redis import RedisCache_checkAPI
 from setting import db_setting
 
 """
 雷竞技网英雄联盟赔率爬虫
 url: https://www.ray83.com/match/37198305
 """
+
+leijingji_log = get_log('leijingji')
 # 爬虫流程：
 # 开始加载两页赛程的url：start_url， second_url
 # start_url = 'https://incpgameinfo.esportsworldlink.com/v2/match?page=1&match_type=2'，
@@ -53,7 +51,7 @@ end_url = [end_url1, end_url2, end_url3, end_url4]
 
 match_url_start = 'https://incpgameinfo.esportsworldlink.com/v2/odds?match_id='
 
-leijingji_log = get_log('leijingji')
+
 
 headers = {
 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -114,50 +112,53 @@ def parse(url, headers):
     # print('源数据：', len(responses))
     source = '雷竞技'
     for response in responses:
-        game_name = response['game_name']
-        leagueName = response['tournament_name']
-        # print('联赛名称:',game_name, leagueName)
-        # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
-        if game_name == '王者荣耀' or (game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS'
-                                                in leagueName or 'LEC' in leagueName or 'LDL' in leagueName )):
-            # 有个lplol的需要过滤
-            if 'LPLOL' not in leagueName:
-                types = game_type[game_name]
-                id = response['id']
-                # print('网站的赛事id：',id)
-                match_url = match_url_start + str(id)
-                # print('详情赔率url:', match_url)
-                responses_detail = get_response(match_url, headers)
-                responses_detail = responses_detail['result']
-                # print('详情数据：', responses_detail)
-                match_name = response['match_name']
-                match_name = match_name.split(' - VS - ')
-                source_a_name = match_name[0]
-                source_b_name = match_name[1]
-                start_time = response['start_time']
-                start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
-                leagueName_pre = str(start_time.year) + ' '
-                # 雷竞技的联赛名不带年份，要自己加上去，用比赛的年份判断出那一年再拼接上去
-                # 例如 start_time:'2020-07-08' ---'2020 ' + leagueName
-                leagueName = leagueName_pre + leagueName
-                # print('leagueName:',leagueName)
-                start_time = int(start_time.timestamp())
-                start_time = str(start_time)
-                source_matchid = str(id)
+        try:
+            game_name = response['game_name']
+            leagueName = response['tournament_name']
+            # print('联赛名称:',game_name, leagueName)
+            # 过滤只拿到英雄联盟的赔率（LPL, LCK, LCS, LEC, LDL）
 
-                # 先查找redis的zset集合中有没有对应网站的source_matchid，没有就添加
-                # print('查找前的数据:', leagueName, source_a_name, source_b_name, start_time)
-                result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name,
-                                     source_b_name, start_time)
-                # print(result)
-                if result:
-                    match_id = result[0]
-                    if match_id:
-                        sql_insert = 'update game_python_match set bet_id={0} where id={1}'.format(id, match_id)
-                        # print(sql_insert)
-                        db.update_insert(sql_insert)
-                        # print('记录bet_id字段完成')
+            if game_name == '王者荣耀' or (game_name == '英雄联盟' and ('LPL' in leagueName or 'LCK' in leagueName or 'LCS'
+                                                    in leagueName or 'LEC' in leagueName or 'LDL' in leagueName )):
+                # 有个lplol的需要过滤
+                if 'LPLOL' not in leagueName:
+                    types = game_type[game_name]
+                    id = response['id']
+                    # print('网站的赛事id：',id)
+                    match_url = match_url_start + str(id)
+                    # print('详情赔率url:', match_url)
+                    responses_detail = get_response(match_url, headers)
+                    responses_detail = responses_detail['result']
+                    # print('详情数据：', responses_detail)
+                    match_name = response['match_name']
+                    match_name = match_name.split(' - VS - ')
+                    source_a_name = match_name[0]
+                    source_b_name = match_name[1]
+                    start_time = response['start_time']
+                    start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+                    leagueName_pre = str(start_time.year) + ' '
+                    # 雷竞技的联赛名不带年份，要自己加上去，用比赛的年份判断出那一年再拼接上去
+                    # 例如 start_time:'2020-07-08' ---'2020 ' + leagueName
+                    leagueName = leagueName_pre + leagueName
+                    # print('leagueName:',leagueName)
+                    start_time = int(start_time.timestamp())
+                    start_time = str(start_time)
+                    source_matchid = str(id)
 
+                    # 先查找redis的zset集合中有没有对应网站的source_matchid，没有就添加
+                    # print('查找前的数据:', leagueName, source_a_name, source_b_name, start_time)
+                    result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name,
+                                         source_b_name, start_time)
+                    # print(result)
+                    if result:
+                        match_id = result[0]
+                        if match_id:
+                            sql_insert = 'update game_python_match set bet_id={0} where id={1}'.format(id, match_id)
+                            # print(sql_insert)
+                            db.update_insert(sql_insert)
+                            # print('记录bet_id字段完成')
+        except Exception as e:
+            leijingji_log.error(e, exc_info=True)
 
 
                 # result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name, source_b_name, start_time)

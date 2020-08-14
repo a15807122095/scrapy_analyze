@@ -1,10 +1,8 @@
 # -*-coding:utf-8-*-
-import json
 from datetime import datetime
 import requests
-import time
 from lxml import etree
-from import_data_to_mysql import con_db
+from db.import_data_to_mysql import con_db
 from setting import db_sport_setting
 
 """

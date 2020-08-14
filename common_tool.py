@@ -18,7 +18,7 @@ def get_log(log_name, level=logging.ERROR):
         # 给logger对象添加handler文件输出属性
         log_object.addHandler(StreamHandler)
         # 设置handler的文件输出属性
-        filehandler = logging.FileHandler('./Log/%s.log' % (log_name))
+        filehandler = logging.FileHandler('../Log/%s.log' % (log_name))
         filehandler.setFormatter(formatter)
         # 给logger对象添加handler文件输出属性
         log_object.addHandler(filehandler)
@@ -362,8 +362,8 @@ def redis_check_heroID(hero_name, source, redis, types, league_name, db):
 
 
 # 赛程爬虫根据redis_check进行更新或者插入操作
-def redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId, team_a_sourcename, team_b_sourcename, start_time,
-                           types, team_a_score, team_b_score, status, bo, win_team, propertys):
+def redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId, team_a_sourcename,
+     team_b_sourcename, start_time, types, team_a_score, team_b_score, status, bo, win_team, propertys):
         # 先检查redis是否有记录
         result = redis_check(redis, game_name, db, source_from, league_sourcename, source_matchId,
                              team_a_sourcename, team_b_sourcename, start_time)

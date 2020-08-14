@@ -1,10 +1,8 @@
 # -*-coding:utf-8-*-
 
-import requests
-import json
 from common_tool import post_response, league_check, api_return_200, hero_check, get_log
-from import_data_to_redis import RedisCache_checkAPI
-from import_data_to_mysql import con_db
+from db.import_data_to_redis import RedisCache_checkAPI
+from db.import_data_to_mysql import con_db
 from setting import db_setting
 
 """
@@ -158,8 +156,6 @@ def parse(types):
                                                 "source_from = 1, judge_position=0001;".format(league_name, hero_name)
                             # print('记录到英雄黑名单sql:', sql_add_blacklist)
                             api_return_200(sql_blacklist, sql_add_blacklist, db)
-
-
 
             else:
                 # 记录到黑名单

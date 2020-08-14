@@ -1,11 +1,9 @@
 # -*-coding:utf-8-*-
 
-import requests
-import json
 from common_tool import post_response, league_check, api_return_200, player_check, hero_check, get_log
 
-from import_data_to_redis import RedisCache_urldistict
-from import_data_to_mysql import con_db
+from db.import_data_to_redis import RedisCache_urldistict
+from db.import_data_to_mysql import con_db
 from setting import db_setting
 
 """

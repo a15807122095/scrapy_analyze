@@ -1,10 +1,7 @@
 # -*-coding:utf-8-*-
-import json
-from datetime import datetime
 import requests
-import time
 from lxml import etree
-from import_data_to_mysql import con_db
+from db.import_data_to_mysql import con_db
 from setting import db_sport_setting
 from common_tool import get_log
 
@@ -23,7 +20,7 @@ bet_list = {
 
 headers_bet = {
 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-              'Chrome/83.0.4103.116 Safari/537.36'
+              'Chrome/84.0.4147.125 Safari/537.36'
 }
 
 start_url = 'https://info.sporttery.cn/football/match_list.php'

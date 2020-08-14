@@ -1,12 +1,9 @@
 # -*-coding:utf-8-*-
 
-import requests
-import json
 from common_tool import post_response, league_check, team_check, api_return_200, player_check, get_log
-from import_data_to_redis import RedisCache_checkAPI
-from import_data_to_mysql import con_db
+from db.import_data_to_redis import RedisCache_checkAPI
+from db.import_data_to_mysql import con_db
 from setting import db_setting
-from datetime import datetime
 
 """
 选手排行榜（英雄联盟,王者荣耀）

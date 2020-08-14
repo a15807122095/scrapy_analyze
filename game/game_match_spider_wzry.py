@@ -1,9 +1,7 @@
 # -*-coding:utf-8-*-
-import json
-import requests
 from common_tool import get_response, redis_return_operation, get_log
-from import_data_to_mysql import con_db
-from import_data_to_redis import RedisCache_checkAPI
+from db.import_data_to_mysql import con_db
+from db.import_data_to_redis import RedisCache_checkAPI
 from setting import db_setting
 
 
@@ -106,7 +104,6 @@ def parse_wzry(url, headers, propertys, db):
             redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId,
                            team_a_sourcename, team_b_sourcename, start_time, types, team_a_score, team_b_score, status,
                            bo, win_team, propertys)
-
     except Exception as e:
         match_wzry_log.error(e, exc_info=True)
 

@@ -1,16 +1,16 @@
 # -*-coding:utf-8-*-
-import json
 from datetime import datetime
-import requests
 import time
-from import_data_to_mysql import con_db
+from db.import_data_to_mysql import con_db
 from common_tool import get_response, redis_return_operation, get_log
 from setting import db_setting
-from import_data_to_redis import RedisCache_checkAPI
+from db.import_data_to_redis import RedisCache_checkAPI
 
 """
 英雄联盟官网爬虫
 """
+
+match_yxlmgw_log = get_log('match_yxlmgw')
 
 team_list = ['RNG', 'ES', 'EDG', 'LGD', 'IG', 'BLG', 'TES', 'SN', 'WE',
             'OMG', 'DMO', 'LNG', 'JDG', 'FPX', 'RW', 'VG', 'V5']
@@ -36,7 +36,7 @@ url_unfinish_1 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.p
 url_unfinish_2 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&p10=&p6=3&p11=&p12={0}&page=1&pagesize=8&_='
 url_unfinish_3 = 'https://apps.game.qq.com/lol/match/apis/searchBMatchInfo_bak.php?p8=5&p1=134&p4=&p2=%C8%AB%B2%BF&p9=&p10=&p6=3&p11=&p12={0}&page=1&pagesize=8&_='
 
-match_yxlmgw_log = get_log('match_yxlmgw')
+
 
 headers_yxlmgw = {
         'USER-AGENT':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36'
@@ -106,7 +106,7 @@ def parse_yxlm(url, db, match_status, headers):
                 match_id = source_matchId
             return match_id
     except Exception as e:
-        match_yxlmgw_log.error(e, exc_info=True)
+        match_yxlmgw_log.error(e)
 
 
 # 拿到时间戳
@@ -125,13 +125,13 @@ match_id = parse_yxlm(url_finish_1, db, '2', headers_yxlmgw)
 # 上周已完成的url中的matchid是以当页最后一场已完成的matchid
 url_finish_2 = url_finish_2.format(match_id) + now_time
 parse_yxlm(url_finish_2, db, '2', headers_yxlmgw)
-print(url_finish_1, url_finish_2)
+# print(url_finish_1, url_finish_2)
 # print('已完成比赛抓取完毕')
 
 # 未进行的
 # print('开始抓取未进行比赛')
 url_unfinish_1 = url_unfinish_1 + now_time
-print(url_unfinish_1)
+# print(url_unfinish_1)
 match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
 # # # 下周未完成的url中的matchid是以当页最后一场未完成的matchid
 # url_unfinish_2 = url_unfinish_2.format(match_id) + now_time
@@ -140,12 +140,11 @@ match_id = parse_yxlm(url_unfinish_1, db, '0', headers_yxlmgw)
 # url_unfinish_3 = url_unfinish_3.format(match_id) + now_time
 # print(url_unfinish_3)
 # parse_yxlm(url_unfinish_3, db, '0', headers_yxlmgw)
-
 # print('未进行比赛抓取完毕')
 
 # print('开始抓取进行中比赛')
 parse_yxlm(url_matching, db, '1', headers_yxlmgw)
-print(url_matching)
+# print(url_matching)
 # print('进行中比赛抓取完毕')
 
 

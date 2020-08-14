@@ -1,14 +1,13 @@
 # -*-coding:utf-8-*-
 from common_tool import post_response, get_log, redis_check, get_weeks, redis_check_playerID, redis_check_heroID
-from import_data_to_redis import RedisCache_checkAPI
-from import_data_to_mysql import con_db
+from db.import_data_to_redis import RedisCache_checkAPI
+from db.import_data_to_mysql import con_db
 from datetime import datetime
 from setting import db_setting, chrome_path
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from lxml import etree
 import requests, re, time
-from threading import Thread
 
 """
 王者荣耀赛事详情爬虫
@@ -167,9 +166,10 @@ def parse_wanplus(url, data, db, headers):
                                              index_num, duration_dict, judge_reversal, match_detail_id)
                         # 小局的长次数用index_num
                         index_num -= 1
-
     except Exception as e:
-        match_detail_wanplus_log.error(e, exc_info=True)
+        match_detail_wanplus_log.error('数据抓取异常')
+        match_detail_wanplus_log.error(e)
+
 
 # 模拟点击获取比赛时长
 def parse_duration(match_details_url, match_detail_ids):
@@ -186,14 +186,10 @@ def parse_duration(match_details_url, match_detail_ids):
             driver.find_element_by_xpath('//*[@id="info"]/div[2]/div[3]/ul/li[{}]'.format(i+1)).click()
         time.sleep(0.5)
         # 拿到时长格式为'26:53'
-        try:
-            duration = driver.find_element_by_xpath('//*[@id="info"]/div[2]/div[3]/div[2]/ul/li[1]/div/div[2]').text
-            duration = duration[-5::]
-            result_time = duration.split(':')
-            duration = int(result_time[0]) * 60 + int(result_time[1])
-        except TypeError:
-            duration = 0
-            match_detail_wanplus_log.error('时长异常')
+        duration = driver.find_element_by_xpath('//*[@id="info"]/div[2]/div[3]/div[2]/ul/li[1]/div/div[2]').text
+        duration = duration[-5::]
+        result_time = duration.split(':')
+        duration = int(result_time[0]) * 60 + int(result_time[1])
         duration_dict[count-i] = duration
 
     # print('拿到比赛时长字典为:', duration_dict)

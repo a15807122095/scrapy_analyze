@@ -1,8 +1,8 @@
 # -*-coding:utf-8-*-
 
 from common_tool import post_response, get_response, api_check, API_return_200, get_log
-from import_data_to_redis import RedisCache_checkAPI
-from import_data_to_mysql import con_db
+from db.import_data_to_redis import RedisCache_checkAPI
+from db.import_data_to_mysql import con_db
 from setting import db_setting
 from datetime import datetime
 
@@ -68,7 +68,7 @@ team_type_name = {}
 # 键值对：‘后端返回战队名：分组名’
 realteam_type_name = {}
 
-league_board_log = get_log('league_board_log')
+league_board_log = get_log('league_board')
 db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 redis = RedisCache_checkAPI()
 
