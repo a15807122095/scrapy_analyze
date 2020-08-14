@@ -265,7 +265,8 @@ def parse_detail(url_list, leagueName, source_matchid, team_a_name, team_b_name,
                             "equip_ids, skill_ids, position, type, source_matchid, team_id) VALUES({0}, '{1}', '{2}', \"{3}\", " \
                             "{4}, {5}, '{6}', '{7}', {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}, {19}, " \
                             "{20}, {21}, {22}, {23}, '{24}', '{25}', '{26}', {27}, '{28}', '{29}') " \
-                            "ON DUPLICATE KEY UPDATE match_id = {0}, player_name = '{2}', player_avatar = \"{3}\", " \
+                                "ON DUPLICATE KEY UPDATE " \
+                            "match_id = {0}, player_name = '{2}', player_avatar = \"{3}\", " \
                             "hero_id = {4}, hero_level = {5}, hero_name = '{6}', hero_avatar = '{7}', kill_count = {8}, " \
                             "death_count = {9}, assist_count = {10}, last_hit_count = {11}, last_hit_minute = {12}, " \
                             "damage_count = {13}, damage_minute = {14}, damage_percent = {15}, damage_taken_count = {16}, " \
