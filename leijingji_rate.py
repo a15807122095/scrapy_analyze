@@ -1,8 +1,8 @@
 # -*-coding:utf-8-*-
 from datetime import datetime
 from common_tool import get_response, get_log, redis_check
-from db.import_data_to_mysql import con_db
-from db.import_data_to_redis import RedisCache_checkAPI
+from import_data_to_mysql import con_db
+from import_data_to_redis import RedisCache_checkAPI
 from setting import db_setting
 
 """

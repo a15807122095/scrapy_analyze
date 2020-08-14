@@ -18,7 +18,7 @@ def get_log(log_name, level=logging.ERROR):
         # 给logger对象添加handler文件输出属性
         log_object.addHandler(StreamHandler)
         # 设置handler的文件输出属性
-        filehandler = logging.FileHandler('../Log/%s.log' % (log_name))
+        filehandler = logging.FileHandler('./Log/%s.log' % (log_name))
         filehandler.setFormatter(formatter)
         # 给logger对象添加handler文件输出属性
         log_object.addHandler(filehandler)

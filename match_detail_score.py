@@ -1,8 +1,8 @@
 # -*-coding:utf-8-*-
 from common_tool import post_response, get_log, get_weeks, get_response, redis_check, \
     player_check, api_return_200, hero_check
-from db.import_data_to_mysql import con_db
-from db.import_data_to_redis import RedisCache_checkAPI
+from import_data_to_mysql import con_db
+from import_data_to_redis import RedisCache_checkAPI
 from datetime import datetime, timedelta
 from setting import db_setting
 import json

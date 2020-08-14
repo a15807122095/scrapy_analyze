@@ -1,7 +1,7 @@
 # -*-coding:utf-8-*-
 from common_tool import post_response, get_log, redis_check, get_weeks, redis_check_playerID, redis_check_heroID
-from db.import_data_to_redis import RedisCache_checkAPI
-from db.import_data_to_mysql import con_db
+from import_data_to_redis import RedisCache_checkAPI
+from import_data_to_mysql import con_db
 from datetime import datetime
 from setting import db_setting, chrome_path
 from selenium import webdriver
@@ -81,94 +81,94 @@ monday_stamp = int(today_stamp - 86400 * week_day)
 # # 上周日的00:00:00时间戳
 last_weekstamp = int(monday_stamp - 86400)
 
-match_detail_wanplus_log = get_log('match_detail_wanplus')
+# match_detail_wanplus_log = get_log('match_detail_wanplus')
 
 redis = RedisCache_checkAPI()
 db = con_db(db_setting['host'], db_setting['user'], db_setting['password'], db_setting['db'])
 
 def parse_wanplus(url, data, db, headers):
-    try:
-        responses = post_response(url, data, headers)
-        results = responses['data']['scheduleList']
-        game_name = '王者荣耀'
-        source_from = 'wanplus王者荣耀详情'  # 爬虫源网站
-        types = 2
-        status = 1
-        for key_list, result in results.items():
-            if key_list not in date_lists:
-                continue
-            date_time = result['time']
-            results_match = result['list']
-            # 有的字段是bool类型，过滤掉
-            # print(results_match)
-            if type(results_match) == bool:
-                continue
-            for result_match in results_match:
-                source_matchid = result_match['scheduleid']
-                # print(source_matchid)
-                league_name = result_match['ename']
-                home_team = result_match['oneseedname']
-                guest_name = result_match['twoseedname']
-                # print('赛程信息：', league_name, home_team, guest_name)
-                # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上result['time']才是表中的start_time类型
-                time = result_match['starttime']
-                strs = time.split(':')
-                start_time = int(strs[0]) * 3600 + int(strs[1]) * 60 + date_time
-                start_time = str(start_time)
+    # try:
+    responses = post_response(url, data, headers)
+    results = responses['data']['scheduleList']
+    game_name = '王者荣耀'
+    source_from = 'wanplus王者荣耀详情'  # 爬虫源网站
+    types = 2
+    status = 1
+    for key_list, result in results.items():
+        if key_list not in date_lists:
+            continue
+        date_time = result['time']
+        results_match = result['list']
+        # 有的字段是bool类型，过滤掉
+        # print(results_match)
+        if type(results_match) == bool:
+            continue
+        for result_match in results_match:
+            source_matchid = result_match['scheduleid']
+            # print(source_matchid)
+            league_name = result_match['ename']
+            home_team = result_match['oneseedname']
+            guest_name = result_match['twoseedname']
+            # print('赛程信息：', league_name, home_team, guest_name)
+            # 源数据中的start_time为‘17:00’类型，转换为时间戳再加上result['time']才是表中的start_time类型
+            time = result_match['starttime']
+            strs = time.split(':')
+            start_time = int(strs[0]) * 3600 + int(strs[1]) * 60 + date_time
+            start_time = str(start_time)
 
-                # 拿到网站的赛事id,拼凑出详情的url
-                match_details_url = match_detail_url.format(source_matchid)
-                # print('拿到的对局url:', source_matchid, match_details_url)
+            # 拿到网站的赛事id,拼凑出详情的url
+            match_details_url = match_detail_url.format(source_matchid)
+            # print('拿到的对局url:', source_matchid, match_details_url)
 
-                # 用xpath提取出对局页面的小局id存到列表中
-                response = requests.get(match_details_url, headers)
-                response = response.text
-                html = etree.HTML(response)
+            # 用xpath提取出对局页面的小局id存到列表中
+            response = requests.get(match_details_url, headers)
+            response = response.text
+            html = etree.HTML(response)
 
-                match_detail_ids = html.xpath('//*[@id="info"]/div[2]/div[3]/ul/li/@match')
-                # print('得到的小局id:', match_detail_ids)
+            match_detail_ids = html.xpath('//*[@id="info"]/div[2]/div[3]/ul/li/@match')
+            # print('得到的小局id:', match_detail_ids)
 
-                # 模拟点击拿该场赛程所有小场比赛时长字典
-                duration_dict = parse_duration(match_details_url, match_detail_ids)
-                index_num = len(match_detail_ids)
-                for match_detail_id in match_detail_ids:
-                    # 拿到每场小局id去redis查找赛程记录
-                    result_check = redis_check(redis, game_name, db, source_from, league_name, match_detail_id,
-                                               home_team, guest_name, start_time)
-                    # print('redis返回的赛程信息：', result_check)
-                    match_id = result_check[0]
+            # 模拟点击拿该场赛程所有小场比赛时长字典
+            duration_dict = parse_duration(match_details_url, match_detail_ids)
+            index_num = len(match_detail_ids)
+            for match_detail_id in match_detail_ids:
+                # 拿到每场小局id去redis查找赛程记录
+                result_check = redis_check(redis, game_name, db, source_from, league_name, match_detail_id,
+                                           home_team, guest_name, start_time)
+                # print('redis返回的赛程信息：', result_check)
+                match_id = result_check[0]
 
-                    # 赛程在赛程表中找到记录
-                    if match_id:
-                        team_a_name = result_check[4]
-                        team_b_name = result_check[5]
-                        sql_check = 'select team_a_name, team_a_id, team_b_name, team_b_id from game_python_match ' \
-                                    'where id = {}'.format(match_id)
-                        result_team = db.select_message(sql_check)
-                        team_a_realname = result_team[0]
-                        team_b_realname = result_team[2]
-                        team_a_id = result_team[1]
-                        team_b_id = result_team[3]
+                # 赛程在赛程表中找到记录
+                if match_id:
+                    team_a_name = result_check[4]
+                    team_b_name = result_check[5]
+                    sql_check = 'select team_a_name, team_a_id, team_b_name, team_b_id from game_python_match ' \
+                                'where id = {}'.format(match_id)
+                    result_team = db.select_message(sql_check)
+                    team_a_realname = result_team[0]
+                    team_b_realname = result_team[2]
+                    team_a_id = result_team[1]
+                    team_b_id = result_team[3]
 
-                        # 判断网站的主客队与赛程表中主客队是否一致
-                        judge_reversal = False
-                        # 如果wanplus主客队校正后与表中a,b队相反，以表为准，此时wanplus的b队是主队(一般不会)
-                        if team_a_name == team_b_realname and team_b_name == team_a_realname:
-                            judge_reversal = True
+                    # 判断网站的主客队与赛程表中主客队是否一致
+                    judge_reversal = False
+                    # 如果wanplus主客队校正后与表中a,b队相反，以表为准，此时wanplus的b队是主队(一般不会)
+                    if team_a_name == team_b_realname and team_b_name == team_a_realname:
+                        judge_reversal = True
 
-                        #拿到小局id拼凑出更细致的详情页面
-                        match_more_details_url = match_more_detail_url.format(match_detail_id)
-                        # print('小局的对局详情url:', match_more_details_url)
+                    #拿到小局id拼凑出更细致的详情页面
+                    match_more_details_url = match_more_detail_url.format(match_detail_id)
+                    # print('小局的对局详情url:', match_more_details_url)
 
 
-                        # 开始分析小局详情页
-                        parse_detail_wanplus(match_more_details_url, source_from, types, team_a_id, team_b_id, league_name, match_id, status,
-                                             index_num, duration_dict, judge_reversal, match_detail_id)
-                        # 小局的长次数用index_num
-                        index_num -= 1
-    except Exception as e:
-        match_detail_wanplus_log.error('数据抓取异常')
-        match_detail_wanplus_log.error(e)
+                    # 开始分析小局详情页
+                    parse_detail_wanplus(match_more_details_url, source_from, types, team_a_id, team_b_id, league_name, match_id, status,
+                                         index_num, duration_dict, judge_reversal, match_detail_id)
+                    # 小局的长次数用index_num
+                    index_num -= 1
+    # except Exception as e:
+    #     match_detail_wanplus_log.error('数据抓取异常')
+    #     match_detail_wanplus_log.error(e)
 
 
 # 模拟点击获取比赛时长

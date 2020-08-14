@@ -1,7 +1,7 @@
 # -*-coding:utf-8-*-
 from common_tool import api_check, \
     check_local, API_return_200, post_response
-from db.import_data_to_mysql import con_db
+from import_data_to_mysql import con_db
 from datetime import datetime
 from setting import db_setting
 

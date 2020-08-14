@@ -1,10 +1,10 @@
 # -*-coding:utf-8-*-
 from datetime import datetime
 import time
-from db.import_data_to_mysql import con_db
+from import_data_to_mysql import con_db
 from common_tool import get_response, redis_return_operation, get_log
 from setting import db_setting
-from db.import_data_to_redis import RedisCache_checkAPI
+from import_data_to_redis import RedisCache_checkAPI
 
 """
 英雄联盟官网爬虫

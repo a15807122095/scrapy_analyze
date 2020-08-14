@@ -2,7 +2,7 @@
 from datetime import datetime
 import requests
 from lxml import etree
-from db.import_data_to_mysql import con_db
+from import_data_to_mysql import con_db
 from setting import db_sport_setting
 
 """

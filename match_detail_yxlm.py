@@ -2,8 +2,8 @@
 import json
 from datetime import datetime, timedelta
 from common_tool import redis_check, get_response_proxy, get_log
-from db.import_data_to_mysql import con_db
-from db.import_data_to_redis import RedisCache_checkAPI
+from import_data_to_mysql import con_db
+from import_data_to_redis import RedisCache_checkAPI
 from setting import db_setting
 
 """

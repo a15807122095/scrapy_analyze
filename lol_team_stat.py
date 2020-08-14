@@ -1,8 +1,8 @@
 # -*-coding:utf-8-*-
 
 from common_tool import post_response, league_check, team_check, api_return_200, get_log
-from db.import_data_to_redis import RedisCache_checkAPI
-from db.import_data_to_mysql import con_db
+from import_data_to_redis import RedisCache_checkAPI
+from import_data_to_mysql import con_db
 from setting import db_setting
 
 """
