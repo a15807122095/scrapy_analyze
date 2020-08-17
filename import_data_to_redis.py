@@ -78,14 +78,16 @@ class RedisCache_urldistict(object):
         else:
             return None
 
-    def del_data(self, key):
-        '''删
-        '''
-        self._connection.delete(key)
 
-
-    def add_zset(self, key, map):
-        '''增加zset类型
+    def add_set(self, key, *args):
+        '''增加set类型
         '''
-        self._connection.zadd(key, map)
+        self._connection.sadd(key, *args)
         self._connection.expire(key,86400)
+
+    def get_set(self, key, name):
+        '''增加set类型
+        '''
+        return self._connection.sismember(key, name)
+
+

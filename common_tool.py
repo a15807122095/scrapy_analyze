@@ -368,38 +368,29 @@ def redis_check_heroID(hero_name, source, redis, types, league_name, db):
                         return None
 
 # 匹配资讯id:
-# redis中找到说明资讯已入库
+# redis类型为set类型
+# redis中找到说明资讯已入库,返回False
 # redis中未找到就去mysql中找,找到就返回False并录入redis(可能redis中的数据已过期,情况很少)
 # redis中未找到就去mysql中找,没有就返回True代表可以入库
-# 格式为：str（源网站 + 源网站的article) : hero_id
-def redis_check_article(hero_name, source, redis, types, league_name, db):
-        # 先从redis中找到hero_id，有记录代表之前已记录,取出player
-        # redis存储结构：（源+hero+hero_name:hero_id）‘score+hero+uzi:'123'
-        key_hero = source + '+' + 'hero' + '+' + hero_name
-        result = redis.get_data(key_hero)
-        # print('redis查询hero的结果：', result)
-        if result:
-                # print('redis有记录：', result)
-                return result
-        else:
-                # print('redis中没记录：', result)
-                # redis中不存在就访问后端接口
-                result_hero = hero_check(hero_name, types)
-                # print('访问后端拿到的选手信息：', result_hero)
-                if result_hero['code'] == 600:
-                        hero_id = result_hero['result']['hero_id']
-                        # 记录到redis中，格式为：（源+player+source_hero_id:hero_name_id）‘score+hero+8377:'123'
-                        redis.set_data(key_hero, 86400, hero_id)
-                        # print('redis记录player完成：',key_hero, player_id)
-                        return hero_id
-                else:
-                        # 记录到黑名单中的选手名称
-                        sql_blacklist = "select id from black_list where player_name ='{}';".format(hero_name)
-                        sql_add_blacklist = "insert into black_list set league_name = '{0}',hero_name ='{1}', " \
-                                            "source_from = 1, judge_position=0001;".format(league_name, hero_name)
-                        # print('记录到英雄黑名单sql:', sql_add_blacklist)
-                        api_return_200(sql_blacklist, sql_add_blacklist, db)
-                        return None
+def redis_check_article(redis_key, article_id, judge_sql, redis, db):
+     redis_article_id = redis.get_set(redis_key, article_id)
+     if redis_article_id:
+             # print('reids有记录, 不用更新到表', redis_article_id)
+             return False
+     else:
+             redis.add_set(redis_key, article_id)
+             article_judge = db.select_id(judge_sql)
+             if article_judge:
+                     # print('reids无记录,mysql有记录')
+                     # mysql中有记录,补充reids的记录
+
+                     return False
+             else:
+                     # print('reids无记录,mysql无记录,写入到表')
+                     # mysql和reids都没有记录
+                     return True
+
+
 
 # 赛程爬虫根据redis_check进行更新或者插入操作
 def redis_return_operation(redis, game_name, db, source_from, league_sourcename, source_matchId, team_a_sourcename,
