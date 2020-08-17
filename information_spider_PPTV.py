@@ -2,7 +2,7 @@
 from import_data_to_mysql import con_db
 from import_data_to_redis import RedisCache_urldistict
 from setting import db_sport_setting
-from common_tool import request_xpath, redis_check_article
+from common_tool import request_xpath, redis_check_article, get_log
 from datetime import datetime
 import json
 
@@ -20,6 +20,8 @@ Spain_url = 'http://www.ppsport.com/laliga'
 German_url = 'http://www.ppsport.com/bundesliga'
 Italy_url = 'http://www.ppsport.com/seriea'
 France_url = 'http://www.ppsport.com/ligue1'
+
+information_pptv_log = get_log('information_pptv')
 
 # 五大联赛对应联赛归属
 start_url_O = {
@@ -73,18 +75,21 @@ def parse(url, league_name, xpath_url):
     article_ids = html.xpath(xpath_url)
     # print(len(article_ids), article_ids)
     for article_id_url in article_ids:
-        # 提取article_id
-        article_id = article_id_url.split('/')[-1]
-        article_id = article_id.split('.')[0]
+        try:
+            # 提取article_id
+            article_id = article_id_url.split('/')[-1]
+            article_id = article_id.split('.')[0]
 
-        article_url = article_url_pre + article_id_url
-        print('文章id和详情url:', article_id, article_url)
+            article_url = article_url_pre + article_id_url
+            print('文章id和详情url:', article_id, article_url)
 
-        article_id_judge = article_id.isdigit()
-        print(article_id_judge)
-        # article_id必须为数字
-        if article_id_judge:
-            parse_detail(article_url, headers, types, league_name, source_from, article_id)
+            article_id_judge = article_id.isdigit()
+            print(article_id_judge)
+            # article_id必须为数字
+            if article_id_judge:
+                parse_detail(article_url, headers, types, league_name, source_from, article_id)
+        except Exception as e:
+            information_pptv_log.error(e)
 
 
 # 详情页解析
