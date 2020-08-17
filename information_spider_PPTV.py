@@ -81,10 +81,10 @@ def parse(url, league_name, xpath_url):
             article_id = article_id.split('.')[0]
 
             article_url = article_url_pre + article_id_url
-            print('文章id和详情url:', article_id, article_url)
+            # print('文章id和详情url:', article_id, article_url)
 
             article_id_judge = article_id.isdigit()
-            print(article_id_judge)
+            # print(article_id_judge)
             # article_id必须为数字
             if article_id_judge:
                 parse_detail(article_url, headers, types, league_name, source_from, article_id)
@@ -99,14 +99,14 @@ def parse_detail(article_url, headers, types, league_name, source_from, article_
     judge_sql = "select id from information_football where source_from='{0}' and article_id={1};". \
         format(source_from, article_id)
     judge_arg = redis_check_article(redis_key, article_id, judge_sql, redis, db)
-    print('sql检测:', judge_arg, judge_sql)
+    # print('sql检测:', judge_arg, judge_sql)
 
     # redis和表中都没有article_id的记录,开始录入到表中
     if judge_arg:
 
         # 拿到字段信息
         html_artile = request_xpath(article_url, headers)
-        print('详情的xpath解析:', html_artile)
+        # print('详情的xpath解析:', html_artile)
         article_title = html_artile.xpath('/html/body/div[1]/div[3]/div[2]/div/div[1]/h1/text()')
         article_title = article_title if article_title else None
         # 有的资讯id拼接的详情页不是新闻,通过标题的有无过滤掉
@@ -120,7 +120,7 @@ def parse_detail(article_url, headers, types, league_name, source_from, article_
             article_img = html_artile.xpath('//*[@id="articleContent"]/div[1]/img/@src')
             article_img = str(article_img)
             article_img = article_img.replace('\'', '\"')
-            print('资讯信息:', type(article_img), article_content)
+            # print('资讯信息:', type(article_img), article_content)
 
             # 判断是否为纯video的资讯(资讯图片和资讯内容为空)
             if article_img != '[]' and article_content:
@@ -149,15 +149,15 @@ def parse_detail(article_url, headers, types, league_name, source_from, article_
                 "type={0}, league_name='{1}', source_from='{2}', article_id={3}, article_title=\"{4}\", article_date='{5}', " \
                 "article_author='{6}', article_img='{7}', article_content=\"{8}\";".format(types, league_name, source_from,
                 article_id, article_title, article_date, article_author, article_img, article_content)
-                print('开始写入的sql:', sql_insert)
+                # print('开始写入的sql:', sql_insert)
                 db.update_insert(sql_insert)
-                print('更新或插入完成')
+                # print('更新或插入完成')
 
 
 
 for url, url_xpaths in league_xpath_rule.items():
     league_name = start_url_O[url]
-    print('抓取的联赛归属:', league_name)
+    # print('抓取的联赛归属:', league_name)
     for url_xpath in url_xpaths:
         parse(url, league_name, url_xpath)
 
