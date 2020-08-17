@@ -404,7 +404,10 @@ def detail_parse(url, resultID, types, index_num, game_name, league_name, start_
                 team_a_side = 'red' if judge_reversal else 'blue'
                 team_b_side = 'blue' if judge_reversal else 'red'
                 # win_teamID为A队id则A队赢，否则B队赢
-                win_team = 'A' if result['win_teamID'] == result['teamID_a'] else 'B'
+                if judge_reversal:
+                    win_team = 'B' if result['win_teamID'] == result['blue_teamID'] else 'A'
+                else:
+                    win_team = 'A' if result['win_teamID'] == result['blue_teamID'] else 'B'
                 dragon_result = result_all['data']['dragon_list']
                 if not judge_reversal:
                     first_big_dragon_team = 'A' if dragon_result['blue']['firstDragonKill'] else 'B'
