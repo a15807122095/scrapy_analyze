@@ -1,4 +1,8 @@
 # -*-coding:utf-8-*-
+
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+
 import requests
 from lxml import etree
 from import_data_to_mysql import con_db

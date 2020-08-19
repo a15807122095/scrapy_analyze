@@ -1,4 +1,8 @@
 # -*-coding:utf-8-*-
+
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+
 import json
 from datetime import datetime, timedelta
 from common_tool import redis_check, get_response_proxy, get_log

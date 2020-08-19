@@ -1,5 +1,8 @@
 # -*-coding:utf-8-*-
 
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+
 from common_tool import post_response, league_check, team_check, api_return_200, player_check, get_log
 from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db

@@ -1,5 +1,9 @@
 # -*-coding:utf-8-*-
-from common_tool import post_response, get_log, redis_check, get_weeks, redis_check_playerID, redis_check_heroID
+
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+
+from common_tool import post_response, redis_check, get_weeks, redis_check_playerID, redis_check_heroID
 from import_data_to_redis import RedisCache_checkAPI
 from import_data_to_mysql import con_db
 from datetime import datetime

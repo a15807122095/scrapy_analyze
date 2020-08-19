@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import logging
 import sys
 from lxml import etree
+from setting import logfile_path
 
 # 生成一个log,log级别为ERROR，用来打印调试和记录异常的log文件
 def get_log(log_name, level=logging.ERROR):
@@ -19,7 +20,8 @@ def get_log(log_name, level=logging.ERROR):
         # 给logger对象添加handler文件输出属性
         log_object.addHandler(StreamHandler)
         # 设置handler的文件输出属性
-        filehandler = logging.FileHandler('./Log/%s.log' % (log_name))
+        # 在settings文件中设置log的存储路径
+        filehandler = logging.FileHandler(logfile_path.format(log_name))
         filehandler.setFormatter(formatter)
         # 给logger对象添加handler文件输出属性
         log_object.addHandler(filehandler)

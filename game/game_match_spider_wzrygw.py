@@ -1,4 +1,8 @@
 # -*-coding:utf-8-*-
+
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+
 from setting import db_setting
 from common_tool import get_response, redis_return_operation
 from import_data_to_redis import RedisCache_checkAPI

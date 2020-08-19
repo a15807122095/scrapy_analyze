@@ -2,8 +2,8 @@
 
 from flask import Flask
 import json
-from game_match_spider_yxlmgw import run_game_match_spider_yxlmgw
-from game_match_spider_wanplus import run_game_match_spider_wanplus
+from game.game_match_spider_yxlmgw import run_game_match_spider_yxlmgw
+from game.game_match_spider_wanplus import run_game_match_spider_wanplus
 
 
 app = Flask(__name__)

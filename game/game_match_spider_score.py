@@ -1,4 +1,7 @@
 # -*-coding:utf-8-*-
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+
 from common_tool import api_check, \
     check_local, API_return_200, post_response
 from import_data_to_mysql import con_db

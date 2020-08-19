@@ -1,4 +1,6 @@
 # -*-coding:utf-8-*-
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
 
 from common_tool import post_response, get_response, api_check, API_return_200, get_log
 from import_data_to_redis import RedisCache_checkAPI
@@ -167,9 +169,9 @@ def parse(form_data_yxlm, types):
                                "league_id='{0}', team_id='{1}', win_count={2}, lost_count={3}, score={4}, type_name='{5}', " \
                                "stage='{6}', type={7}, team_name='{8}';".format(league_id, team_id, win_count, lost_count, score,
                                type_name, stage, types, team_name)
-                    # print('更新或插入排行表：', sql_rank)
+                    print('更新或插入排行表：', sql_rank)
                     db.update_insert(sql_rank)
-                    # print('更新完成')
+                    print('更新完成')
     except Exception as e:
         league_board_log.error('每组队局之前的异常')
         league_board_log.error(e, exc_info=True)

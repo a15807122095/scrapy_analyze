@@ -1,4 +1,8 @@
 # -*-coding:utf-8-*-
+
+import sys,os
+sys.path.append(os.path.dirname(__file__) + os.sep + '../')
+
 from common_tool import post_response, get_log, get_weeks, get_response, redis_check, \
     player_check, api_return_200, hero_check
 from import_data_to_mysql import con_db
