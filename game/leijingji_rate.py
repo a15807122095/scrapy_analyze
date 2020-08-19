@@ -135,32 +135,34 @@ def parse(url, headers):
                     responses_detail = responses_detail['result']
                     # print('详情数据：', responses_detail)
                     match_name = response['match_name']
-                    match_name = match_name.split(' - VS - ')
-                    source_a_name = match_name[0]
-                    source_b_name = match_name[1]
-                    start_time = response['start_time']
-                    start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
-                    leagueName_pre = str(start_time.year) + ' '
-                    # 雷竞技的联赛名不带年份，要自己加上去，用比赛的年份判断出那一年再拼接上去
-                    # 例如 start_time:'2020-07-08' ---'2020 ' + leagueName
-                    leagueName = leagueName_pre + leagueName
-                    # print('leagueName:',leagueName)
-                    start_time = int(start_time.timestamp())
-                    start_time = str(start_time)
-                    source_matchid = str(id)
+                    # 有正确的团队名(带 'vs'字样)
+                    if ' - VS - ' in match_name:
+                        match_name = match_name.split(' - VS - ')
+                        source_a_name = match_name[0]
+                        source_b_name = match_name[1]
+                        start_time = response['start_time']
+                        start_time = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+                        leagueName_pre = str(start_time.year) + ' '
+                        # 雷竞技的联赛名不带年份，要自己加上去，用比赛的年份判断出那一年再拼接上去
+                        # 例如 start_time:'2020-07-08' ---'2020 ' + leagueName
+                        leagueName = leagueName_pre + leagueName
+                        # print('leagueName:',leagueName)
+                        start_time = int(start_time.timestamp())
+                        start_time = str(start_time)
+                        source_matchid = str(id)
 
-                    # 先查找redis的zset集合中有没有对应网站的source_matchid，没有就添加
-                    # print('查找前的数据:', leagueName, source_a_name, source_b_name, start_time)
-                    result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name,
-                                         source_b_name, start_time)
-                    # print(result)
-                    if result:
-                        match_id = result[0]
-                        if match_id:
-                            sql_insert = 'update game_python_match set bet_id={0} where id={1}'.format(id, match_id)
-                            # print(sql_insert)
-                            db.update_insert(sql_insert)
-                            # print('记录bet_id字段完成')
+                        # 先查找redis的zset集合中有没有对应网站的source_matchid，没有就添加
+                        # print('查找前的数据:', leagueName, source_a_name, source_b_name, start_time)
+                        result = redis_check(redis, game_name, db, source, leagueName, source_matchid, source_a_name,
+                                             source_b_name, start_time)
+                        # print(result)
+                        if result:
+                            match_id = result[0]
+                            if match_id:
+                                sql_insert = 'update game_python_match set bet_id={0} where id={1}'.format(id, match_id)
+                                # print(sql_insert)
+                                db.update_insert(sql_insert)
+                                # print('记录bet_id字段完成')
         except Exception as e:
             leijingji_log.error(e, exc_info=True)
 
